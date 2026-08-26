@@ -2275,6 +2275,10 @@
       "name": "Enable Guild Logistics",
       "help": "Receive guild missions, submit preparation materials, and receive fleet rewards"
     },
+    "BuySupply": {
+      "name": "Buy / Receive Supply",
+      "help": "Members receive supply automatically, while leaders purchase (using guild funds) and receive supply"
+    },
     "SelectNewMission": {
       "name": "Select new weekly fleet mission",
       "help": "This account needs to be the fleet commander or deputy commander to enable.\nBy default, Siren Annihilation III, which is the easiest to complete, is selected. The mission is to sink 300 enemy ships."

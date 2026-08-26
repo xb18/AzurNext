@@ -11063,6 +11063,10 @@
         "type": "checkbox",
         "value": true
       },
+      "BuySupply": {
+        "type": "checkbox",
+        "value": true
+      },
       "SelectNewMission": {
         "type": "checkbox",
         "value": false

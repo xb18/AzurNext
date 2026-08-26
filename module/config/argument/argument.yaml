@@ -780,6 +780,7 @@ MeowfficerTrain:
   MaxFeedLevel: 5
 GuildLogistics:
   Enable: true
+  BuySupply: true
   SelectNewMission: false
   ExchangeFilter: |-
     PlateTorpedoT1 > PlateAntiAirT1 > PlatePlaneT1 > PlateGunT1 > PlateGeneralT1

@@ -324,6 +324,10 @@ class GuildLogistics(GuildBase):
         Returns:
             bool: If handled and loop should continue.
         """
+        if not self.config.GuildLogistics_BuySupply:
+            state['checked'] = True
+            return False
+
         if state['checked']:
             return False
 
@@ -476,6 +480,7 @@ class GuildLogistics(GuildBase):
             out: GUILD_LOGISTICS
         """
         logger.hr('大舰队后勤')
+        logger.attr('购买/领取补给', self.config.GuildLogistics_BuySupply)
         logger.attr('舰队司令/副司令', self.config.GuildLogistics_SelectNewMission)
         confirm_timer = Timer(1.5, count=3).start()
         exchange_interval = Timer(1.5, count=3)
