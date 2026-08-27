@@ -77,7 +77,7 @@ def generate_webui_password(length=32):
 
 def ensure_public_webui_password(key):
     """
-    公网监听且未设置密码时自动生成密码。
+    检查 WebUI 密码。若未配置密码则默认为无密码访问。
 
     Args:
         key: 命令行或部署配置中的 WebUI 密码。
@@ -85,26 +85,7 @@ def ensure_public_webui_password(key):
     Returns:
         tuple[str | None, str | None]: 有效密码和失败原因。
     """
-    if is_demo_mode():
-        return key, None
-
-    host = State.webui_host or State.deploy_config.WebuiHost
-    if not is_public_webui_host(host) or is_webui_password_set(key):
-        return key, None
-
-    try:
-        password = generate_webui_password()
-        from deploy.atomic import atomic_write
-
-        atomic_write(WEBUI_AUTO_PASSWORD_FILE, f"{password}\n")
-        State.deploy_config.Password = password
-        logger.warning(
-            f"[WebUI] WebUI 已自动生成密码，请在根目录 {WEBUI_AUTO_PASSWORD_FILE} 查看。"
-        )
-        return password, None
-    except Exception as e:
-        logger.exception(f"WebUI 自动生成密码失败: {e}")
-        return None, str(e)
+    return key, None
 
 
 def timedelta_to_text(delta=None):

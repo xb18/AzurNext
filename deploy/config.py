@@ -61,7 +61,7 @@ class ConfigModel:
     TurnCredentialMode: str = "static"
 
     # WebUI 配置
-    WebuiHost: str = "0.0.0.0"
+    WebuiHost: str = "127.0.0.1"
     WebuiPort: int = 25548
     WebuiSSLKey: Optional[str] = None
     WebuiSSLCert: Optional[str] = None
