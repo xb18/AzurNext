@@ -672,6 +672,9 @@ Commission:
     type: textarea
     value: ""
   DoMajorCommission: false
+  DormFoodOnOilMaxed:
+    value: 20
+    validate: [0, 100]
   CommissionNotifyReward:
     type: checkbox
     value: false

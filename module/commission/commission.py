@@ -658,6 +658,11 @@ class RewardCommission(UI, InfoHandler):
             else:
                 self.device.screenshot()
 
+            # 石油溢出检测（优先于 info_bar_count 检查，因为石油上限横幅也带有蓝色线条）
+            if self.appear(OIL_MAXED, offset=(120, 30)):
+                logger.warning('[委托-启动] 检测到石油达到上限无法接受委托')
+                raise OilMaxed
+
             # 结束
             if self.info_bar_count():
                 break
@@ -771,14 +776,7 @@ class RewardCommission(UI, InfoHandler):
         self.device.click_record_clear()
         return False
 
-    def commission_start(self):
-        """
-        扫描并启动所有选定的委托。
-
-        Pages:
-            in: page_commission
-            out: page_commission
-        """
+    def _commission_start_all(self):
         self._commission_scan_all()
 
         logger.hr('执行委托', level=1)
@@ -800,6 +798,32 @@ class RewardCommission(UI, InfoHandler):
                 self._commission_mode_reset()
         if not self.daily_choose and not self.urgent_choose:
             logger.info('[委托-执行] 没有选择任何委托')
+
+    def commission_start(self):
+        """
+        扫描并启动所有选定的委托。若启动时检测到石油达到上限，则前往后宅购买食物消耗石油后重试。
+
+        Pages:
+            in: page_commission
+            out: page_commission
+        """
+        for _ in range(3):
+            try:
+                return self._commission_start_all()
+            except OilMaxed:
+                amount = int(getattr(self.config, 'Commission_DormFoodOnOilMaxed', 20))
+                if amount > 0:
+                    logger.info(f'[委托-石油] 接受委托时石油达到上限，前往后宅购买 {amount} 份食物消耗石油')
+                    RewardDorm(self.config, self.device).dorm_food_run(amount=amount)
+                    self.ui_ensure(page_commission)
+                    self._commission_swipe_to_top()
+                    self.handle_info_bar()
+                else:
+                    logger.warning('[委托-石油] 接受委托时石油达到上限，但配置不购买后宅食物')
+                    break
+
+        logger.critical('[委托-石油] 尝试3次后仍无法处理石油溢出')
+        raise RequestHumanTakeover
 
     def _record_commission_income(self):
         """
@@ -1081,9 +1105,14 @@ class RewardCommission(UI, InfoHandler):
             try:
                 return self._commission_receive()
             except OilMaxed:
-                logger.info("[委托-石油] 石油溢出，购买食物消耗石油")
-                RewardDorm(self.config, self.device).dorm_food_run(amount=10)
-                self.ui_ensure(page_reward)
+                amount = int(getattr(self.config, 'Commission_DormFoodOnOilMaxed', 20))
+                if amount > 0:
+                    logger.info(f'[委托-石油] 石油溢出，前往后宅购买 {amount} 份食物消耗石油')
+                    RewardDorm(self.config, self.device).dorm_food_run(amount=amount)
+                    self.ui_ensure(page_reward)
+                else:
+                    logger.warning('[委托-石油] 石油溢出，但配置不购买后宅食物')
+                    break
 
         logger.critical('[委托-石油] 尝试3次后仍无法处理石油溢出')
         raise RequestHumanTakeover
