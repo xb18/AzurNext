@@ -192,7 +192,7 @@ class GeneratedConfig:
     # 配置组 `GlobalScheduler`
     GlobalScheduler_Enable = False  # True, False
     GlobalScheduler_ConfigList = 'auto'
-    GlobalScheduler_RunSingleCycle = True  # True, False
+    GlobalScheduler_RunSingleCycle = False  # True, False
     GlobalScheduler_WhenTaskQueueEmpty = 'close_emulator'  # close_emulator, app_stop, goto_main, stay_there
     GlobalScheduler_WaitBetweenConfigs = 5
     GlobalScheduler_SwitchOnError = True  # True, False

@@ -348,7 +348,7 @@ GlobalScheduler:
     value: auto
   RunSingleCycle:
     type: checkbox
-    value: true
+    value: false
     option: [true, false]
   WhenTaskQueueEmpty:
     value: close_emulator

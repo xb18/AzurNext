@@ -1900,7 +1900,7 @@ class AzurLaneAutoScript:
         is_cycle_end = (current_idx + 1 >= len(config_list))
 
         # 检查是否开启了【只执行一轮】
-        if is_cycle_end and bool(self._get_global_scheduler_attr('RunSingleCycle', True)):
+        if is_cycle_end and bool(self._get_global_scheduler_attr('RunSingleCycle', False)):
             logger.hr('[全局调度] 单轮多配置任务已全部完成，结束调度', level=0)
             self._update_global_scheduler_status("idle", task="单轮已完成", config_list=config_list)
             return False
@@ -1963,7 +1963,7 @@ class AzurLaneAutoScript:
 
         current_idx = config_list.index(self.config_name) if self.config_name in config_list else 0
         is_cycle_end = (current_idx + 1 >= len(config_list))
-        if is_cycle_end and bool(self._get_global_scheduler_attr('RunSingleCycle', True)):
+        if is_cycle_end and bool(self._get_global_scheduler_attr('RunSingleCycle', False)):
             logger.hr('[全局调度] 单轮多配置任务已结束（含异常跳过），退出调度', level=0)
             self._update_global_scheduler_status("idle", task="单轮结束(遇错跳过)", config_list=config_list)
             return False

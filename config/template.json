@@ -152,7 +152,7 @@
     "GlobalScheduler": {
       "Enable": false,
       "ConfigList": "auto",
-      "RunSingleCycle": true,
+      "RunSingleCycle": false,
       "WhenTaskQueueEmpty": "close_emulator",
       "WaitBetweenConfigs": 5,
       "SwitchOnError": true

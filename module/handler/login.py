@@ -125,8 +125,8 @@ class LoginHandler(UI):
                 continue
             # 4399 渠道服专属弹窗与悬浮球处理
             if self.is_m4399:
-                if self.appear_then_click(M4399_POPUP_CLOSE, offset=(20, 20), interval=3):
-                    logger.info('[登录] 检测到 4399 活动弹窗，点击右上角关闭')
+                if self.appear_then_click(M4399_COUPON_POPUP_CLOSE, offset=(20, 20), interval=3):
+                    logger.info('[登录] 检测到 4399 天降神券优惠券弹窗，点击右上角关闭')
                     continue
                 if self.handle_m4399_floating_ball():
                     continue
