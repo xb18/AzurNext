@@ -133,6 +133,10 @@ class AzurLaneConfig(ConfigUpdater, ManualConfig, GeneratedConfig, ConfigWatcher
         logger.attr("服务器", self.SERVER)
         # 读取 ./config/<config_name>.json
         self.config_name = config_name
+        # 在调用任何 save() 之前，先记录源文件在构造这一刻是否已经真的存在于磁盘上。
+        # 后续 save() 会基于此判断：若原本不存在 + 磁盘上已经有其他用户配置，
+        # 则不允许凭空生成一个幽灵配置文件。
+        self._config_file_existed_on_disk = os.path.exists(filepath_config(config_name))
         # YAML 文件中的原始 JSON 数据
         self.data = {}
         # 已修改的参数。键：YAML 文件中的参数路径。值：修改后的值。
@@ -161,7 +165,7 @@ class AzurLaneConfig(ConfigUpdater, ManualConfig, GeneratedConfig, ConfigWatcher
             logger.info("[配置] 使用模板配置，只读模式")
             self.auto_update = False
             self.task = name_to_function("template")
-        elif not os.path.exists(filepath_config(config_name)):
+        elif not self._config_file_existed_on_disk:
             from module.config.utils import is_oobe_needed
             if is_oobe_needed():
                 logger.warning(
@@ -370,6 +374,15 @@ class AzurLaneConfig(ConfigUpdater, ManualConfig, GeneratedConfig, ConfigWatcher
             raise RequestHumanTakeover
 
     def save(self, mod_name='alas'):
+        # 最小化幽灵文件拦截：如果源 JSON 在构造那一刻根本不存在于磁盘上，
+        # 并且当前 config/ 目录下已经有其他用户配置（说明不是 OOBE 场景），
+        # 那就不允许凭空 save() 出一个新的幽灵配置文件。
+        # 只有 is_oobe_needed == True（0 配置首启）时，才允许首次写入默认名。
+        if not getattr(self, '_config_file_existed_on_disk', True):
+            from module.config.utils import is_oobe_needed
+            if not is_oobe_needed():
+                return False
+
         if not self.modified:
             return False
 
