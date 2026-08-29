@@ -578,7 +578,7 @@ EventDaily:
 Raid:
   Mode:
     value: hard
-    option: [easy, normal, hard, ex]
+    option: [easy, normal, hard, ex, easy_15_normal_15_hard]
   UseTicket: false
 RaidDaily:
   StageFilter: |-

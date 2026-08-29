@@ -320,7 +320,7 @@ class GeneratedConfig:
     EventDaily_LastStage = 0
 
     # 配置组 `Raid`
-    Raid_Mode = 'hard'  # easy, normal, hard, ex
+    Raid_Mode = 'hard'  # easy, normal, hard, ex, easy_15_normal_15_hard
     Raid_UseTicket = False
 
     # 配置组 `RaidDaily`

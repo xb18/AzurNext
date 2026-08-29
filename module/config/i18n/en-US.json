@@ -1853,7 +1853,8 @@
       "easy": "Easy",
       "normal": "Normal",
       "hard": "Hard",
-      "ex": "EX"
+      "ex": "EX",
+      "easy_15_normal_15_hard": "15 Easy, 15 Normal, then Hard"
     },
     "UseTicket": {
       "name": "Use Exercise Tickets",
@@ -2276,8 +2277,8 @@
       "help": "Receive guild missions, submit preparation materials, and receive fleet rewards"
     },
     "BuySupply": {
-      "name": "Buy / Receive Supply",
-      "help": "Members receive supply automatically, while leaders purchase (using guild funds) and receive supply"
+      "name": "Buy Supply",
+      "help": "Guild master/officers will automatically buy supply (costs guild funds). If disabled, will still claim supply if already bought by other leaders."
     },
     "SelectNewMission": {
       "name": "Select new weekly fleet mission",

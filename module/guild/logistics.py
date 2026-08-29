@@ -23,7 +23,8 @@ from module.exception import GameBugError
 from module.guild.assets import *
 from module.guild.base import GuildBase
 from module.logger import logger
-from module.ocr.ocr import Digit
+from module.ocr.ocr import Digit, Ocr
+import module.config.server as server
 from module.statistics.item import ItemGrid
 
 EXCHANGE_GRIDS = ButtonGrid(
@@ -52,6 +53,38 @@ class ExchangeLimitOcr(Digit):
 
 
 GUILD_EXCHANGE_LIMIT = ExchangeLimitOcr(OCR_GUILD_EXCHANGE_LIMIT, threshold=64)
+
+
+class GuildSupplyOcr(Ocr):
+    """大舰队补给按钮 OCR 识别器。
+    用于识别按钮上的【购买补给】、【领取奖励/补给】、【已领取】等文字。
+    """
+    def status(self, image):
+        """
+        识别大舰队补给按钮的状态。
+
+        Returns:
+            str: 'buy'（购买补给）, 'claim'（领取补给/奖励）, 'claimed'（已领取）, 'unknown'（未知）
+        """
+        text = self.ocr(image)
+        if not text:
+            return 'unknown'
+        text = str(text).strip()
+        # CN / TW
+        if any(w in text for w in ['购买', '購買', 'Buy']):
+            return 'buy'
+        if any(w in text for w in ['领取', '領取', '奖励', '獎勵', 'Claim', 'Receive']):
+            return 'claim'
+        if any(w in text for w in ['已领', '已領', '已购', '已購', 'Claimed']):
+            return 'claimed'
+        # JP
+        if any(w in text for w in ['購入']):
+            return 'buy'
+        if any(w in text for w in ['受取', '報酬']):
+            if '済' in text:
+                return 'claimed'
+            return 'claim'
+        return 'unknown'
 
 
 class GuildLogistics(GuildBase):
@@ -258,30 +291,71 @@ class GuildLogistics(GuildBase):
             logger.info('[大舰队-后勤] 大舰队任务按钮未激活')
             return False
 
-    def _guild_logistics_supply_available(self):
-        """
-        Color sample the GUILD_SUPPLY area to determine
-        whether the button is enabled or disabled
+    @cached_property
+    def _guild_supply_ocr(self):
+        ocr_lang = 'cnocr'
+        if server.server in ['jp']:
+            ocr_lang = 'jp'
+        elif server.server in ['tw']:
+            ocr_lang = 'tw'
+        elif server.server in ['en']:
+            ocr_lang = 'azur_lane'
+        return GuildSupplyOcr(GUILD_SUPPLY, lang=ocr_lang, letter=(255, 255, 255), threshold=128)
 
-        mode determines
+    def _guild_logistics_supply_status(self):
+        """
+        通过 OCR 和颜色判断大舰队补给按钮的状态。
 
         Returns:
-            bool: If button active
+            tuple[bool, str]: (is_available, status_name)
+                is_available: 是否可点击（购买或领取）
+                status_name: 'buy' (购买补给), 'claim' (领取补给/奖励), 'claimed' (已领取), 'inactive' (未激活)
+        """
+        color = get_color(self.device.image, GUILD_SUPPLY.area)
+        # 激活状态文字明亮，置灰状态文字较暗
+        is_active = np.max(color) > np.mean(color) + 25
+
+        if not is_active:
+            return False, 'inactive'
+
+        status = self._guild_supply_ocr.status(self.device.image)
+        if status == 'claimed':
+            return False, 'claimed'
+        return True, status
+
+    def _guild_logistics_supply_available(self):
+        """
+        判断大舰队补给按钮是否处于可用状态（购买或领取）。
+        若为购买补给且未开启 BuySupply 配置，则视为不可用。
+
+        Returns:
+            bool: 按钮是否可用并允许操作
 
         Pages:
             in: GUILD_LOGISTICS
             out: GUILD_LOGISTICS
         """
-        color = get_color(self.device.image, GUILD_SUPPLY.area)
-        # Active button has white letters, inactive button have gray letters
-        if np.max(color) > np.mean(color) + 25:
-            # For members, click to receive supply
-            # For leaders, click to buy supply and receive supply
-            logger.info('[大舰队-后勤] 大舰队补给按钮已激活')
+        available, status = self._guild_logistics_supply_status()
+        if not available:
+            if status == 'claimed':
+                logger.info('[大舰队-后勤] 大舰队补给已领取完毕')
+            else:
+                logger.info('[大舰队-后勤] 大舰队补给按钮未激活')
+            return False
+
+        if status == 'buy':
+            if self.config.GuildLogistics_BuySupply:
+                logger.info('[大舰队-后勤] 检测到【购买补给】（司令/副司令将消耗舰队资金购买）')
+                return True
+            else:
+                logger.info('[大舰队-后勤] 检测到【购买补给】，但未开启自动购买补给，跳过')
+                return False
+        elif status == 'claim':
+            logger.info('[大舰队-后勤] 检测到【领取补给/奖励】，正在自动领取')
             return True
         else:
-            logger.info('[大舰队-后勤] 大舰队补给按钮未激活')
-            return False
+            logger.info('[大舰队-后勤] 大舰队补给按钮已激活')
+            return True
 
     def _handle_guild_fleet_mission_start(self):
         """
@@ -324,15 +398,12 @@ class GuildLogistics(GuildBase):
         Returns:
             bool: If handled and loop should continue.
         """
-        if not self.config.GuildLogistics_BuySupply:
-            state['checked'] = True
-            return False
-
         if state['checked']:
             return False
 
         if not state['clicked']:
             if not self._guild_logistics_supply_available():
+                self._guild_logistics_supply_check_finished(state)
                 return False
 
             if click_interval.reached():
