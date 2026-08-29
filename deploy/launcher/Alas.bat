@@ -1,21 +1,21 @@
 @rem
 @echo off
+setlocal
 
-set "_root=%~dp0"
-set "_root=%_root:~0,-1%"
-cd "%_root%"
-echo "%_root%
+set "_root=%~dp0..\.."
+cd /d "%_root%"
 
-color F0
+title AzurPilot WebUI
+echo Starting AzurPilot WebUI via uv...
 
-set "_pyBin=%_root%\.venv\Scripts"
-set "_GitBin=%_root%\.venv\Scripts\git\cmd"
-set "PATH=%_pyBin%;%_GitBin%;%PATH%"
+rem 延迟 2 秒后自动打开默认浏览器访问 WebUI
+start "" /b cmd /c "timeout /t 2 /nobreak >nul && start http://127.0.0.1:25548"
 
-title AzurPilot Updater
-"%_pyBin%\python.exe" -m deploy.installer
+uv run python gui.py
+
 if %errorlevel% neq 0 (
-    pause >nul
-) else (
-    start "AzurPilot" "%_pyBin%\pythonw.exe" "%_root%\gui.py" --electron
+    echo.
+    echo AzurPilot exited with error code %errorlevel%.
+    pause
 )
+
