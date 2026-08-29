@@ -123,6 +123,13 @@ class LoginHandler(UI):
                 continue
             if self.appear_then_click(LOGIN_ANNOUNCE_2, offset=(30, 30), interval=5):
                 continue
+            # 4399 渠道服专属弹窗与悬浮球处理
+            if self.is_m4399:
+                if self.appear_then_click(M4399_POPUP_CLOSE, offset=(20, 20), interval=3):
+                    logger.info('[登录] 检测到 4399 活动弹窗，点击右上角关闭')
+                    continue
+                if self.handle_m4399_floating_ball():
+                    continue
             if self.appear(EVENT_LIST_CHECK, offset=(30, 30), interval=5):
                 self.device.click(BACK_ARROW)
                 continue
@@ -154,6 +161,44 @@ class LoginHandler(UI):
                 continue
 
         return True
+
+    @property
+    def is_m4399(self):
+        """判断当前运行/配置的是否为 4399 渠道服。"""
+        pkg = getattr(self.device, 'package', '') or getattr(self.config, 'Emulator_PackageName', '')
+        return pkg == 'com.bilibili.blhx.m4399'
+
+    _m4399_ball_timer = Timer(3, count=4)
+
+    def handle_m4399_floating_ball(self):
+        """
+        自动检测并隐藏 4399 渠道服顶部悬浮球：
+        1. 若已出现【隐藏】确认框，直接点击【隐藏】按钮
+        2. 若检测到顶部 4399 悬浮球，长按拖动至屏幕底部区域触发隐藏确认框，并紧接着点击【隐藏】按钮
+        """
+        if self.appear_then_click(M4399_HIDE_CONFIRM, offset=(20, 20), interval=1):
+            logger.info('[4399] 点击【隐藏】悬浮球确认按钮')
+            self._m4399_ball_timer.reset()
+            return True
+
+        if not self._m4399_ball_timer.reached():
+            return False
+
+        if self.appear(M4399_FLOATING_BALL, offset=(10, 10)):
+            logger.info('[4399] 检测到 4399 悬浮球，正在拖拽至底部隐藏区域')
+            self.device.drag((209, 12), (636, 640), point_random=(-2, -2, 2, 2), swipe_duration=0.6, name='M4399_HIDE_BALL')
+            self._m4399_ball_timer.reset()
+
+            # 拖拽到底部松手后，等待并点击弹出的【隐藏】确认按钮
+            for _ in range(5):
+                self.device.sleep(0.3)
+                self.device.screenshot()
+                if self.appear_then_click(M4399_HIDE_CONFIRM, offset=(20, 20), interval=0):
+                    logger.info('[4399] 成功点击【隐藏】悬浮球确认')
+                    return True
+            return True
+
+        return False
 
     _user_agreement_timer = Timer(1, count=2)
 
