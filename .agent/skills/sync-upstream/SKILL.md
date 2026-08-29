@@ -83,11 +83,33 @@ git push origin feat/dev-workspace --force-with-lease
 
 ---
 
+## 长期维护与避免冲突的最佳实践 (应对大量提交)
+
+当个人分支积累了较多提交（如几十个甚至上百个）时，为了避免每次 Rebase 重复解决冲突，请遵循以下工程实践：
+
+### 1. 定期聚合提交 (Squash Commits)
+- **原理**：零散的微调提交（如 typo 修复、临时调试代码）会增加 Rebase 重放的轮数。
+- **做法**：按功能模块定期使用 `git rebase -i master` 将同类修改压缩为 1 个有清晰语义的提交（例如：将 5 个零散的 WebUI 调试提交压缩为 1 个 `feat(webui): ...`）。
+- **效果**：分支上常年保持 5~10 个结构清晰的功能 Commit，每次变基只需重放这几个点，速度极快且极易排查。
+
+### 2. 非侵入式开发原则 (从根本上杜绝冲突)
+- **新建文件优于修改旧文件**：例如独立脚本（`deploy/launcher/Alas.bat`）、独立技能（`.agent/skills/`）或独立扩展模块。因为上游官方库没有这些文件，所以**永远 100% 零冲突自动合入**。
+- **轻量挂载与配置覆盖**：尽量通过外部配置或独立函数实现功能，避免在上游几千行的大型核心业务文件中间做大面积侵入式修改。
+
+### 3. 上游发生重大重构时的兜底方案
+如果上游官方库发生了颠覆性的大重构导致直接 Rebase 冲突过多：
+- **方案 A (Cherry-Pick 重建)**：基于最新 master 新建干净分支 `feat/dev-workspace-v2`，使用 `git cherry-pick` 只挑选出你真正需要的几个功能提交，一次性适配。
+- **方案 B (Patch 导出)**：使用 `git format-patch master` 导出你的功能补丁包，在新分支上统一应用。
+
+---
+
 ## 快捷命令参考表
 
 | 操作 | 命令 |
 |---|---|
 | 快速全流程同步 | `git checkout master; git pull origin master; git checkout feat/dev-workspace; git rebase master` |
+| 交互式聚合提交 | `git rebase -i master` |
 | 中止变基 | `git rebase --abort` |
 | 解决冲突后继续 | `git add .; git rebase --continue` |
 | 安全推送到个人库 | `git push origin feat/dev-workspace --force-with-lease` |
+
