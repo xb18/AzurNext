@@ -514,6 +514,12 @@
       "com.bilibili.blhx.bilibiliMove": "国服 迁移渠道服 com.bilibili.blhx.bilibiliMove",
       "com.hkmanjuu.azurlane.gp.mc": "台服 com.hkmanjuu.azurlane.gp.mc"
     },
+    "M4399HideFloatingBall": {
+      "name": "隐藏 4399 悬浮球",
+      "help": "针对 4399 渠道服，在登录或重启时自动检测并隐藏顶部悬浮球以防遮挡 UI。\n【首次使用说明】：若悬浮球位置被手动移开导致无法识别，请手动将悬浮球拖动至屏幕底部区域，弹窗提示后点击【取消】，悬浮球将自动重置回顶部默认位置（即软件可识别的标准位置）。",
+      "True": "开启",
+      "False": "关闭"
+    },
     "ServerName": {
       "name": "游戏内服务器",
       "help": "选择游戏内所在的服务器以启用服务器状态检测\n当服务器维护或网络不可用时挂起直到恢复",

@@ -83,6 +83,7 @@ def should_render_config_argument(
     widget_type: str,
     options: Sequence[Any],
     value: Any,
+    package_name: str | None = None,
 ) -> bool:
     """判断参数是否会在当前配置页实际渲染。"""
     if display == "hide":
@@ -97,6 +98,10 @@ def should_render_config_argument(
         and len(options) == 1
     ):
         return False
+    # 4399 悬浮球设置仅在游戏服务器为 4399 渠道服时显示
+    if group == "Emulator" and argument == "M4399HideFloatingBall":
+        if package_name != "com.bilibili.blhx.m4399":
+            return False
     return True
 
 

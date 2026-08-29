@@ -514,6 +514,12 @@
       "com.bilibili.blhx.bilibiliMove": "National service com.bilibili.blhx.bilibiliMove",
       "com.hkmanjuu.azurlane.gp.mc": "Taiwan server com.hkmanjuu.azurlane.gp.mc"
     },
+    "M4399HideFloatingBall": {
+      "name": "Hide 4399 Floating Ball",
+      "help": "Automatically hide the top floating ball for 4399 channel server during login/restart.\n[First-time Use]: If the floating ball position was moved and cannot be recognized, manually drag it to the bottom area and click [Cancel] on the prompt to reset it back to the default top position.",
+      "True": "Enable",
+      "False": "Disable"
+    },
     "ServerName": {
       "name": "In-game server",
       "help": "Select the server where the game is located to enable server status detection\nSuspend until resumed during server maintenance or network unavailability",

@@ -176,6 +176,9 @@ class LoginHandler(UI):
         1. 若已出现【隐藏】确认框，直接点击【隐藏】按钮
         2. 若检测到顶部 4399 悬浮球，长按拖动至屏幕底部区域触发隐藏确认框，并紧接着点击【隐藏】按钮
         """
+        if not getattr(self.config, 'Emulator_M4399HideFloatingBall', True):
+            return False
+
         if self.appear_then_click(M4399_HIDE_CONFIRM, offset=(20, 20), interval=1):
             logger.info('[4399] 点击【隐藏】悬浮球确认按钮')
             self._m4399_ball_timer.reset()

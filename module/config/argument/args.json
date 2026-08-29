@@ -248,6 +248,14 @@
           "com.hkmanjuu.azurlane.gp.mc"
         ]
       },
+      "M4399HideFloatingBall": {
+        "type": "checkbox",
+        "value": true,
+        "option": [
+          true,
+          false
+        ]
+      },
       "ServerName": {
         "type": "select",
         "value": "disabled",

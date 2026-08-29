@@ -71,6 +71,7 @@
     "Emulator": {
       "Serial": "auto",
       "PackageName": "auto",
+      "M4399HideFloatingBall": true,
       "ServerName": "disabled",
       "ScreenshotMethod": "auto",
       "ControlMethod": "MaaTouch",

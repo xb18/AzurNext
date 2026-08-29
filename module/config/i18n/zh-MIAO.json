@@ -514,6 +514,12 @@
       "com.bilibili.blhx.bilibiliMove": "国服舰B喵 com.bilibili.blhx.bilibiliMove",
       "com.hkmanjuu.azurlane.gp.mc": "台服喵 com.hkmanjuu.azurlane.gp.mc"
     },
+    "M4399HideFloatingBall": {
+      "name": "隐藏 4399 悬浮球喵",
+      "help": "针对 4399 渠道服，登录时自动把头顶上的悬浮球藏起来喵。\n【首次使用说明】：要是悬浮球被移跑了认不出来，手动把它拖到底部然后点【取消】，它就会自己跑回顶上的默认老家喵！",
+      "True": "开启喵",
+      "False": "关闭喵"
+    },
     "ServerName": {
       "name": "游戏内服务器选择",
       "help": "选游戏内所在服以启用服务器状态检测，维护或掉线时挂起恢复喵~ (´・ω・`)",

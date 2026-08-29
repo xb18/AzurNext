@@ -98,6 +98,10 @@ Emulator:
   PackageName:
     value: auto
     option: [auto]
+  M4399HideFloatingBall:
+    type: checkbox
+    value: true
+    option: [true, false]
   ServerName:
     value: disabled
     option: [disabled]

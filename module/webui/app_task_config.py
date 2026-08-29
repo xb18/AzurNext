@@ -360,6 +360,7 @@ class TaskConfigMixin(WebUIMixinBase):
                 widget_type,
                 options,
                 value,
+                package_name=package_name,
             ):
                 continue
 
@@ -708,5 +709,7 @@ class TaskConfigMixin(WebUIMixinBase):
                 )
                 config_updater.write_file(config_name, config)
                 self._invalidate_config_search_cache()
+                if "Alas.Emulator.PackageName" in modified:
+                    self.alas_set_group("Alas")
         except Exception as e:
             logger.exception(e)

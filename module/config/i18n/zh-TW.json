@@ -514,6 +514,12 @@
       "com.bilibili.blhx.bilibiliMove": "國服 com.bilibili.blhx.bilibiliMove",
       "com.hkmanjuu.azurlane.gp.mc": "臺服 MyCard渠道服 com.hkmanjuu.azurlane.gp.mc"
     },
+    "M4399HideFloatingBall": {
+      "name": "隱藏 4399 懸浮球",
+      "help": "針對 4399 渠道服，在登入或重啟時自動檢測並隱藏頂部懸浮球以防遮擋 UI。\n【首次使用說明】：若懸浮球位置被手動移開導致無法識別，請手動將懸浮球拖動至螢幕底部區域，彈窗提示後點擊【取消】，懸浮球將自動重置回頂部默認位置（即軟體可識別的標準位置）。",
+      "True": "開啟",
+      "False": "關閉"
+    },
     "ServerName": {
       "name": "遊戲內伺服器",
       "help": "選擇遊戲內所在的伺服器以啟用伺服器狀態檢測\n當伺服器維護或網路不可用時掛起直到恢復",

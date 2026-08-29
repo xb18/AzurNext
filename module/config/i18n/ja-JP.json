@@ -514,6 +514,12 @@
       "com.bilibili.blhx.bilibiliMove": "中国サーバー com.bilibili.blhx.bilibiliMove",
       "com.hkmanjuu.azurlane.gp.mc": "台湾サーバー com.hkmanjuu.azurlane.gp.mc"
     },
+    "M4399HideFloatingBall": {
+      "name": "4399フローティングボール非表示",
+      "help": "4399版のログイン/再起動時にフローティングボールを自動非表示にします。\n【初回使用】：ボールが移動されて認識できない場合、画面下部へドラッグして「キャンセル」を押すとデフォルトの認識可能位置にリセットされます。",
+      "True": "有効",
+      "False": "無効"
+    },
     "ServerName": {
       "name": "ゲーム内サーバー",
       "help": "サーバーステータスの検出を有効にするには、ゲームが配置されているサーバーを選択してください\nサーバーのメンテナンス中またはネットワークが利用できない場合は再開されるまで一時停止します",
