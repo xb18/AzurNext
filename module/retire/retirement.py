@@ -25,7 +25,7 @@ from module.retire.assets import (
     TEMPLATE_DOWNES_1, TEMPLATE_DOWNES_2, TEMPLATE_FOOTE, TEMPLATE_HERMES,
     TEMPLATE_LANGLEY, TEMPLATE_RANGER, TEMPLATE_Z20, TEMPLATE_Z21
 )
-from module.retire.enhancement import Enhancement
+from module.retire.enhancement import Enhancement, OCR_DOCK_AMOUNT
 from module.retire.scanner import ShipScanner
 from module.retire.setting import QuickRetireSettingHandler
 from module.ui.scroll import Scroll
@@ -487,6 +487,216 @@ class Retirement(Enhancement, QuickRetireSettingHandler):
 
         return total
 
+    def retire_sr_bulins(self, total_retired_before=0) -> int:
+        """
+        退役多余的泛用型布里 (紫布里)。
+
+        触发条件：
+        1. 用户开启配置 Retirement_RetireSRBulin
+        2. 一键退役未能退役任何舰船 (total_retired_before == 0)，
+           或船坞剩余容量 <= Retirement_RetireSRBulinThreshold
+
+        退役流程：
+        1. 筛选 index='others', rarity='elite', sort='level'
+        2. 扫描空闲且不在编队中的 SR 布里
+        3. 保留至少 RetireSRBulinKeepCount 艘，其余批量退役
+        4. 确认退役并自动处理 SR 确认弹窗
+        5. 恢复船坞筛选器设置
+
+        Args:
+            total_retired_before (int): 之前常规退役退役的舰船数量。
+
+        Returns:
+            int: 退役的紫布里数量。
+        """
+        if not getattr(self.config, 'Retirement_RetireSRBulin', False):
+            return 0
+
+        # 检测船坞剩余容量
+        try:
+            current, remain, total = OCR_DOCK_AMOUNT.ocr(self.device.image)
+        except Exception as e:
+            logger.warning(f'[退役-布里] 识别船坞容量失败: {e}')
+            current, remain, total = 0, 0, 0
+
+        threshold = int(getattr(self.config, 'Retirement_RetireSRBulinThreshold', 3))
+        keep_count = int(getattr(self.config, 'Retirement_RetireSRBulinKeepCount', 5))
+
+        # 🌟 核心判断：只要船坞当前剩余容量充足 (> 阈值)，说明船坞空间完全足够，坚决不退役紫布里！
+        if remain > threshold:
+            logger.info(
+                f'[退役-布里] 船坞剩余容量充足 ({remain} > 阈值 {threshold})，无需退役紫布里'
+            )
+            return 0
+
+        logger.hr('退役紫布里')
+        logger.info(
+            f'[退役-布里] 检测到船坞容量已满或告急 (当前已用={current}/{total}, 剩余容量={remain} <= 阈值 {threshold})，准备退役多余紫布里'
+        )
+
+        self.dock_favourite_set(False, wait_loading=False)
+        self.dock_sort_method_dsc_set(False, wait_loading=False)
+        self.dock_filter_set(
+            index='others', rarity='elite', sort='level', extra='no_limit'
+        )
+        self.handle_dock_cards_loading()
+
+        scanner = ShipScanner(
+            rarity='elite', fleet=0, status='free', level=(1, 100)
+        )
+        scanner.disable('emotion')
+
+        total_bulin_retired = 0
+        skip_first_screenshot = True
+
+        while 1:
+            if skip_first_screenshot:
+                skip_first_screenshot = False
+            else:
+                self.device.screenshot()
+
+            self.handle_info_bar()
+            ships = scanner.scan(self.device.image)
+            if not ships:
+                logger.info('[退役-布里] 未扫描到可用紫布里')
+                break
+
+            # 扣除需要保留的数量
+            if len(ships) <= keep_count:
+                logger.info(
+                    f'[退役-布里] 当前紫布里数量 ({len(ships)}) <= 保留数量 ({keep_count})，停止退役'
+                )
+                break
+
+            # 优先退役低等级的布里，保留最后 keep_count 艘
+            ships.sort(key=lambda s: s.level)
+            to_retire = ships[:-keep_count] if keep_count > 0 else ships
+            # 每轮最多退役 10 艘
+            to_retire = to_retire[:10]
+
+            logger.info(
+                f'[退役-布里] 本轮选中 {len(to_retire)} 艘紫布里进行退役 (保留 {keep_count} 艘)'
+            )
+            for ship in to_retire:
+                self.device.click(ship.button)
+                self.device.sleep((0.1, 0.15))
+                total_bulin_retired += 1
+
+            self._retirement_confirm()
+
+            if len(to_retire) < 10:
+                break
+
+        # 恢复默认筛选
+        self.dock_filter_set(wait_loading=False)
+        logger.info(f'[退役-布里] 共退役紫布里 {total_bulin_retired} 艘')
+        return total_bulin_retired
+
+    def retire_ssr_bulins(self, total_retired_before=0) -> int:
+        """
+        退役多余的试作型布里MKII (金布里)。
+
+        触发条件：
+        1. 用户开启配置 Retirement_RetireSSRBulin (默认关闭)
+        2. 在常规退役与紫布里退役均执行后，船坞剩余可用容量依然 <= Retirement_RetireSSRBulinThreshold
+
+        退役流程：
+        1. 读取船坞容量 (OCR_DOCK_AMOUNT)，判断剩余容量 remain 是否 <= 阈值 threshold
+        2. 筛选 index='others', rarity='super_rare', sort='level'
+        3. 扫描空闲且不在编队中的 SSR 金布里
+        4. 保留至少 RetireSSRBulinKeepCount 艘，其余批量退役
+        5. 确认退役并自动处理 SSR 确认弹窗
+        6. 恢复船坞筛选器设置
+
+        Args:
+            total_retired_before (int): 之前常规退役及紫布里退役的舰船数量。
+
+        Returns:
+            int: 退役的金布里数量。
+        """
+        if not getattr(self.config, 'Retirement_RetireSSRBulin', False):
+            return 0
+
+        # 检测船坞剩余容量
+        try:
+            current, remain, total = OCR_DOCK_AMOUNT.ocr(self.device.image)
+        except Exception as e:
+            logger.warning(f'[退役-金布里] 识别船坞容量失败: {e}')
+            current, remain, total = 0, 0, 0
+
+        threshold = int(getattr(self.config, 'Retirement_RetireSSRBulinThreshold', 1))
+        keep_count = int(getattr(self.config, 'Retirement_RetireSSRBulinKeepCount', 5))
+
+        # 🌟 核心判断：只有紫布里退完后船坞剩余容量依然告急 (<= 阈值) 时，才触发金布里退役！
+        if remain > threshold:
+            logger.info(
+                f'[退役-金布里] 船坞剩余容量充足 ({remain} > 阈值 {threshold})，无需退役金布里'
+            )
+            return 0
+
+        logger.hr('退役金布里')
+        logger.info(
+            f'[退役-金布里] 检测到船坞容量在紫布里处理后依然告急 (当前已用={current}/{total}, 剩余容量={remain} <= 阈值 {threshold})，准备退役多余金布里'
+        )
+
+        self.dock_favourite_set(False, wait_loading=False)
+        self.dock_sort_method_dsc_set(False, wait_loading=False)
+        self.dock_filter_set(
+            index='others', rarity='super_rare', sort='level', extra='no_limit'
+        )
+        self.handle_dock_cards_loading()
+
+        scanner = ShipScanner(
+            rarity='super_rare', fleet=0, status='free', level=(1, 100)
+        )
+        scanner.disable('emotion')
+
+        total_ssr_bulin_retired = 0
+        skip_first_screenshot = True
+
+        while 1:
+            if skip_first_screenshot:
+                skip_first_screenshot = False
+            else:
+                self.device.screenshot()
+
+            self.handle_info_bar()
+            ships = scanner.scan(self.device.image)
+            if not ships:
+                logger.info('[退役-金布里] 未扫描到可用金布里')
+                break
+
+            # 扣除需要保留的数量
+            if len(ships) <= keep_count:
+                logger.info(
+                    f'[退役-金布里] 当前金布里数量 ({len(ships)}) <= 保留数量 ({keep_count})，停止退役'
+                )
+                break
+
+            # 优先退役低等级的金布里，保留最后 keep_count 艘
+            ships.sort(key=lambda s: s.level)
+            to_retire = ships[:-keep_count] if keep_count > 0 else ships
+            # 每轮最多退役 10 艘
+            to_retire = to_retire[:10]
+
+            logger.info(
+                f'[退役-金布里] 本轮选中 {len(to_retire)} 艘金布里进行退役 (保留 {keep_count} 艘)'
+            )
+            for ship in to_retire:
+                self.device.click(ship.button)
+                self.device.sleep((0.1, 0.15))
+                total_ssr_bulin_retired += 1
+
+            self._retirement_confirm()
+
+            if len(to_retire) < 10:
+                break
+
+        # 恢复默认筛选
+        self.dock_filter_set(wait_loading=False)
+        logger.info(f'[退役-金布里] 共退役金布里 {total_ssr_bulin_retired} 艘')
+        return total_ssr_bulin_retired
+
     def handle_retirement(self):
         """
         处理船坞满载时的退役/强化流程。
@@ -613,7 +823,18 @@ class Retirement(Enhancement, QuickRetireSettingHandler):
                     self.quick_retire_setting_set('all')
                     total = self.retire_ships_one_click()
             total += self.retire_gems_farming_flagships(keep_one=total > 0)
+            total += self.retire_sr_bulins(total_retired_before=total)
+            total += self.retire_ssr_bulins(total_retired_before=total)
             if not total:
+                try:
+                    _, remain, _ = OCR_DOCK_AMOUNT.ocr(self.device.image)
+                    threshold = int(getattr(self.config, 'Retirement_RetireSRBulinThreshold', 3))
+                    if remain > threshold:
+                        logger.info(f'[退役-船坞] 未退役舰船，但当前船坞仍有充足空位 ({remain} > {threshold})，允许继续运行')
+                        self._retirement_quit()
+                        return 0
+                except Exception:
+                    pass
                 logger.critical('[退役] 杂鱼大叔~ 根本没有船可以退役啦，你是来表演冷笑话的吗？❤')
                 logger.critical('[退役] 赶紧把游戏里的”一键退役”配置好啦！不配置的话，难道大叔想让我亲手帮你点吗？❤')
                 logger.critical('[退役] 哼，因为大叔太笨没配置好退役，脚本只能停掉了呢。赶紧去求求谁教教你怎么操作吧~')
@@ -622,7 +843,18 @@ class Retirement(Enhancement, QuickRetireSettingHandler):
             self.handle_dock_cards_loading()
             total = self.retire_ships_old()
             total += self.retire_gems_farming_flagships()
+            total += self.retire_sr_bulins(total_retired_before=total)
+            total += self.retire_ssr_bulins(total_retired_before=total)
             if not total:
+                try:
+                    _, remain, _ = OCR_DOCK_AMOUNT.ocr(self.device.image)
+                    threshold = int(getattr(self.config, 'Retirement_RetireSRBulinThreshold', 3))
+                    if remain > threshold:
+                        logger.info(f'[退役-船坞] 未退役舰船，但当前船坞仍有充足空位 ({remain} > {threshold})，允许继续运行')
+                        self._retirement_quit()
+                        return 0
+                except Exception:
+                    pass
                 logger.critical('[退役] 甚至没船能退役，你这设置是认真的吗？')
                 logger.critical('[退役] 既然你想让脚本停，我也挺支持的，毕竟这设置简直不可思议。')
                 logger.critical('[退役] 未退役任何船只，如果你眼瞎没开对应稀有度，请去 Alas 设置打开。')

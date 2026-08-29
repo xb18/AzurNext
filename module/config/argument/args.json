@@ -811,6 +811,46 @@
           "enhance",
           "old_retire"
         ]
+      },
+      "RetireSRBulin": {
+        "type": "checkbox",
+        "value": true
+      },
+      "RetireSRBulinThreshold": {
+        "type": "input",
+        "value": 3,
+        "validate": [
+          0,
+          50
+        ]
+      },
+      "RetireSRBulinKeepCount": {
+        "type": "input",
+        "value": 5,
+        "validate": [
+          0,
+          50
+        ]
+      },
+      "RetireSSRBulin": {
+        "type": "checkbox",
+        "value": false
+      },
+      "RetireSSRBulinThreshold": {
+        "type": "input",
+        "value": 1,
+        "validate": [
+          0,
+          50
+        ]
+      },
+      "RetireSSRBulinKeepCount": {
+        "type": "input",
+        "value": 5,
+        "validate": [
+          0,
+          50
+        ]
       }
     },
     "OneClickRetire": {

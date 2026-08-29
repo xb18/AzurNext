@@ -1004,6 +1004,30 @@
       "one_click_retire": "一键退役喵",
       "enhance": "强化喵",
       "old_retire": "传统退役喵"
+    },
+    "RetireSRBulin": {
+      "name": "退役泛用型布里(紫布里)喵",
+      "help": "当一键退役清理不掉船坞容量，且船坞快塞爆时，自动退役多余的紫布里腾空间喵。"
+    },
+    "RetireSRBulinThreshold": {
+      "name": "退役紫布里船坞剩余容量阈值喵",
+      "help": "船坞空位小于等于这个数且退不出船时，就会去退役紫布里喵。设为0表示只有完全满坞才退役喵。"
+    },
+    "RetireSRBulinKeepCount": {
+      "name": "退役紫布里最少保留数量喵",
+      "help": "退役紫布里时最少在船坞里留几只，防止全被退光光喵。设为0表示全退喵。"
+    },
+    "RetireSSRBulin": {
+      "name": "退役试作型布里MKII(金布里)喵",
+      "help": "当连紫布里都退完了船坞还快塞爆时，才会去退役金布里喵。"
+    },
+    "RetireSSRBulinThreshold": {
+      "name": "退役金布里船坞剩余容量阈值喵",
+      "help": "退完紫布里后船坞空位还小于等于这个数时触发退役金布里喵。"
+    },
+    "RetireSSRBulinKeepCount": {
+      "name": "退役金布里最少保留数量喵",
+      "help": "退役金布里时最少在船坞里留几只金布里喵。"
     }
   },
   "PublicEmotion": {

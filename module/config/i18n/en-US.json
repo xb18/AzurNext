@@ -1004,6 +1004,30 @@
       "one_click_retire": "Retire with one click",
       "enhance": "Enhance",
       "old_retire": "traditional retirement"
+    },
+    "RetireSRBulin": {
+      "name": "Retire Universal Bulin (SR)",
+      "help": "When Quick Retire cannot free up enough dock capacity and remaining dock space is less than or equal to the threshold, automatically retire excess Universal Bulins (Purple Bulins)."
+    },
+    "RetireSRBulinThreshold": {
+      "name": "Retire Bulin Remaining Dock Threshold",
+      "help": "Trigger Bulin retirement when remaining dock space is <= this number after normal retirement. Set to 0 to trigger only when dock is 100% full."
+    },
+    "RetireSRBulinKeepCount": {
+      "name": "Retire Bulin Minimum Reserve Count",
+      "help": "Minimum number of Universal Bulins to keep in dock during retirement to avoid retiring all of them. Set to 0 to keep none."
+    },
+    "RetireSSRBulin": {
+      "name": "Retire Prototype Bulin MKII (SSR)",
+      "help": "When Quick Retire and Purple Bulin retirement cannot free up enough dock capacity and remaining dock space is <= threshold, automatically retire excess Gold Bulins."
+    },
+    "RetireSSRBulinThreshold": {
+      "name": "Retire Gold Bulin Remaining Dock Threshold",
+      "help": "Trigger Gold Bulin retirement only if remaining dock space is still <= this number after purple bulin retirement."
+    },
+    "RetireSSRBulinKeepCount": {
+      "name": "Retire Gold Bulin Minimum Reserve Count",
+      "help": "Minimum number of Gold Bulins to keep in dock during retirement to avoid retiring all of them."
     }
   },
   "PublicEmotion": {

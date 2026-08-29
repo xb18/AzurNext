@@ -159,7 +159,13 @@
       "ZipMethod": "zip"
     },
     "Retirement": {
-      "RetireMode": "one_click_retire"
+      "RetireMode": "one_click_retire",
+      "RetireSRBulin": true,
+      "RetireSRBulinThreshold": 3,
+      "RetireSRBulinKeepCount": 5,
+      "RetireSSRBulin": false,
+      "RetireSSRBulinThreshold": 1,
+      "RetireSSRBulinKeepCount": 5
     },
     "OneClickRetire": {
       "KeepLimitBreak": "keep_limit_break"

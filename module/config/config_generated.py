@@ -171,6 +171,12 @@ class GeneratedConfig:
 
     # 配置组 `Retirement`
     Retirement_RetireMode = 'one_click_retire'  # one_click_retire, enhance, old_retire
+    Retirement_RetireSRBulin = True
+    Retirement_RetireSRBulinThreshold = 3
+    Retirement_RetireSRBulinKeepCount = 5
+    Retirement_RetireSSRBulin = False
+    Retirement_RetireSSRBulinThreshold = 1
+    Retirement_RetireSSRBulinKeepCount = 5
 
     # 配置组 `PublicEmotion`
     PublicEmotion_Enable = False
