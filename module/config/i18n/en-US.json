@@ -1081,6 +1081,46 @@
       "help": ""
     }
   },
+  "GlobalScheduler": {
+    "_info": {
+      "name": "Global Scheduler Settings",
+      "help": "Support running all created Alas configurations in sequential order (e.g. Official server + 4399 server, alts, etc.).\nAutomatically closes game and switches to the next config when current tasks finish; waits for earliest next run when all configs are idle."
+    },
+    "Enable": {
+      "name": "Enable Global Scheduler",
+      "help": "When enabled, scheduler runs all created configs in sequential order.\nDisabled by default.",
+      "True": "Enable",
+      "False": "Disable"
+    },
+    "ConfigList": {
+      "name": "Config List",
+      "help": "When set to `auto` or left empty, all created configs will be executed in order automatically.\nYou can also manually specify config names (e.g. `alas, alas4399`) to customize order or exclude configs."
+    },
+    "RunSingleCycle": {
+      "name": "Single Cycle Only",
+      "help": "When enabled (default), scheduler stops after all configs complete one round of due tasks.\nWhen disabled, enters dynamic global wait and loops continuously.",
+      "True": "Enable",
+      "False": "Disable"
+    },
+    "WhenTaskQueueEmpty": {
+      "name": "Action on Config Finished",
+      "help": "Action to perform after all due tasks of a config are finished, before switching to the next config.\n[Close Game] is recommended to release resources.",
+      "close_emulator": "Close Emulator",
+      "app_stop": "Close Game",
+      "goto_main": "Go to Main Page",
+      "stay_there": "Stay There"
+    },
+    "WaitBetweenConfigs": {
+      "name": "Wait Between Configs",
+      "help": "Buffer wait time (seconds) before switching to the next config. Default 5 seconds."
+    },
+    "SwitchOnError": {
+      "name": "Switch to Next Config on Error",
+      "help": "When a config encounters an unrecoverable error or max retries, automatically log and switch to the next config to avoid blocking the global queue.",
+      "True": "Enable",
+      "False": "Disable"
+    }
+  },
   "YukikazeTaskManager": {
     "_info": {
       "name": "Yukikaze-sama's task management",
@@ -6227,7 +6267,8 @@
       "Update": "Updater",
       "Remote": "Remote Control",
       "Setting": "Settings",
-      "Utils": "Utils"
+      "Utils": "Utils",
+      "GlobalScheduler": "Global Scheduler"
     },
     "Overview": {
       "Scheduler": "Scheduler",

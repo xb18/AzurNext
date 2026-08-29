@@ -10,6 +10,7 @@ Alas:
       - Optimization
       - DropRecord
       - EmulatorManagement
+      - GlobalScheduler
     General:
       - Log
       - Retirement
@@ -478,6 +479,7 @@ Tool:
       - GameManager
     EmulatorManager:
       - EmulatorManager
+
 Dashboard:
   page: dashboard
   tasks:

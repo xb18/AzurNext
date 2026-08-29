@@ -338,6 +338,28 @@ PublicEmotion:
     option: [not_in_dormitory, dormitory_floor_1, dormitory_floor_2]
   FleetOath: false
   FleetOnsen: false
+GlobalScheduler:
+  Enable:
+    type: checkbox
+    value: false
+    option: [true, false]
+  ConfigList:
+    type: textarea
+    value: auto
+  RunSingleCycle:
+    type: checkbox
+    value: true
+    option: [true, false]
+  WhenTaskQueueEmpty:
+    value: close_emulator
+    option: [close_emulator, app_stop, goto_main, stay_there]
+  WaitBetweenConfigs:
+    value: 5
+    validate: [0, 60]
+  SwitchOnError:
+    type: checkbox
+    value: true
+    option: [true, false]
 YukikazeTaskManager:
   TaskPriorityAdjustment:
     type: task_priority

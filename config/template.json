@@ -149,6 +149,14 @@
       "ForceScheduledRestart": false,
       "RestartIntervalHours": 4
     },
+    "GlobalScheduler": {
+      "Enable": false,
+      "ConfigList": "auto",
+      "RunSingleCycle": true,
+      "WhenTaskQueueEmpty": "close_emulator",
+      "WaitBetweenConfigs": 5,
+      "SwitchOnError": true
+    },
     "Storage": {
       "Storage": {}
     }

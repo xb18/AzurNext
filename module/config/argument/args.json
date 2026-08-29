@@ -775,6 +775,54 @@
         ]
       }
     },
+    "GlobalScheduler": {
+      "Enable": {
+        "type": "checkbox",
+        "value": false,
+        "option": [
+          true,
+          false
+        ]
+      },
+      "ConfigList": {
+        "type": "textarea",
+        "value": "auto"
+      },
+      "RunSingleCycle": {
+        "type": "checkbox",
+        "value": true,
+        "option": [
+          true,
+          false
+        ]
+      },
+      "WhenTaskQueueEmpty": {
+        "type": "select",
+        "value": "close_emulator",
+        "option": [
+          "close_emulator",
+          "app_stop",
+          "goto_main",
+          "stay_there"
+        ]
+      },
+      "WaitBetweenConfigs": {
+        "type": "input",
+        "value": 5,
+        "validate": [
+          0,
+          60
+        ]
+      },
+      "SwitchOnError": {
+        "type": "checkbox",
+        "value": true,
+        "option": [
+          true,
+          false
+        ]
+      }
+    },
     "Storage": {
       "Storage": {
         "type": "storage",

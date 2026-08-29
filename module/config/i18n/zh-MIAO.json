@@ -1081,6 +1081,46 @@
       "help": ""
     }
   },
+  "GlobalScheduler": {
+    "_info": {
+      "name": "全局调度设置喵",
+      "help": "支持按顺序轮流执行已创建的所有配置（如官服 + 4399服、小号等）喵。\n当前配置做完后自动换下一个配置喵。"
+    },
+    "Enable": {
+      "name": "启用全局调度喵",
+      "help": "开启后，调度器会自动按顺序轮流跑所有配置喵。",
+      "True": "开启喵",
+      "False": "关闭喵"
+    },
+    "ConfigList": {
+      "name": "配置列表喵",
+      "help": "填 `auto` 或留空会自动按顺序跑所有配置喵。\n也可以自己写配置名字（比如 `alas, alas4399`），调整顺序或删掉不要的喵。"
+    },
+    "RunSingleCycle": {
+      "name": "只执行一轮喵",
+      "help": "开启后所有配置跑完一轮就自动停掉喵（默认开启）；关闭时会自动等最早到期任务继续跑下一轮喵。",
+      "True": "开启喵",
+      "False": "关闭喵"
+    },
+    "WhenTaskQueueEmpty": {
+      "name": "单个配置完成动作喵",
+      "help": "某个配置任务做完切下一个前做啥喵，推荐关掉游戏省资源喵。",
+      "close_emulator": "关闭模拟器喵",
+      "app_stop": "关闭游戏喵",
+      "goto_main": "回主界面喵",
+      "stay_there": "呆在原地喵"
+    },
+    "WaitBetweenConfigs": {
+      "name": "配置切换缓冲时间喵",
+      "help": "切到下一个配置前歇几秒喵。"
+    },
+    "SwitchOnError": {
+      "name": "遇错自动跳过喵",
+      "help": "要是某个配置卡死报错了，自动切下一个配置继续跑喵。",
+      "True": "开启喵",
+      "False": "关闭喵"
+    }
+  },
   "YukikazeTaskManager": {
     "_info": {
       "name": "雪风大人的任务管理 ゝ",
@@ -6227,7 +6267,8 @@
       "Update": "更新器喵",
       "Remote": "远程控制喵",
       "Setting": "设置喵",
-      "Utils": "开发者工具喵"
+      "Utils": "开发者工具喵",
+      "GlobalScheduler": "全局调度喵"
     },
     "Overview": {
       "Scheduler": "调度器喵",
