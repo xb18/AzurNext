@@ -60,6 +60,12 @@ class DeveloperMenuMixin(WebUIMixinBase):
             color="menu",
         ).style(f"--menu-Utils--")
 
+        put_button(
+            label=t("Gui.MenuDevelop.GlobalScheduler"),
+            onclick=self.dev_global_scheduler,
+            color="menu",
+        ).style(f"--menu-GlobalScheduler--")
+
     def dev_translate(self) -> None:
         go_app("translate", new_window=True)
         lang.TRANSLATE_MODE = True

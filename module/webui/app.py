@@ -46,6 +46,7 @@ from module.webui.app_developer_tools import DeveloperToolsMixin
 from module.webui.app_developer_update import DeveloperUpdateMixin
 from module.webui.app_event_tools import EventToolsMixin
 from module.webui.app_fleet_management import FleetManagementMixin
+from module.webui.app_global_scheduler import GlobalSchedulerMixin
 from module.webui.app_helpers import (
     DEMO_DEVICE_ID_TEXT,
     WEBUI_AUTO_PASSWORD_FILE,
@@ -203,6 +204,7 @@ class AlasGUI(
     DeveloperUpdateMixin,
     DeveloperSettingsMixin,
     DeveloperToolsMixin,
+    GlobalSchedulerMixin,
     InstanceMixin,
     HomeMixin,
     Frame,
@@ -335,7 +337,7 @@ def app():
         localstorage = None
         if is_webui_password_set(key):
             localstorage = get_localstorage_values(
-                ("password", "clarity_notice_shown", "aside")
+                ("password", "clarity_notice_shown", "aside", "menu")
             )
         if is_webui_password_set(key) and not login(
             key, stored_password=localstorage.get("password")

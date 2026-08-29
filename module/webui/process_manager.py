@@ -112,7 +112,7 @@ class ProcessManager:
             return None
         return self._state_override
 
-    def start(self, func: str | None, ev: threading.Event | None = None) -> None:
+    def start(self, func: str | None = None, ev: threading.Event | None = None) -> None:
         # 更新事务持有 restart_lock；清理过程持有 cleanup_lock。请求线程不能在事务
         # 期间长期阻塞；同线程的 RLock 重入仍允许更新失败后的实例恢复。
         if not State.restart_lock.acquire(blocking=False):

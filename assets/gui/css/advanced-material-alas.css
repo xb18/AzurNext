@@ -1589,6 +1589,265 @@ button[style*="--menu-Overview--"] {
 }
 
 /* ==========================================
+   全局调度页面（Global Scheduler）高级材质适配
+   ========================================== */
+
+#pywebio-scope-gs_header,
+#pywebio-scope-gs_controls,
+#pywebio-scope-gs_tasks,
+#pywebio-scope-gs_progress,
+#pywebio-scope-gs_settings,
+#pywebio-scope-gs_logs,
+.gs-card {
+	background-color: var(--alas-apple-card-bg, rgba(255, 255, 255, 0.75)) !important;
+	backdrop-filter: blur(20px) saturate(180%);
+	-webkit-backdrop-filter: blur(20px) saturate(180%);
+	border: 1px solid var(--alas-apple-glass-border, rgba(0, 0, 0, 0.08)) !important;
+	border-radius: var(--radius-lg, 16px) !important;
+	box-shadow: var(--alas-apple-shadow, 0 4px 16px rgba(0, 0, 0, 0.06)) !important;
+	padding: 1.25rem 1.5rem !important;
+	margin-bottom: 1.25rem !important;
+	color: var(--alas-apple-text, inherit) !important;
+	transition: box-shadow 0.3s ease, transform 0.2s ease !important;
+}
+
+#pywebio-scope-gs_header:hover,
+#pywebio-scope-gs_controls:hover,
+#pywebio-scope-gs_tasks:hover,
+#pywebio-scope-gs_progress:hover,
+#pywebio-scope-gs_settings:hover,
+#pywebio-scope-gs_logs:hover,
+.gs-card:hover {
+	box-shadow: var(--alas-apple-shadow-md, 0 8px 24px rgba(0, 0, 0, 0.08)) !important;
+}
+
+#pywebio-scope-gs_header,
+.gs-header-card {
+	border-left: 5px solid var(--alas-apple-accent, #007aff) !important;
+}
+
+.gs-title {
+	font-size: 1.25rem !important;
+	font-weight: 700 !important;
+	color: var(--alas-apple-text, inherit) !important;
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	margin-bottom: 0.5rem;
+}
+
+.gs-desc {
+	font-size: 0.92rem !important;
+	color: var(--alas-apple-text-secondary, #86868b) !important;
+	line-height: 1.6 !important;
+}
+
+.gs-badge {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4rem;
+	padding: 0.35rem 0.85rem;
+	border-radius: 20px;
+	font-size: 0.88rem;
+	font-weight: 600;
+	transition: all 0.3s ease;
+}
+
+.gs-badge-running {
+	background: rgba(52, 199, 89, 0.15);
+	color: #34c759;
+	border: 1px solid rgba(52, 199, 89, 0.35);
+}
+
+.gs-badge-waiting {
+	background: rgba(255, 149, 0, 0.15);
+	color: #ff9500;
+	border: 1px solid rgba(255, 149, 0, 0.35);
+}
+
+.gs-badge-switching {
+	background: rgba(0, 122, 255, 0.15);
+	color: var(--alas-apple-accent, #007aff);
+	border: 1px solid rgba(0, 122, 255, 0.35);
+}
+
+.gs-badge-idle {
+	background: rgba(142, 142, 147, 0.15);
+	color: #8e8e93;
+	border: 1px solid rgba(142, 142, 147, 0.35);
+}
+
+.gs-step-grid {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.85rem;
+	margin-top: 0.75rem;
+}
+
+.gs-step-item {
+	flex: 1;
+	min-width: 170px;
+	padding: 0.85rem 1.1rem;
+	border-radius: var(--radius-md, 12px);
+	border: 1px solid var(--alas-apple-glass-border, rgba(0, 0, 0, 0.08));
+	background: var(--alas-apple-bg, rgba(255, 255, 255, 0.4));
+	transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.gs-step-item.active {
+	background: var(--alas-apple-accent-light, rgba(0, 122, 255, 0.12));
+	border-color: var(--alas-apple-accent, #007aff);
+	box-shadow: var(--alas-apple-shadow-accent, 0 2px 8px rgba(0, 122, 255, 0.2));
+	transform: translateY(-2px);
+}
+
+.gs-step-item.completed {
+	border-color: rgba(52, 199, 89, 0.4);
+	background: rgba(52, 199, 89, 0.06);
+}
+
+.gs-step-name {
+	font-weight: 700;
+	font-size: 0.96rem;
+	color: var(--alas-apple-text, inherit);
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.gs-step-badge {
+	font-size: 0.72rem;
+	padding: 2px 7px;
+	border-radius: 10px;
+	font-weight: 600;
+}
+
+/* 全局调度任务看板样式 */
+.gs-tasks-sections {
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+	margin-top: 0.5rem;
+}
+
+.gs-task-block {
+	background: var(--alas-apple-bg, rgba(255, 255, 255, 0.4));
+	border: 1px solid var(--alas-apple-glass-border, rgba(0, 0, 0, 0.08));
+	border-radius: var(--radius-md, 12px);
+	padding: 0.7rem 0.95rem;
+	transition: all 0.2s ease;
+}
+
+.gs-task-block:hover {
+	background: var(--alas-apple-bg, rgba(255, 255, 255, 0.6));
+}
+
+.gs-task-block-title {
+	font-size: 0.92rem;
+	font-weight: 700;
+	margin-bottom: 0.45rem;
+	display: flex;
+	align-items: center;
+	gap: 0.4rem;
+}
+
+.gs-task-list {
+	display: flex;
+	flex-direction: column;
+	gap: 0.35rem;
+	max-height: 160px;
+	overflow-y: auto;
+}
+
+.gs-task-row {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0.35rem 0.6rem;
+	border-radius: 8px;
+	background: var(--alas-apple-card-bg, rgba(255, 255, 255, 0.65));
+	font-size: 0.9rem;
+	border: 1px solid rgba(0, 0, 0, 0.05);
+	transition: background 0.2s ease;
+}
+
+.gs-task-row:hover {
+	background: var(--alas-apple-card-bg, rgba(255, 255, 255, 0.9));
+}
+
+.gs-task-cfg-tag {
+	display: inline-block;
+	padding: 1px 6px;
+	border-radius: 6px;
+	background: var(--alas-apple-accent-light, rgba(0, 122, 255, 0.12));
+	color: var(--alas-apple-accent, #007aff);
+	font-weight: 600;
+	font-size: 0.8rem;
+	margin-right: 0.4rem;
+}
+
+.gs-task-time {
+	font-size: 0.82rem;
+	color: var(--alas-apple-text-secondary, #86868b);
+	font-family: monospace;
+}
+
+.gs-task-empty {
+	font-size: 0.85rem;
+	color: var(--alas-apple-text-secondary, #86868b);
+	padding: 0.35rem 0.5rem;
+	font-style: italic;
+}
+
+/* 全局调度左右双栏响应式布局 */
+#pywebio-scope-gs_body {
+	display: grid !important;
+	grid-template-columns: minmax(360px, 1.05fr) minmax(420px, 1.15fr) !important;
+	gap: 1.25rem !important;
+	align-items: start !important;
+}
+
+#pywebio-scope-gs_left {
+	display: flex !important;
+	flex-direction: column !important;
+}
+
+#pywebio-scope-gs_right {
+	position: sticky !important;
+	top: 1rem !important;
+	z-index: 10 !important;
+}
+
+#pywebio-scope-gs_logs {
+	height: calc(100vh - 180px) !important;
+	min-height: 520px !important;
+	max-height: 840px !important;
+	display: flex !important;
+	flex-direction: column !important;
+	margin-bottom: 0 !important;
+}
+
+#pywebio-scope-gs_logs #pywebio-scope-log-container {
+	flex: 1 !important;
+	height: 100% !important;
+	max-height: none !important;
+}
+
+@media (max-width: 991px) {
+	#pywebio-scope-gs_body {
+		grid-template-columns: 1fr !important;
+	}
+	#pywebio-scope-gs_right {
+		position: static !important;
+	}
+	#pywebio-scope-gs_logs {
+		height: 480px !important;
+		min-height: 380px !important;
+		max-height: 580px !important;
+	}
+}
+
+/* ==========================================
    13. 媒体查询
    ========================================== */
 

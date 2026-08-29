@@ -98,6 +98,7 @@ class Frame(Base):
             self.collapse_menu()
         if name:
             self.active_button("menu", name)
+            set_localstorage("menu", name)
 
     @staticmethod
     def set_statistics_content_visible(visible: bool) -> None:

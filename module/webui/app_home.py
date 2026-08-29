@@ -40,6 +40,37 @@ class HomeMixin(WebUIMixinBase):
         self.mount_shell()
         self.show_home()
 
+    def restore_home_menu(self, menu: str | None) -> None:
+        """恢复开发者/主页下的二级菜单。"""
+        self.mount_shell()
+        self._set_manage_mode(False)
+        self._active_aside = "Home"
+        self.init_aside(name="Home")
+        self.dev_set_menu()
+        self.alas_name = ""
+        if hasattr(self, "alas"):
+            del self.alas
+        self.set_status(0)
+
+        try:
+            if menu == "GlobalScheduler":
+                self.dev_global_scheduler()
+            elif menu == "Setting":
+                self.dev_setting()
+            elif menu == "Remote":
+                self.dev_remote()
+            elif menu == "Utils":
+                self.dev_utils()
+            elif menu == "Update":
+                self.dev_update()
+            elif menu == "Announcement":
+                self.ui_check_announcement(force=True)
+            else:
+                self.show_home()
+        except Exception as e:
+            logger.warning(f"[WebUI] 恢复开发者二级菜单 [{menu}] 失败，回退到主页: {e}")
+            self.show_home()
+
     def show_home(self) -> None:
         self.mount_shell()
         self._set_manage_mode(False)
@@ -293,15 +324,20 @@ class HomeMixin(WebUIMixinBase):
         # RPC 较慢，用户也能立即看到真实外壳，且该读取不再阻塞首条内容。
         self.mount_shell()
         if localstorage is None:
-            localstorage = get_localstorage_values(("clarity_notice_shown", "aside"))
+            localstorage = get_localstorage_values(("clarity_notice_shown", "aside", "menu"))
         aside = localstorage.get("aside")
+        menu = localstorage.get("menu")
         self._stored_aside = aside
+        self._stored_menu = menu
         show_clarity_notice = localstorage.get("clarity_notice_shown") != "1"
         restore_instance = initial_page == "home" and aside in alas_instance()
         if initial_page == "manage":
             self.ui_manage()
         elif not restore_instance:
-            self.show_home()
+            if aside == "Home" and menu and menu != "HomePage":
+                self.restore_home_menu(menu)
+            else:
+                self.show_home()
 
         # save config
         _thread_save_config = threading.Thread(target=self._alas_thread_update_config)
@@ -404,7 +440,7 @@ class HomeMixin(WebUIMixinBase):
         self.task_handler.add(announcement_checker(), delay=5)
 
         if restore_instance:
-            self.ui_alas(aside)
+            self.ui_alas(aside, initial_menu=menu)
 
         if show_clarity_notice:
             set_localstorage("clarity_notice_shown", "1")

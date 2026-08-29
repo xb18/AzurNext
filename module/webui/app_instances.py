@@ -36,9 +36,9 @@ from module.webui.app_types import WebUIMixinBase
 class InstanceMixin(WebUIMixinBase):
     """WebUI实例切换创建和导入"""
 
-    def ui_alas(self, config_name: str) -> None:
+    def ui_alas(self, config_name: str, initial_menu: str | None = None) -> None:
         self._set_manage_mode(False)
-        if config_name == self.alas_name:
+        if config_name == self.alas_name and initial_menu is None:
             self.expand_menu()
             return
         self._active_aside = config_name
@@ -55,7 +55,7 @@ class InstanceMixin(WebUIMixinBase):
                 # best-effort: ignore if switch not ready
                 pass
         self.initial()
-        self.alas_set_menu()
+        self.alas_set_menu(initial_menu=initial_menu)
 
     def ui_add_alas(self) -> None:
         with popup(t("Gui.AddAlas.PopupTitle")) as s:
@@ -238,8 +238,8 @@ class InstanceMixin(WebUIMixinBase):
             return
         self._set_manage_mode(True)
         self._active_aside = "Manage"
-        self.init_aside(expand_menu=False)
-        self.init_menu()
+        self.init_aside(expand_menu=False, name="Manage")
+        self.init_menu(name="ManageList")
         self.active_button("aside", "Manage")
         self.set_title(t("Gui.AppManage.PageTitle"))
         self.alas_name = ""

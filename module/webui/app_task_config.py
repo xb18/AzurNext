@@ -75,14 +75,42 @@ class TaskConfigMixin(WebUIMixinBase):
     CONFIG_SEARCH_RESULT_LIMIT = 20
 
     @use_scope("menu", clear=True)
-    def alas_set_menu(self) -> None:
+    def alas_set_menu(self, initial_menu: str | None = None) -> None:
         """渲染任务菜单及配置搜索入口。"""
         put_scope("task_config_search")
         put_scope("task_config_search_results")
         put_scope("task_config_menu_items")
         self._render_config_search_control()
         self._render_task_menu_items()
-        self.alas_overview()
+        if initial_menu and initial_menu != "Overview":
+            self.restore_instance_menu(initial_menu)
+        else:
+            self.alas_overview()
+
+    def restore_instance_menu(self, menu: str) -> None:
+        """恢复实例下的指定二级菜单。"""
+        try:
+            if menu == "Stat":
+                self.alas_set_stat()
+            elif menu == "FleetScan":
+                self.fleet_scan_page()
+            elif menu == "FleetInfo":
+                self.fleet_info_page()
+            elif menu in self.ALAS_ARGS or menu in self.ALAS_MENU:
+                is_tool = False
+                for m, task_data in self.ALAS_MENU.items():
+                    if task_data.get("page") == "tool" and (m == menu or menu in task_data.get("tasks", [])):
+                        is_tool = True
+                        break
+                if is_tool:
+                    self.alas_daemon_overview(menu)
+                else:
+                    self.alas_set_group(menu)
+            else:
+                self.alas_overview()
+        except Exception as e:
+            logger.warning(f"[WebUI] 恢复二级菜单 [{menu}] 失败，回退到总览: {e}")
+            self.alas_overview()
 
     @use_scope("task_config_menu_items", clear=True)
     def _render_task_menu_items(self) -> None:
