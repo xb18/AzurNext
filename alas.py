@@ -1749,18 +1749,25 @@ class AzurLaneAutoScript:
         return enabled
 
     def _get_global_scheduler_attr(self, name: str, default=None):
+        from module.config.utils import get_default_main_instance
+        main_name = getattr(self, '_initial_config_name', None) or get_default_main_instance()
+        if main_name:
+            if main_name == self.config_name and 'config' in self.__dict__:
+                val = getattr(self.config, f'GlobalScheduler_{name}', None)
+                if val is not None and str(val).strip() != '':
+                    return val
+            else:
+                try:
+                    main_cfg = AzurLaneConfig(config_name=main_name)
+                    val = getattr(main_cfg, f'GlobalScheduler_{name}', None)
+                    if val is not None and str(val).strip() != '':
+                        return val
+                except Exception:
+                    pass
+
         val = getattr(self.config, f'GlobalScheduler_{name}', None)
         if val is not None and str(val).strip() != '':
             return val
-        initial_name = getattr(self, '_initial_config_name', None)
-        if initial_name and initial_name != self.config_name:
-            try:
-                init_cfg = AzurLaneConfig(config_name=initial_name)
-                val = getattr(init_cfg, f'GlobalScheduler_{name}', None)
-                if val is not None and str(val).strip() != '':
-                    return val
-            except Exception:
-                pass
         return default
 
     def _update_global_scheduler_status(

@@ -364,7 +364,7 @@ class GlobalSchedulerMixin(WebUIMixinBase):
     @use_scope("gs_settings", clear=True)
     def _render_gs_settings(self, config: AzurLaneConfig, main_config_name: str) -> None:
         cfg_list_val = str(getattr(config, "GlobalScheduler_ConfigList", "auto"))
-        single_cycle_val = bool(getattr(config, "GlobalScheduler_RunSingleCycle", True))
+        single_cycle_val = bool(getattr(config, "GlobalScheduler_RunSingleCycle", False))
         when_empty_val = str(getattr(config, "GlobalScheduler_WhenTaskQueueEmpty", "close_emulator"))
         wait_val = int(getattr(config, "GlobalScheduler_WaitBetweenConfigs", 5))
         switch_err_val = bool(getattr(config, "GlobalScheduler_SwitchOnError", True))
@@ -461,11 +461,22 @@ class GlobalSchedulerMixin(WebUIMixinBase):
             self.task_handler.add(log.put_log(mgr), 0.25, True)
 
     def _auto_save_gs_config(self, main_config_name: str, attr_name: str, value: object) -> None:
-        """自动保存单个全局调度配置项并实时生效。"""
+        """自动保存单个全局调度配置项并实时生效，并同步至所有实例保持一致。"""
         try:
             config = load_config(main_config_name)
             setattr(config, f"GlobalScheduler_{attr_name}", value)
             config.save()
+
+            # 同步更新到所有其他已创建的配置实例，保证多配置间全局调度参数完全统一
+            for cfg_name in alas_instance():
+                if cfg_name != main_config_name:
+                    try:
+                        other_cfg = load_config(cfg_name)
+                        setattr(other_cfg, f"GlobalScheduler_{attr_name}", value)
+                        other_cfg.save()
+                    except Exception:
+                        pass
+
             logger.info(f"[全局调度] 自动保存配置: GlobalScheduler_{attr_name} = {value}")
             toast(f"✅ 全局调度配置已更新", color="success", duration=1.2)
             if attr_name == "ConfigList":
