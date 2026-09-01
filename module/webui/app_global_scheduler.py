@@ -420,9 +420,14 @@ class GlobalSchedulerMixin(WebUIMixinBase):
             value=cfg_list_val,
             rows=2,
         )
+        # 只执行一轮（默认关闭 False）
+        single_cycle_opts = [{"label": "只执行一轮（跑完一整套任务后直接退出调度器；关闭则动态全局等待并循环）", "value": "true"}]
+        if single_cycle_val:
+            single_cycle_opts[0]["selected"] = True
         put_checkbox(
             "gs_single_cycle",
-            options=[{"label": "只执行一轮（跑完一整套任务后直接退出调度器；关闭则动态全局等待并循环）", "value": "true", "selected": single_cycle_val}],
+            options=single_cycle_opts,
+            value=["true"] if single_cycle_val else [],
         )
         put_select(
             "gs_when_empty",
@@ -440,17 +445,21 @@ class GlobalSchedulerMixin(WebUIMixinBase):
             type="number",
             value=str(wait_val),
         )
+        switch_err_opts = [{"label": "遇错自动跳过（当某一配置卡死或连续失败时，自动记录并跳至下一配置，防止单账号异常阻塞全局）", "value": "true"}]
+        if switch_err_val:
+            switch_err_opts[0]["selected"] = True
         put_checkbox(
             "gs_switch_on_error",
-            options=[{"label": "遇错自动跳过（当某一配置卡死或连续失败时，自动记录并跳至下一配置，防止单账号异常阻塞全局）", "value": "true", "selected": switch_err_val}],
+            options=switch_err_opts,
+            value=["true"] if switch_err_val else [],
         )
 
         # 监听输入改动，实时自动保存
         pin_on_change("gs_config_list", onchange=lambda val: self._auto_save_gs_config(main_config_name, "ConfigList", str(val).strip()))
-        pin_on_change("gs_single_cycle", onchange=lambda val: self._auto_save_gs_config(main_config_name, "RunSingleCycle", bool(val)))
+        pin_on_change("gs_single_cycle", onchange=lambda val: self._auto_save_gs_config(main_config_name, "RunSingleCycle", bool(val and "true" in val)))
         pin_on_change("gs_when_empty", onchange=lambda val: self._auto_save_gs_config(main_config_name, "WhenTaskQueueEmpty", str(val)))
         pin_on_change("gs_wait_between", onchange=lambda val: self._auto_save_gs_config(main_config_name, "WaitBetweenConfigs", int(val or 5)))
-        pin_on_change("gs_switch_on_error", onchange=lambda val: self._auto_save_gs_config(main_config_name, "SwitchOnError", bool(val)))
+        pin_on_change("gs_switch_on_error", onchange=lambda val: self._auto_save_gs_config(main_config_name, "SwitchOnError", bool(val and "true" in val)))
 
     @use_scope("gs_logs", clear=True)
     def _render_gs_logs(self, main_config_name: str) -> None:
