@@ -69,13 +69,16 @@ class GlobalSchedulerMixin(WebUIMixinBase):
 
         self._render_gs_header()
         self._render_gs_controls(config, main_config_name)
-        self._render_gs_tasks()
+        self._render_gs_tasks(force=True)
         self._render_gs_progress()
         self._render_gs_settings(config, main_config_name)
         self._render_gs_logs(main_config_name)
 
         # 启动定时刷新
-        self.task_handler.add(self._update_gs_live_status, 1.5, True)
+        # 1. 轻量级运行状态与进度监控（2s，轻量：仅检查进程与轻量状态文件，不读任务配置）
+        self.task_handler.add(self._update_gs_live_status, 2.0, True)
+        # 2. 任务看板按需轮询（10s，对齐单配置 overview 刷新周期；未运行时自动跳过查询）
+        self.task_handler.add(self._update_gs_tasks_loop, 10.0, True)
 
     def _get_gs_status_data(self) -> dict:
         """读取全局调度实时状态 JSON。"""
@@ -191,8 +194,13 @@ class GlobalSchedulerMixin(WebUIMixinBase):
                     color="success",
                 )
 
-    @use_scope("gs_tasks", clear=True)
-    def _render_gs_tasks(self) -> None:
+    def _handle_manual_refresh_tasks(self) -> None:
+        """用户点击手动刷新任务看板。"""
+        toast("正在刷新任务看板...", color="info", duration=1.0)
+        self._render_gs_tasks(force=True)
+
+    def _render_gs_tasks(self, force: bool = False) -> None:
+        """渲染全局任务看板。类似单个配置的 overview，通过快照对比避免无谓重绘。"""
         status_data = self._get_gs_status_data()
         is_running = self._is_gs_running()
         all_instances = alas_instance()
@@ -245,8 +253,25 @@ class GlobalSchedulerMixin(WebUIMixinBase):
 
         waiting_items.sort(key=lambda x: x["time"])
 
+        # 生成快照（包含运行状态、当前任务、以及各队列项目）
+        snapshot = (
+            is_running,
+            current_cfg,
+            current_raw_task,
+            tuple((item["config"], item["raw_task"], item["time"]) for item in running_items),
+            tuple((item["config"], item["raw_task"], item["time"]) for item in pending_items),
+            tuple((item["config"], item["raw_task"], item["time"]) for item in waiting_items[:12]),
+        )
+
+        if not force and getattr(self, "_gs_tasks_snapshot", None) == snapshot:
+            return
+        self._gs_tasks_snapshot = snapshot
+
         def make_rows_html(items, is_active=False):
             if not items:
+                if is_active:
+                    hint = "暂无运行中任务（调度未运行）" if not is_running else "暂无运行中任务"
+                    return f'<div class="gs-task-empty">{hint}</div>'
                 return '<div class="gs-task-empty">暂无任务</div>'
             rows = []
             for item in items:
@@ -270,42 +295,54 @@ class GlobalSchedulerMixin(WebUIMixinBase):
         pending_html = make_rows_html(pending_items)
         waiting_html = make_rows_html(waiting_items[:12])  # 最多展示前 12 个等待任务
 
-        put_html(f"""
-        <div class="gs-title" style="font-size: 1.1rem !important; margin-bottom: 0.5rem;">
-            <span>📊</span> 全局任务看板 (按状态分类)
-        </div>
-        <div class="gs-tasks-sections">
-            <!-- 运行中 -->
-            <div class="gs-task-block" style="border-left: 4px solid #34c759;">
-                <div class="gs-task-block-title" style="color: #34c759;">
-                    <span>🔥</span> 运行中 ({len(running_items)})
+        clear("gs_tasks")
+        with use_scope("gs_tasks"):
+            put_html(f"""
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                <div class="gs-title" style="font-size: 1.1rem !important; margin-bottom: 0;">
+                    <span>📊</span> 全局任务看板 (按状态分类)
                 </div>
-                <div class="gs-task-list">
-                    {running_html}
-                </div>
+                <div id="pywebio-scope-gs_tasks_refresh_btn"></div>
             </div>
+            <div class="gs-tasks-sections">
+                <!-- 运行中 -->
+                <div class="gs-task-block" style="border-left: 4px solid #34c759;">
+                    <div class="gs-task-block-title" style="color: #34c759;">
+                        <span>🔥</span> 运行中 ({len(running_items)})
+                    </div>
+                    <div class="gs-task-list">
+                        {running_html}
+                    </div>
+                </div>
 
-            <!-- 队列中 -->
-            <div class="gs-task-block" style="border-left: 4px solid #007aff;">
-                <div class="gs-task-block-title" style="color: var(--alas-apple-accent, #007aff);">
-                    <span>⚡</span> 队列中 ({len(pending_items)})
+                <!-- 队列中 -->
+                <div class="gs-task-block" style="border-left: 4px solid #007aff;">
+                    <div class="gs-task-block-title" style="color: var(--alas-apple-accent, #007aff);">
+                        <span>⚡</span> 队列中 ({len(pending_items)})
+                    </div>
+                    <div class="gs-task-list">
+                        {pending_html}
+                    </div>
                 </div>
-                <div class="gs-task-list">
-                    {pending_html}
-                </div>
-            </div>
 
-            <!-- 等待中 -->
-            <div class="gs-task-block" style="border-left: 4px solid #ff9500;">
-                <div class="gs-task-block-title" style="color: #ff9500;">
-                    <span>⏳</span> 等待中 ({len(waiting_items)})
-                </div>
-                <div class="gs-task-list">
-                    {waiting_html}
+                <!-- 等待中 -->
+                <div class="gs-task-block" style="border-left: 4px solid #ff9500;">
+                    <div class="gs-task-block-title" style="color: #ff9500;">
+                        <span>⏳</span> 等待中 ({len(waiting_items)})
+                    </div>
+                    <div class="gs-task-list">
+                        {waiting_html}
+                    </div>
                 </div>
             </div>
-        </div>
-        """)
+            """)
+            put_scope("gs_tasks_refresh_btn")
+            with use_scope("gs_tasks_refresh_btn"):
+                put_button(
+                    label="🔄 刷新",
+                    onclick=self._handle_manual_refresh_tasks,
+                    color="light",
+                )
 
     @use_scope("gs_progress", clear=True)
     def _render_gs_progress(self) -> None:
@@ -481,6 +518,7 @@ class GlobalSchedulerMixin(WebUIMixinBase):
             toast(f"✅ 全局调度配置已更新", color="success", duration=1.2)
             if attr_name == "ConfigList":
                 self._render_gs_progress()
+                self._render_gs_tasks(force=True)
         except Exception as e:
             logger.exception(f"[全局调度] 自动保存配置失败: {e}")
 
@@ -545,7 +583,7 @@ class GlobalSchedulerMixin(WebUIMixinBase):
             except Exception:
                 config = AzurLaneConfig(config_name=main_cfg)
             self._render_gs_controls(config, main_cfg)
-            self._render_gs_tasks()
+            self._render_gs_tasks(force=True)
             self._render_gs_progress()
             self._render_gs_logs(start_config_name)
         except Exception as e:
@@ -591,42 +629,41 @@ class GlobalSchedulerMixin(WebUIMixinBase):
             except Exception:
                 config = AzurLaneConfig(config_name=main_cfg)
             self._render_gs_controls(config, main_cfg)
-            self._render_gs_tasks()
+            self._render_gs_tasks(force=True)
             self._render_gs_progress()
         except Exception as e:
             logger.exception(f"停止全局调度失败: {e}")
             toast(f"❌ 停止失败: {e}", color="error")
 
     def _check_and_update_gs_tasks(self) -> None:
-        """定时检查任务队列看板是否有变化，并在有变化时增量更新。"""
-        status_data = self._get_gs_status_data()
-        is_running = self._is_gs_running()
-        all_instances = alas_instance()
-        cfg_list = status_data.get("config_list", [])
-        if not cfg_list:
-            cfg_list = list(all_instances)
+        """增量检查并更新任务看板。"""
+        self._render_gs_tasks(force=False)
 
-        current_cfg = status_data.get("current_config", self._get_active_running_instance_name() or "")
-        current_raw_task = status_data.get("current_task", "")
+    def _update_gs_tasks_loop(self) -> None:
+        """
+        定时更新全局任务看板（周期 10s，对齐单配置 overview 刷新频率）。
+        关键优化：若调度器未在运行，直接跳过查询，避免后台无谓磁盘 IO 与计算。
+        """
+        if self.page != "GlobalScheduler":
+            return
+        if not getattr(self, "visible", True):
+            return
 
-        snapshot = [is_running, current_cfg, current_raw_task]
-        for name in cfg_list:
-            try:
-                cfg = AzurLaneConfig(config_name=name)
-                cfg.get_next_task()
-                snapshot.append((name, tuple((t.command, str(t.next_run)) for t in cfg.pending_task)))
-                snapshot.append((name, tuple((t.command, str(t.next_run)) for t in cfg.waiting_task[:12])))
-            except Exception:
-                pass
+        # 未运行时不进行后台全量配置查询
+        if not self._is_gs_running():
+            return
 
-        snapshot_key = tuple(snapshot)
-        if getattr(self, "_gs_tasks_snapshot", None) != snapshot_key:
-            self._gs_tasks_snapshot = snapshot_key
-            self._render_gs_tasks()
+        # 运行中每 10s 进行增量比对与按需刷新
+        self._render_gs_tasks(force=False)
 
     def _update_gs_live_status(self) -> None:
-        """定时刷新实时状态和进度。"""
+        """
+        定时刷新实时运行状态、步骤进度和日志挂载（周期 2s）。
+        极轻量：仅检查进程活跃状态及状态文件，绝不触发全量任务配置查询。
+        """
         if self.page != "GlobalScheduler":
+            return
+        if not getattr(self, "visible", True):
             return
 
         status_data = self._get_gs_status_data()
@@ -644,21 +681,23 @@ class GlobalSchedulerMixin(WebUIMixinBase):
         }
 
         if status_key != self._global_scheduler_last_status:
-            last_active = (self._global_scheduler_last_status or {}).get("active_name")
+            last_status = self._global_scheduler_last_status or {}
+            last_active = last_status.get("active_name")
+            last_running = last_status.get("running")
             self._global_scheduler_last_status = status_key
-            all_inst = alas_instance()
+
             main_config_name = get_default_main_instance()
             try:
                 config = load_config(main_config_name)
             except Exception:
                 config = AzurLaneConfig(config_name=main_config_name)
             self._render_gs_controls(config, main_config_name)
-            self._render_gs_tasks()
             self._render_gs_progress()
+
+            # 当运行状态改变（启动/停止）或当前运行配置切换时，主动刷新一次任务看板
+            if is_running != last_running or status_data.get("current_config") != last_status.get("current_config"):
+                self._render_gs_tasks(force=True)
 
             # 当运行实例切换或从停止变为启动时，刷新日志容器挂载
             if active_name != last_active:
                 self._render_gs_logs(main_config_name)
-        else:
-            # 即使全局调度状态未变，也检查并实时更新任务看板
-            self._check_and_update_gs_tasks()
