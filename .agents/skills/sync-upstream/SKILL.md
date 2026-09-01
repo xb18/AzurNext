@@ -13,7 +13,7 @@ description: >-
 ## 核心原则
 
 1. **保持 master 纯净**：本地 master 分支永远与官方/上游保持 100% 一致，不在 master 上做任何私有修改。
-2. **私有修改在独立分支**：所有个人定制、脚本和修改均维护在独立分支（如 `feat/dev-workspace`）。
+2. **私有修改在独立分支**：所有个人定制、脚本和修改均维护在独立主分支（如 `main`）。
 3. **优先使用 Rebase（变基）**：将私有提交平移追加在最新的 master 之后，保持线性的 Git 历史。
 4. **仅推送到个人 Remote**：只向 origin（个人的 Fork 仓库）推送，绝不向上游主仓库推送私有代码。
 
@@ -28,7 +28,7 @@ description: >-
 git status
 ```
 - 若有未完成的代码修改，使用 `git stash` 暂存或先行提交。
-- 记录当前所在的分支名（例如当前分支为 `feat/dev-workspace`）。
+- 记录当前所在的分支名（例如当前分支为 `main`）。
 
 ### 第二步：同步上游主分支到本地与个人 Fork 的 master
 如果已配置上游源（`upstream`，如官方原仓库），将自动拉取官方最新代码并同步到本地和你的 Fork 仓库：
@@ -50,8 +50,8 @@ git push origin master
 
 ### 第三步：将 master 变基合入开发分支
 ```powershell
-# 1. 切回你的开发分支
-git checkout feat/dev-workspace
+# 1. 切回你的主分支
+git checkout main
 
 # 2. 将 master 的最新更新变基到当前分支之下
 git rebase master
@@ -78,7 +78,7 @@ uv run -m module.config.config_updater
 ### 第六步：推送到个人远程备份
 ```powershell
 # 使用 --force-with-lease 安全覆盖远程个人开发分支
-git push origin feat/dev-workspace --force-with-lease
+git push origin main --force-with-lease
 ```
 
 ---
@@ -98,7 +98,7 @@ git push origin feat/dev-workspace --force-with-lease
 
 ### 3. 上游发生重大重构时的兜底方案
 如果上游官方库发生了颠覆性的大重构导致直接 Rebase 冲突过多：
-- **方案 A (Cherry-Pick 重建)**：基于最新 master 新建干净分支 `feat/dev-workspace-v2`，使用 `git cherry-pick` 只挑选出你真正需要的几个功能提交，一次性适配。
+- **方案 A (Cherry-Pick 重建)**：基于最新 master 新建干净分支 `main-v2`，使用 `git cherry-pick` 只挑选出你真正需要的几个功能提交，一次性适配。
 - **方案 B (Patch 导出)**：使用 `git format-patch master` 导出你的功能补丁包，在新分支上统一应用。
 
 ---
@@ -107,9 +107,9 @@ git push origin feat/dev-workspace --force-with-lease
 
 | 操作 | 命令 |
 |---|---|
-| 快速全流程同步 | `git checkout master; git pull origin master; git checkout feat/dev-workspace; git rebase master` |
+| 快速全流程同步 | `git checkout master; git pull origin master; git checkout main; git rebase master` |
 | 交互式聚合提交 | `git rebase -i master` |
 | 中止变基 | `git rebase --abort` |
 | 解决冲突后继续 | `git add .; git rebase --continue` |
-| 安全推送到个人库 | `git push origin feat/dev-workspace --force-with-lease` |
+| 安全推送到个人库 | `git push origin main --force-with-lease` |
 

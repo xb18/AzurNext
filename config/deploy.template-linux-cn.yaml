@@ -13,7 +13,7 @@ Deploy:
     # [Developer] Use 'dev', 'app', etc, to try new features
     # [其他用户] 使用 'master'，稳定分支
     # [Other] Use 'master', the stable branch
-    Branch: feat/dev-workspace
+    Branch: main
     # Git 可执行文件路径
     # Filepath of git executable.
     GitExecutable: ./.venv/bin/git

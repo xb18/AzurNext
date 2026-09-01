@@ -7,7 +7,7 @@ Deploy:
     # Branch of AzurPilot
     # [Developer] Use 'dev', 'app', etc, to try new features
     # [Other] Use 'master', the stable branch
-    Branch: 'feat/dev-workspace'
+    Branch: main
     # Filepath of git executable `git.exe`
     # [Other] Use you own git
     GitExecutable: './.venv/Scripts/git/cmd/git.exe'
