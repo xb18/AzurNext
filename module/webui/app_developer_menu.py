@@ -48,17 +48,17 @@ class DeveloperMenuMixin(WebUIMixinBase):
             color="menu",
         ).style(f"--menu-Setting--")
 
-        put_button(
-            label=t("Gui.MenuDevelop.Announcement"),
-            onclick=lambda: self.ui_check_announcement(force=True),
-            color="menu",
-        ).style(f"--menu-Announcement--")
+        # put_button(
+        #     label=t("Gui.MenuDevelop.Announcement"),
+        #     onclick=lambda: self.ui_check_announcement(force=True),
+        #     color="menu",
+        # ).style(f"--menu-Announcement--")
 
-        put_button(
-            label=t("Gui.MenuDevelop.Utils"),
-            onclick=self.dev_utils,
-            color="menu",
-        ).style(f"--menu-Utils--")
+        # put_button(
+        #     label=t("Gui.MenuDevelop.Utils"),
+        #     onclick=self.dev_utils,
+        #     color="menu",
+        # ).style(f"--menu-Utils--")
 
         put_button(
             label=t("Gui.MenuDevelop.GlobalScheduler"),

@@ -59,12 +59,12 @@ class HomeMixin(WebUIMixinBase):
                 self.dev_setting()
             elif menu == "Remote":
                 self.dev_remote()
-            elif menu == "Utils":
-                self.dev_utils()
+            # elif menu == "Utils":
+            #     self.dev_utils()
             elif menu == "Update":
                 self.dev_update()
-            elif menu == "Announcement":
-                self.ui_check_announcement(force=True)
+            # elif menu == "Announcement":
+            #     self.ui_check_announcement(force=True)
             else:
                 self.show_home()
         except Exception as e:
@@ -325,13 +325,23 @@ class HomeMixin(WebUIMixinBase):
         self.mount_shell()
         if localstorage is None:
             localstorage = get_localstorage_values(("clarity_notice_shown", "aside", "menu"))
-        aside = localstorage.get("aside")
-        menu = localstorage.get("menu")
+        all_instances = alas_instance()
+        url_aside = localstorage.get("url_aside")
+        url_menu = localstorage.get("url_menu")
+
+        # 若 URL 中存在显式路由信息且目标有效，优先使用 URL 路由
+        if url_aside and (url_aside in all_instances or url_aside in ("Home", "Manage")):
+            aside = url_aside
+            menu = url_menu
+        else:
+            aside = localstorage.get("aside")
+            menu = localstorage.get("menu")
+
         self._stored_aside = aside
         self._stored_menu = menu
         show_clarity_notice = localstorage.get("clarity_notice_shown") != "1"
-        restore_instance = initial_page == "home" and aside in alas_instance()
-        if initial_page == "manage":
+        restore_instance = initial_page == "home" and aside in all_instances
+        if initial_page == "manage" or aside == "Manage":
             self.ui_manage()
         elif not restore_instance:
             if aside == "Home" and menu and menu != "HomePage":
@@ -437,7 +447,7 @@ class HomeMixin(WebUIMixinBase):
                 yield
 
         # 首次立即执行，后续间隔由任务自身根据请求状态动态调整。
-        self.task_handler.add(announcement_checker(), delay=5)
+        # self.task_handler.add(announcement_checker(), delay=5)
 
         if restore_instance:
             self.ui_alas(aside, initial_menu=menu)

@@ -743,20 +743,91 @@ def get_localstorage(key):
 
 
 def get_localstorage_values(keys):
-    """一次读取多个 localStorage 键，避免首屏串行浏览器往返。"""
+    """一次读取多个 localStorage 键以及 URL 中的路由信息，避免首屏串行浏览器往返。"""
     keys = list(dict.fromkeys(keys))
-    if not keys:
-        return {}
 
     values = eval_js(
-        "(function(keys) {"
-        "var values = {};"
-        "keys.forEach(function(key) { values[key] = localStorage.getItem(key); });"
-        "return values;"
-        "})(keys)",
+        """(function(keys) {
+        var values = {};
+        if (keys && keys.forEach) {
+            keys.forEach(function(key) { values[key] = localStorage.getItem(key); });
+        }
+
+        var urlAside = null;
+        var urlMenu = null;
+
+        // 1. 优先解析 Hash，支持格式：
+        //    - 路径格式: #/aside/menu 或 #/aside
+        //    - 参数格式: #aside=xxx&menu=yyy
+        var hash = window.location.hash || '';
+        if (hash.startsWith('#')) {
+            hash = hash.substring(1);
+        }
+        if (hash.startsWith('/')) {
+            var parts = hash.substring(1).split('/').filter(Boolean);
+            if (parts.length > 0) urlAside = decodeURIComponent(parts[0]);
+            if (parts.length > 1) urlMenu = decodeURIComponent(parts[1]);
+        } else if (hash.indexOf('=') !== -1) {
+            try {
+                var params = new URLSearchParams(hash);
+                if (params.get('aside')) urlAside = params.get('aside');
+                if (params.get('menu')) urlMenu = params.get('menu');
+            } catch (e) {}
+        }
+
+        // 2. 兼容 Search (Query) 参数，例如 ?aside=xxx&menu=yyy
+        if (!urlAside) {
+            try {
+                var searchParams = new URLSearchParams(window.location.search);
+                if (searchParams.get('aside')) urlAside = searchParams.get('aside');
+                if (searchParams.get('menu')) urlMenu = searchParams.get('menu');
+            } catch (e) {}
+        }
+
+        if (urlAside) values['url_aside'] = urlAside;
+        if (urlMenu) values['url_menu'] = urlMenu;
+
+        return values;
+    })(keys)""",
         keys=keys,
     )
     return values if isinstance(values, dict) else {}
+
+
+def update_url(aside: str | None = None, menu: str | None = None) -> None:
+    """更新浏览器地址栏的 Hash，以反映当前页面状态。"""
+    if not aside:
+        return
+    run_js(
+        """(function(aside, menu) {
+        if (!aside) return;
+        var hash = '#/' + encodeURIComponent(aside);
+        if (menu) {
+            hash += '/' + encodeURIComponent(menu);
+        }
+        if (window.location.hash !== hash) {
+            try {
+                history.replaceState(null, '', hash);
+            } catch (e) {
+                window.location.hash = hash;
+            }
+        }
+        if (!window._alasHashListenerInstalled) {
+            window._alasHashListenerInstalled = true;
+            window.addEventListener('hashchange', function() {
+                var newHash = window.location.hash || '';
+                if (newHash.startsWith('#')) newHash = newHash.substring(1);
+                var currentExpected = '/' + encodeURIComponent(aside);
+                if (menu) currentExpected += '/' + encodeURIComponent(menu);
+                if (newHash !== currentExpected && newHash !== currentExpected + '/') {
+                    window.location.reload();
+                }
+            });
+        }
+    })(aside, menu);""",
+        aside=aside,
+        menu=menu,
+    )
 
 
 def re_fullmatch(pattern, string):

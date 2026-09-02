@@ -11,7 +11,7 @@ import threading
 from pywebio.output import clear, put_html, put_scope, put_text, use_scope
 from pywebio.session import defer_call, info, run_js
 
-from module.webui.utils import Icon, WebIOTaskHandler, set_localstorage
+from module.webui.utils import Icon, WebIOTaskHandler, set_localstorage, update_url
 
 
 class Base:
@@ -37,6 +37,7 @@ class Frame(Base):
 
     def __init__(self) -> None:
         super().__init__()
+        self.aside = "Home"
         self.page = "Home"
         self._page_lock = threading.Lock()
 
@@ -75,6 +76,7 @@ class Frame(Base):
         if expand_menu:
             self.expand_menu()
         if name:
+            self.aside = name
             self.active_button("aside", name)
             set_localstorage("aside", name)
 
@@ -99,6 +101,7 @@ class Frame(Base):
         if name:
             self.active_button("menu", name)
             set_localstorage("menu", name)
+            update_url(self.aside, name)
 
     @staticmethod
     def set_statistics_content_visible(visible: bool) -> None:
