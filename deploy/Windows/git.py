@@ -95,7 +95,7 @@ class GitManager(DeployConfig):
         for i in range(max_retry):
             git = f'"{self.git}" -c http.userAgent={ua}'
             logger.info(f'Use git User-Agent: {ua}')
-            if self.execute(f'{git} fetch {source} {branch}'):
+            if self.execute(f'{git} fetch --depth 1 --update-shallow {source} {branch}'):
                 return
             logger.warning(f'git fetch failed with UA {ua}, attempt {i + 1}/{max_retry}')
             if i < max_retry - 1:
@@ -161,8 +161,9 @@ class GitManager(DeployConfig):
         self.execute(f'{git} reset --hard {source}/{branch}')
         Progress.GitReset()
         # git fetch 已执行，checkout 会更快
-        if not self.execute(f'{git} checkout {branch}', allow_failure=True):
-            self.execute(f'{git} pull --ff-only {source} {branch}')
+        if not self.execute(f'{git} checkout -B {branch} {source}/{branch}', allow_failure=True):
+            if not self.execute(f'{git} checkout {branch}', allow_failure=True):
+                self.execute(f'{git} pull --ff-only {source} {branch}', allow_failure=True)
         Progress.GitCheckout()
 
         logger.hr('Show Version', 1)
