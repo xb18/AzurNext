@@ -19,6 +19,7 @@ if sys.platform != "win32":
     except Exception:
         pass
 
+from deploy.utils import get_default_webui_port
 from deploy.uv import (
     DEPENDENCY_SYNC_TIMEOUT,
     dependency_sync_service,
@@ -189,7 +190,8 @@ def func(
 
     # 配置服务器设置
     host = args.host or State.deploy_config.WebuiHost or "127.0.0.1"
-    port = args.port or int(State.deploy_config.WebuiPort) or 25548
+    default_port = get_default_webui_port()
+    port = args.port or int(State.deploy_config.WebuiPort) or default_port
     ssl_key = args.ssl_key or State.deploy_config.WebuiSSLKey
     ssl_cert = args.ssl_cert or State.deploy_config.WebuiSSLCert
     ssl = ssl_key is not None and ssl_cert is not None

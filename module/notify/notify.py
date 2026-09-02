@@ -116,10 +116,15 @@ def notify_webui(instance: str, title: str, content: str, **kwargs) -> bool:
         推送成功返回 True，失败返回 False。
     """
     try:
-        from module.webui.setting import State
-        port = int(State.deploy_config.WebuiPort) or 25548
+        from deploy.utils import get_default_webui_port
+        default_port = get_default_webui_port()
     except Exception:
-        port = 25548
+        default_port = 25548
+    try:
+        from module.webui.setting import State
+        port = int(State.deploy_config.WebuiPort) or default_port
+    except Exception:
+        port = default_port
     try:
         import requests
         payload = {"instance": instance, "title": title, "content": content}

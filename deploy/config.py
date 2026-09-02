@@ -164,6 +164,16 @@ class DeployConfig(ConfigModel):
         if self.Repository in ['cn']:
             super().__setattr__('Repository', GIT_OVER_CDN_REPOSITORY)
 
+        # 开发环境与生产环境 WebUI 端口自适应
+        if not is_production_environment(self.root_filepath):
+            if self.WebuiPort == PRODUCTION_WEBUI_PORT:
+                self.WebuiPort = DEVELOPMENT_WEBUI_PORT
+                self.config['WebuiPort'] = DEVELOPMENT_WEBUI_PORT
+        else:
+            if self.WebuiPort == DEVELOPMENT_WEBUI_PORT:
+                self.WebuiPort = PRODUCTION_WEBUI_PORT
+                self.config['WebuiPort'] = PRODUCTION_WEBUI_PORT
+
     def _redirect_github_repository(self):
         """为官方 GitHub 源一次性选择适合当前网络的更新镜像。"""
         if self._github_location_checked or self.Repository != GITHUB_REPOSITORY:

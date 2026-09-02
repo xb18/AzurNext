@@ -1,7 +1,8 @@
 import os
 import re
 import sys
-from typing import Callable, Generic, TypeVar
+from pathlib import Path
+from typing import Callable, Generic, Optional, TypeVar
 
 from deploy.atomic import atomic_read_text, atomic_write
 
@@ -9,6 +10,77 @@ T = TypeVar("T")
 
 DEPLOY_CONFIG = './config/deploy.yaml'
 DEPLOY_TEMPLATE = './deploy/template'
+
+PRODUCTION_WEBUI_PORT: int = 25548
+DEVELOPMENT_WEBUI_PORT: int = 25549
+
+
+def is_production_environment(root_dir: Optional[str] = None) -> bool:
+    """判断当前运行环境是否为生产环境。
+
+    判断依据与优先级：
+    1. 环境变量显式指定 (AZURPILOT_ENV / ALAS_ENV):
+       - 'prod' 或 'production' -> True (生产环境)
+       - 'dev' 或 'development' -> False (开发环境)
+    2. 启动器环境：
+       - 存在 ALAS_LAUNCHER_PID 环境变量 (由 alas-launcher / AzurNext 进程启动) -> True
+    3. 运行路径特征：
+       - 路径中包含 'alas-launcher' (如 F:\\code\\alas-launcher) 或 'azurnext' -> True
+       - 同级或父级目录存在 'alas-launcher.exe' 或 'AzurNext.exe' -> True
+    4. 二进制打包环境：
+       - sys.frozen 为 True -> True
+    5. 开发工作区与安全兜底：
+       - 若处于包含 .git 的开发工作区且未命中上述生产特征 -> False (开发环境)
+       - 其余未识别环境默认安全回退到生产环境 -> True
+
+    Args:
+        root_dir (Optional[str]): 待检测的根目录路径。若为 None 则使用当前工作目录。
+
+    Returns:
+        bool: True 表示生产环境，False 表示开发环境。
+    """
+    env = os.environ.get("AZURPILOT_ENV") or os.environ.get("ALAS_ENV")
+    if env:
+        env_lower = env.strip().lower()
+        if env_lower in ("dev", "development"):
+            return False
+        if env_lower in ("prod", "production"):
+            return True
+
+    if os.environ.get("ALAS_LAUNCHER_PID"):
+        return True
+
+    if getattr(sys, "frozen", False):
+        return True
+
+    try:
+        target_path = Path(root_dir if root_dir else os.getcwd()).resolve()
+    except Exception:
+        target_path = Path(os.getcwd()).resolve()
+
+    target_str = str(target_path).lower().replace("\\", "/")
+    if "alas-launcher" in target_str or "azurnext" in target_str:
+        return True
+
+    search_parents = [target_path, *target_path.parents]
+    for p in search_parents:
+        if (p / "alas-launcher.exe").is_file() or (p / "AzurNext.exe").is_file():
+            return True
+
+    for p in search_parents:
+        if (p / ".git").exists():
+            return False
+
+    return True
+
+
+def get_default_webui_port(root_dir: Optional[str] = None) -> int:
+    """获取当前环境下 WebUI 默认监听端口。
+
+    生产环境返回 25548，开发环境返回 25549。
+    """
+    return PRODUCTION_WEBUI_PORT if is_production_environment(root_dir) else DEVELOPMENT_WEBUI_PORT
+
 
 
 def get_deploy_template():
