@@ -141,6 +141,17 @@ class Frame(Base):
                 put_scope("statistics-content").style("display: none;"),
             ],
         )
+        run_js(
+            """
+            if (!document.getElementById('alas-desktop-script')) {
+                var script = document.createElement('script');
+                script.id = 'alas-desktop-script';
+                script.async = true;
+                script.src = 'static/assets/gui/js/alas-desktop.js';
+                document.head.appendChild(script);
+            }
+            """
+        )
 
     @staticmethod
     @use_scope("header_title", clear=True)

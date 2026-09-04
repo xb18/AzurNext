@@ -1,0 +1,384 @@
+/* AzurPilot 桌面客户端专属样式（仅在 Tauri 客户端内激活） */
+
+/* 顶部拖拽区 */
+body.is-tauri-client #pywebio-scope-header {
+    app-region: drag !important;
+    -webkit-app-region: drag !important;
+    user-select: none !important;
+}
+
+/* 顶部导航内的常规交互元素禁止拖拽，保证正常点击 */
+body.is-tauri-client #pywebio-scope-header button,
+body.is-tauri-client #pywebio-scope-header a,
+body.is-tauri-client #pywebio-scope-header input,
+body.is-tauri-client #pywebio-scope-header .alas-desktop-controls,
+body.is-tauri-client #pywebio-scope-header .alas-desktop-controls * {
+    app-region: no-drag !important;
+    -webkit-app-region: no-drag !important;
+}
+
+/* 桌面窗口控制栏容器 */
+.alas-desktop-controls {
+    display: none;
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 100%;
+    align-items: center;
+    gap: 8px;
+    padding: 0 16px;
+    z-index: 1005;
+    pointer-events: auto;
+    box-sizing: border-box;
+}
+
+body.is-tauri-client .alas-desktop-controls {
+    display: flex;
+}
+
+/* 控制按钮公共样式（macOS 风格圆点） */
+.alas-desktop-btn {
+    width: 12px;
+    height: 12px;
+    min-width: 12px;
+    min-height: 12px;
+    margin: 0;
+    padding: 0;
+    line-height: 1;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    flex: 0 0 auto;
+    position: relative;
+    transition: filter 120ms ease, transform 120ms ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.alas-desktop-btn:active {
+    filter: brightness(0.85);
+    transform: scale(0.92);
+}
+
+.alas-desktop-btn svg {
+    width: 7px;
+    height: 7px;
+    stroke: rgba(0, 0, 0, .72);
+    fill: none;
+    stroke-width: 1.35;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    opacity: 0;
+    transition: opacity 150ms ease;
+    pointer-events: none;
+}
+
+.alas-desktop-controls:hover .alas-desktop-btn svg {
+    opacity: 1;
+}
+
+/* 检查更新按钮 */
+.alas-desktop-btn-update {
+    background: rgba(120, 120, 128, .2);
+    box-shadow: 0 0 0 .5px rgba(120, 120, 128, .25);
+}
+
+.alas-desktop-btn-update svg {
+    width: 8px;
+    height: 8px;
+    fill: currentColor;
+    stroke: none;
+    opacity: .85;
+    transition: transform 300ms ease;
+}
+
+.alas-desktop-btn-update.is-spinning svg {
+    animation: alas-desktop-spin 1s linear infinite;
+    opacity: 1;
+}
+
+.alas-desktop-btn-update.is-ready {
+    background: #28c840;
+    box-shadow: 0 0 0 .5px #14ae35;
+}
+
+.alas-desktop-btn-update.is-ready svg {
+    opacity: 1;
+    fill: #ffffff;
+}
+
+@keyframes alas-desktop-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* 更新进度徽标/药丸 */
+.alas-desktop-update-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 18px;
+    padding: 0 7px;
+    font-size: 11px;
+    font-weight: 500;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    line-height: 1;
+    border-radius: 9px;
+    cursor: default;
+    user-select: none;
+    -webkit-user-select: none;
+    white-space: nowrap;
+    transition: background 150ms ease, opacity 200ms ease, border-color 150ms ease;
+    box-sizing: border-box;
+    app-region: no-drag !important;
+    -webkit-app-region: no-drag !important;
+}
+
+.alas-desktop-update-badge.is-updating {
+    background: rgba(59, 130, 246, .2);
+    border: 1px solid rgba(59, 130, 246, .45);
+    color: #60a5fa;
+}
+
+.alas-desktop-update-badge.is-ready {
+    background: rgba(34, 197, 94, .25);
+    border: 1px solid rgba(34, 197, 94, .5);
+    color: #4ade80;
+    cursor: pointer;
+}
+
+.alas-desktop-update-badge.is-ready:hover {
+    background: rgba(34, 197, 94, .35);
+    filter: brightness(1.1);
+}
+
+.alas-desktop-update-badge.is-failed {
+    background: rgba(239, 68, 68, .25);
+    border: 1px solid rgba(239, 68, 68, .5);
+    color: #f87171;
+}
+
+.alas-desktop-update-badge.is-latest {
+    background: rgba(120, 120, 128, .2);
+    border: 1px solid rgba(120, 120, 128, .35);
+    color: #a1a1aa;
+}
+
+/* 最小化到托盘 */
+.alas-desktop-btn-hide {
+    background: #3b82f6;
+    box-shadow: 0 0 0 .5px #2563eb;
+}
+
+/* 最小化窗口 */
+.alas-desktop-btn-minimize {
+    background: #febc2e;
+    box-shadow: 0 0 0 .5px #d4a017;
+}
+
+/* 最大化/还原窗口 */
+.alas-desktop-btn-maximize {
+    background: #28c840;
+    box-shadow: 0 0 0 .5px #14ae35;
+}
+
+/* 关闭窗口 */
+.alas-desktop-btn-close {
+    background: #ff5f57;
+    box-shadow: 0 0 0 .5px #e0443e;
+}
+
+/* ============================================================ */
+/* 关闭确认弹窗                                                  */
+/* ============================================================ */
+#alas-desktop-close-menu {
+    position: fixed;
+    top: 58px;
+    right: 12px;
+    z-index: 2147483647;
+    width: 252px;
+    padding: 13px;
+    border: 1px solid rgba(255, 255, 255, .16);
+    border-radius: 18px;
+    background: rgba(22, 25, 31, .94);
+    box-shadow: 0 18px 46px rgba(0, 0, 0, .36);
+    backdrop-filter: blur(20px) saturate(1.3);
+    -webkit-backdrop-filter: blur(20px) saturate(1.3);
+    color: #fff;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-10px) scale(.85);
+    transform-origin: calc(100% - 16px) top;
+    transition: opacity 160ms ease, transform 220ms cubic-bezier(.2, .9, .25, 1);
+    box-sizing: border-box;
+    user-select: none;
+}
+
+#alas-desktop-close-menu.is-open {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0) scale(1);
+}
+
+#alas-desktop-close-menu * {
+    box-sizing: border-box;
+}
+
+#alas-desktop-close-title {
+    margin: 0 0 11px;
+    font: 500 12px/1.45 "MiSans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: rgba(255, 255, 255, .82);
+}
+
+#alas-desktop-close-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+#alas-desktop-close-actions button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    min-height: 34px;
+    margin: 0;
+    padding: 0 10px;
+    border: 1px solid rgba(255, 255, 255, .14);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, .1);
+    color: #fff;
+    font: 600 12px/1 "MiSans", sans-serif;
+    cursor: pointer;
+    transition: background 120ms ease, transform 120ms ease;
+    outline: none;
+}
+
+#alas-desktop-close-actions button:hover {
+    transform: translateY(-1px);
+    background: rgba(255, 255, 255, .18);
+}
+
+#alas-desktop-close-actions button:active {
+    transform: translateY(0);
+}
+
+#alas-desktop-close-actions button:disabled {
+    opacity: .55;
+    cursor: default;
+    transform: none;
+}
+
+#alas-desktop-close-actions .alas-desktop-close-confirm {
+    border-color: rgba(255, 113, 106, .38);
+    background: rgba(202, 56, 52, .86);
+}
+
+#alas-desktop-close-actions .alas-desktop-close-confirm:hover {
+    background: rgba(225, 68, 63, .96);
+}
+
+/* 记住选择复选框 */
+#alas-desktop-close-remember {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-top: 11px;
+    font: 400 11px/1.4 "MiSans", sans-serif;
+    color: rgba(255, 255, 255, .72);
+    cursor: pointer;
+    user-select: none;
+    transition: color 120ms ease;
+}
+
+#alas-desktop-close-remember:hover {
+    color: rgba(255, 255, 255, .92);
+}
+
+#alas-desktop-close-remember input[type="checkbox"] {
+    position: absolute !important;
+    opacity: 0 !important;
+    width: 0 !important;
+    height: 0 !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    max-width: 0 !important;
+    max-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    background: none !important;
+    pointer-events: none !important;
+    transform: none !important;
+    -webkit-appearance: none !important;
+    appearance: none !important;
+}
+
+#alas-desktop-close-remember input[type="checkbox"]::before,
+#alas-desktop-close-remember input[type="checkbox"]::after {
+    display: none !important;
+    content: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    border: none !important;
+    transform: none !important;
+}
+
+.alas-desktop-checkbox-box {
+    width: 14px;
+    height: 14px;
+    min-width: 14px;
+    min-height: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255, 255, 255, .28);
+    border-radius: 4px;
+    background: rgba(255, 255, 255, .08);
+    flex-shrink: 0;
+    transition: background 140ms ease, border-color 140ms ease;
+    box-sizing: border-box;
+}
+
+#alas-desktop-close-remember:hover .alas-desktop-checkbox-box {
+    border-color: rgba(255, 255, 255, .45);
+    background: rgba(255, 255, 255, .14);
+}
+
+#alas-desktop-close-remember input[type="checkbox"]:checked + .alas-desktop-checkbox-box {
+    background: #3b82f6;
+    border-color: #3b82f6;
+}
+
+#alas-desktop-close-remember input[type="checkbox"]:focus-visible + .alas-desktop-checkbox-box {
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, .5);
+}
+
+.alas-desktop-checkbox-box svg {
+    width: 9px;
+    height: 9px;
+    display: block;
+    transform: scale(0);
+    opacity: 0;
+    transition: transform 120ms cubic-bezier(.2, .9, .25, 1), opacity 120ms ease;
+}
+
+.alas-desktop-checkbox-box svg path {
+    stroke: #fff !important;
+    fill: none !important;
+    stroke-width: 1.8 !important;
+    stroke-linecap: round !important;
+    stroke-linejoin: round !important;
+}
+
+#alas-desktop-close-remember input[type="checkbox"]:checked + .alas-desktop-checkbox-box svg {
+    transform: scale(1);
+    opacity: 1;
+}
+
+.alas-desktop-close-remember-text {
+    line-height: 1.3;
+}

@@ -506,6 +506,7 @@ def load_webui_styles(theme=None, is_mobile=None, preloaded_styles=()):
         "alas",
         "alas-mobile" if is_mobile else "alas-pc",
         "entry-alas",
+        "alas-desktop",
     ]
     theme_styles = {
         "dark": ("dark-alas",),
