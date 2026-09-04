@@ -24,6 +24,39 @@
     document.body.classList.add('is-tauri-client');
     window.alasDesktopMounted = true;
 
+    // 清理壳端注入的旧标题栏 DOM、旧样式与旧弹窗，防止两套图标冲突
+    const cleanupLegacyLauncherElements = () => {
+        ['#alas-launcher-titlebar', '#alas-launcher-titlebar-style', '#alas-close-menu'].forEach(sel => {
+            document.querySelectorAll(sel).forEach(el => el.remove());
+        });
+        if (document.body && document.body.dataset && document.body.dataset.alasCustomTitlebar) {
+            delete document.body.dataset.alasCustomTitlebar;
+        }
+    };
+    cleanupLegacyLauncherElements();
+
+    // 桌面客户端环境下禁用默认右键菜单与 Ctrl+P 快捷键
+    window.addEventListener('contextmenu', e => e.preventDefault(), { capture: true });
+    window.addEventListener('keydown', e => {
+        if ((e.ctrlKey || e.metaKey) && (e.key === 'p' || e.key === 'P')) {
+            e.preventDefault();
+        }
+    }, { capture: true });
+
+    // 重写 saveAs 函数，将文件导出路由至客户端原生文件保存对话框
+    window.saveAs = function (blob, filename) {
+        const reader = new FileReader();
+        reader.onload = async () => {
+            const data = reader.result.split(',')[1];
+            try {
+                await invoke('save_as', { filename, data });
+            } catch (err) {
+                console.error('Failed to invoke save_as', err);
+            }
+        };
+        reader.readAsDataURL(blob);
+    };
+
     // 挂载全局 alasDesktop 客户端能力对象，方便 Web 前端任意模块直接调用
     window.alasDesktop = {
         isAvailable: true,
@@ -511,6 +544,7 @@
 
     // 监听 DOM 树变化，确保 #pywebio-scope-header 重新渲染时 controls 能够自动挂载
     const checkAndMount = () => {
+        cleanupLegacyLauncherElements();
         const header = document.getElementById('pywebio-scope-header');
         if (header) {
             initHeaderControls(header);
