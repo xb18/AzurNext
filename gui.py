@@ -19,7 +19,7 @@ if sys.platform != "win32":
     except Exception:
         pass
 
-from deploy.utils import get_default_webui_port
+from deploy.utils import find_available_port, get_default_webui_port
 from deploy.uv import (
     DEPENDENCY_SYNC_TIMEOUT,
     dependency_sync_service,
@@ -191,7 +191,12 @@ def func(
     # 配置服务器设置
     host = args.host or State.deploy_config.WebuiHost or "127.0.0.1"
     default_port = get_default_webui_port()
-    port = args.port or int(State.deploy_config.WebuiPort) or default_port
+    if args.port:
+        # 生产环境（由 Launcher 分配并传入空闲端口）
+        port = args.port
+    else:
+        # 开发环境固定使用 25548
+        port = int(State.deploy_config.WebuiPort) if State.deploy_config.WebuiPort else default_port
     ssl_key = args.ssl_key or State.deploy_config.WebuiSSLKey
     ssl_cert = args.ssl_cert or State.deploy_config.WebuiSSLCert
     ssl = ssl_key is not None and ssl_cert is not None

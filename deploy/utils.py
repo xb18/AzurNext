@@ -12,7 +12,7 @@ DEPLOY_CONFIG = './config/deploy.yaml'
 DEPLOY_TEMPLATE = './deploy/template'
 
 PRODUCTION_WEBUI_PORT: int = 25548
-DEVELOPMENT_WEBUI_PORT: int = 25549
+DEVELOPMENT_WEBUI_PORT: int = 25548
 
 
 def is_production_environment(root_dir: Optional[str] = None) -> bool:
@@ -77,9 +77,40 @@ def is_production_environment(root_dir: Optional[str] = None) -> bool:
 def get_default_webui_port(root_dir: Optional[str] = None) -> int:
     """获取当前环境下 WebUI 默认监听端口。
 
-    生产环境返回 25548，开发环境返回 25549。
+    开发环境与生产环境默认均使用端口 25548。
     """
-    return PRODUCTION_WEBUI_PORT if is_production_environment(root_dir) else DEVELOPMENT_WEBUI_PORT
+    return PRODUCTION_WEBUI_PORT
+
+
+def is_port_available(port: int, host: str = "127.0.0.1") -> bool:
+    """检查指定端口在 host 上是否可用。"""
+    if port <= 0 or port > 65535:
+        return False
+    import socket
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            s.bind((host, port))
+            return True
+    except OSError:
+        return False
+
+
+def find_available_port(preferred_port: int = 25548, host: str = "127.0.0.1") -> int:
+    """自动使用空闲端口。优先使用 preferred_port，若被占用则自动寻找可用空闲端口。"""
+    if is_port_available(preferred_port, host):
+        return preferred_port
+
+    import socket
+    # 优先在 preferred_port + 1 .. preferred_port + 100 寻找
+    for p in range(preferred_port + 1, preferred_port + 101):
+        if is_port_available(p, host):
+            return p
+
+    # 若邻近端口均被占用，由系统动态分配一个空闲端口
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.bind((host, 0))
+        return s.getsockname()[1]
 
 
 
