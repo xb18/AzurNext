@@ -6482,6 +6482,8 @@
       "AutoRestartTimeHelp": "更新がある場合に毎日自動再起動する時刻です。空欄で無効になります。",
       "DiscordRichPresence": "Discord リッチプレゼンス",
       "DiscordRichPresenceHelp": "AzurPilot の実行状態を Discord に表示します。",
+      "CloseAction": "ウィンドウを閉じる動作",
+      "CloseActionHelp": "右上の閉じるボタンをクリックした時の動作：ask（毎回確認）、minimize（トレイに最小化）、exit（終了）。",
       "EnableRemoteAccess": "リモートアクセスを有効化",
       "EnableRemoteAccessHelp": "SSH リバーストンネルで WebUI を公開します。公開前に必ずパスワードを設定してください。",
       "RemoteAccessMode": "リモートアクセスモード",

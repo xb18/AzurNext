@@ -87,6 +87,11 @@ Deploy:
   Misc:
     # Enable discord rich presence
     DiscordRichPresence: false
+    # Window close button action
+    # [ask] Ask every time (Default)
+    # [minimize] Minimize to tray
+    # [exit] Exit application
+    CloseAction: ask
 
   RemoteAccess:
     # Enable remote access (using ssh reverse tunnel serve by https://github.com/wang0618/localshare)

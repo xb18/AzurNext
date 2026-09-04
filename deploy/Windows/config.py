@@ -55,6 +55,7 @@ class ConfigModel:
 
     # 杂项
     DiscordRichPresence: bool = False
+    CloseAction: str = "ask"
 
     # 远程访问
     EnableRemoteAccess: bool = False

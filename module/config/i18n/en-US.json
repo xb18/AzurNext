@@ -6482,6 +6482,8 @@
       "AutoRestartTimeHelp": "Daily restart time when an update is available. Leave empty to disable.",
       "DiscordRichPresence": "Discord Rich Presence",
       "DiscordRichPresenceHelp": "Show AzurPilot status in Discord.",
+      "CloseAction": "Window Close Action",
+      "CloseActionHelp": "Behavior when clicking the top-right close button: ask (ask every time), minimize (minimize to tray), exit (exit application).",
       "EnableRemoteAccess": "Enable Remote Access",
       "EnableRemoteAccessHelp": "Expose WebUI through an SSH reverse tunnel. Set a password before public access.",
       "RemoteAccessMode": "Remote Access Mode",

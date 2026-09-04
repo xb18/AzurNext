@@ -283,6 +283,8 @@ DeploySetting:
   AutoRestartTimeHelp:
   DiscordRichPresence:
   DiscordRichPresenceHelp:
+  CloseAction:
+  CloseActionHelp:
   EnableRemoteAccess:
   EnableRemoteAccessHelp:
   RemoteAccessMode:

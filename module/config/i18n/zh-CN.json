@@ -6482,6 +6482,8 @@
       "AutoRestartTimeHelp": "有更新时每天自动重启的时间，留空表示禁用。",
       "DiscordRichPresence": "Discord 富状态",
       "DiscordRichPresenceHelp": "在 Discord 中展示 AzurPilot 运行状态。",
+      "CloseAction": "关闭窗口行为",
+      "CloseActionHelp": "点击右上角关闭按钮时的行为：ask（每次询问）、minimize（最小化到托盘）、exit（退出程序）。",
       "EnableRemoteAccess": "启用远程访问",
       "EnableRemoteAccessHelp": "通过 SSH 反向隧道暴露 WebUI。公网使用前请务必设置密码。",
       "RemoteAccessMode": "远程访问模式",
