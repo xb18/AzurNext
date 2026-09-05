@@ -52,38 +52,42 @@ class DeveloperUpdateMixin(WebUIMixinBase):
         put_scope("updater_detail")
 
         def update_table():
-            with use_scope("updater_table", clear=True):
-                local_commit = updater.get_commit(short_sha1=True)
-                upstream_commit = updater.get_commit(
-                    f"origin/{updater.Branch}", short_sha1=True
-                )
-                put_table(
-                    [
-                        [t("Gui.Update.Local"), *local_commit],
-                        [t("Gui.Update.Upstream"), *upstream_commit],
-                    ],
-                    header=[
-                        "",
-                        "SHA1",
-                        t("Gui.Update.Author"),
-                        t("Gui.Update.Time"),
-                        t("Gui.Update.Message"),
-                    ],
-                )
-            with use_scope("updater_detail", clear=True):
-                put_text(t("Gui.Update.DetailedHistory"))
-                history = updater.get_commit(
-                    f"origin/{updater.Branch}", n=20, short_sha1=True
-                )
-                put_table(
-                    [commit for commit in history],
-                    header=[
-                        "SHA1",
-                        t("Gui.Update.Author"),
-                        t("Gui.Update.Time"),
-                        t("Gui.Update.Message"),
-                    ],
-                )
+            try:
+                with use_scope("updater_table", clear=True):
+                    local_commit = updater.get_commit(short_sha1=True) or ("", "", "", "")
+                    upstream_commit = updater.get_commit(
+                        f"origin/{updater.Branch}", short_sha1=True
+                    ) or ("", "", "", "")
+                    put_table(
+                        [
+                            [t("Gui.Update.Local"), *local_commit],
+                            [t("Gui.Update.Upstream"), *upstream_commit],
+                        ],
+                        header=[
+                            "",
+                            "SHA1",
+                            t("Gui.Update.Author"),
+                            t("Gui.Update.Time"),
+                            t("Gui.Update.Message"),
+                        ],
+                    )
+                with use_scope("updater_detail", clear=True):
+                    put_text(t("Gui.Update.DetailedHistory"))
+                    history = updater.get_commit(
+                        f"origin/{updater.Branch}", n=20, short_sha1=True
+                    ) or []
+                    put_table(
+                        [commit for commit in history],
+                        header=[
+                            "SHA1",
+                            t("Gui.Update.Author"),
+                            t("Gui.Update.Time"),
+                            t("Gui.Update.Message"),
+                        ],
+                    )
+            except Exception as e:
+                with use_scope("updater_table", clear=True):
+                    put_warning(f"获取版本提交记录失败: {e}")
 
         def u(state):
             if state == -1:
