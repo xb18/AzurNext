@@ -1,4 +1,5 @@
 import copy
+import subprocess
 import sys
 from typing import Optional, Union
 
@@ -226,7 +227,11 @@ class DeployConfig(ConfigModel):
         if not output:
             command = command + ' >nul 2>nul'
         logger.info(command)
-        error_code = os.system(command)
+        kwargs = {}
+        if os.name == 'nt':
+            kwargs['creationflags'] = getattr(subprocess, 'CREATE_NO_WINDOW', 0x08000000)
+        res = subprocess.run(command, shell=True, **kwargs)
+        error_code = res.returncode
         if error_code:
             if allow_failure:
                 logger.info(f"[ allowed failure ], error_code: {error_code}")
