@@ -556,6 +556,14 @@ server.server = 'en'
 
 ---
 
+## 桌面外壳与 Web 交互规范（Thin Shell）
+
+- **Rust/桌面外壳定位**：纯粹的底层系统能力提供者（窗口控制、系统原生 Toast 通知、打开外部链接/文件夹、文件保存等），严禁承载应用层业务逻辑，不通过长连接反向轮询 WebUI。
+- **接口统一收拢在 `window.alasDesktop`**：外壳底层接口全部统一挂载在 `window.alasDesktop.*` 下（如 `window.alasDesktop.showNotification(title, content)`），代码中严禁暴露散落的全局变量。
+- **业务逻辑归属 Web 端**：通知触发时机、提示文案、多环境自适应（有壳调用 `window.alasDesktop` 底层能力，无壳回退为 WebUI 界面 Toast 提示）全部由 Web 端（Python / 前端 JS）自行处理与决策。
+
+---
+
 ## 测试
 
 - **没有 Python 测试套件** — 测试通过运行任务对接真实模拟器进行
@@ -584,6 +592,29 @@ GitHub Actions 使用 `uv sync --frozen` 和 `uv run`：
 - **AI**：openai（LLM 错误分析）、mcp、sse-starlette
 - **通知**：onepush
 - **工具**：pyyaml、psutil、watchdog、numba、lz4
+
+---
+
+## 桌面外壳与 Web 交互规范（Thin Shell）
+
+AzurPilot 桌面端采用 **Thin Shell（瘦外壳）** 架构设计（外壳为 Tauri 2 + Rust 构建的 `alas-launcher`）：
+
+1. **Rust 只暴露底层接口到 `window.alasDesktop`**：
+   - Rust 外壳仅作为纯粹的底层系统能力提供者，所有能力必须统一收拢挂载在 `window.alasDesktop` 顶级命名空间下（严禁暴露分散的全局函数）；
+   - Rust 端严禁承载业务调度判定、状态机逻辑，严禁 Rust 端后台轮询/SSE 读取 WebUI 业务数据；
+   - 核心暴露接口包括：
+     - `window.alasDesktop.showNotification(title, content)`：调用系统原生 Toast 通知（点击唤醒主窗口）；
+     - `window.alasDesktop.focus()`：唤醒并置顶聚焦主窗口；
+     - `window.alasDesktop.openExternal(url)`：使用系统默认浏览器打开外部链接；
+     - `window.alasDesktop.openFolder(path)`：在系统文件资源管理器中定位目录或文件；
+     - `window.alasDesktop.getInfo()`：获取启动器版本与系统平台信息；
+     - `window.alasDesktop.minimize()` / `toggleMaximize()` / `minimizeToTray()` / `close()` / `exit()`：窗口与托盘管理；
+     - `window.alasDesktop.triggerUpdate()` / `getUpdateStatus()`：软件更新管理。
+
+2. **Web 端做业务逻辑开发**：
+   - 全权由 Web 端（Python WebUI / 前端 JS）负责业务逻辑判断、流程状态推进与通知时机决策；
+   - **通知设计原则**：有外壳（`window.alasDesktop?.showNotification` 可用）时走系统原生通知，无外壳（纯浏览器访问）时回退为 WebUI 界面 Toast（如使用 `notify_or_toast(...)`）；
+   - **严禁用 Python 调度系统通知**：Python 端不直接调度操作系统级通知 API（如 powershell/winrt 等），所有系统原生通知统一由前端 Web 页面在有壳环境下通过 `window.alasDesktop.showNotification` 触发。
 
 ---
 
