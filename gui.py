@@ -202,6 +202,7 @@ def func(
     ssl = ssl_key is not None and ssl_cert is not None
     State.electron = args.electron
     State.webui_host = host
+    os.environ["WEBUI_PORT"] = str(port)
 
     # 记录启动器配置
     logger.hr("Launcher config")

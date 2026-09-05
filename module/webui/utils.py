@@ -734,6 +734,39 @@ def get_window_visibility_state():
     return False if ret == "hidden" else True
 
 
+def notify_or_toast(title: str, content: str = "", color: str = "info", duration: int = 6) -> None:
+    """跨环境通知：桌面外壳（window.alasDesktop）存在时调用系统原生 Toast，否则在界面展示 UI Toast。
+
+    遵循 Thin Shell（瘦外壳）规范：
+    - 外壳通过 window.alasDesktop 暴露原生底层接口；
+    - Web 端负责检测环境并决策通知形式；
+    - Python 端不直接调度操作系统级通知。
+
+    Args:
+        title: 通知标题。
+        content: 通知正文内容。
+        color: 界面 Toast 提示颜色（如 "info", "success", "warn", "error"）。
+        duration: 界面 Toast 持续显示秒数（0 为不自动关闭）。
+    """
+    try:
+        has_desktop = eval_js("Boolean(window.alasDesktop && typeof window.alasDesktop.showNotification === 'function')")
+        if has_desktop:
+            run_js(
+                "window.alasDesktop.showNotification(title, content);",
+                title=title,
+                content=content or "",
+            )
+            return
+    except Exception:
+        pass
+
+    try:
+        text = f"{title}：{content}" if content else title
+        toast(text, color=color, duration=duration)
+    except Exception:
+        pass
+
+
 # https://pywebio.readthedocs.io/zh_CN/latest/cookbook.html#cookie-and-localstorage-manipulation
 def set_localstorage(key, value):
     return run_js("localStorage.setItem(key, value)", key=key, value=value)

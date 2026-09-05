@@ -18,6 +18,7 @@ from module.webui.app_dependencies import (
     put_html,
     put_scope,
     put_text,
+    notify_or_toast,
     run_js,
     t,
     toast,
@@ -708,3 +709,11 @@ class GlobalSchedulerMixin(WebUIMixinBase):
             # 当运行实例切换或从停止变为启动时，刷新日志容器挂载
             if active_name != last_active:
                 self._render_gs_logs(main_config_name)
+
+            # 当单轮多配置调度完成退出时，根据运行环境跨环境通知（有外壳走原生 Toast，无外壳走界面 Toast）
+            current_task_name = status_data.get("current_task", "")
+            if last_running and not is_running and current_task_name in ("单轮已完成", "单轮结束(遇错跳过)"):
+                title = "🌐 全局调度完成" if current_task_name == "单轮已完成" else "⚠️ 全局调度单轮结束"
+                content = "所有配置单轮任务已全部完成！" if current_task_name == "单轮已完成" else "部分配置遇到异常跳过，调度器已退出。"
+                color = "success" if current_task_name == "单轮已完成" else "warn"
+                notify_or_toast(title=title, content=content, color=color, duration=8)

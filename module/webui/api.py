@@ -1400,27 +1400,54 @@ async def ws_live_control(websocket):
         except Exception:
             pass
 
-_notification_queue = asyncio.Queue()
+class NotificationBroadcaster:
+    """通知广播器，支持多客户端（启动器外壳、浏览器 Web 端）同时订阅，避免 Queue 竞争。"""
+
+    def __init__(self) -> None:
+        self._subscribers: set[asyncio.Queue] = set()
+
+    def subscribe(self) -> asyncio.Queue:
+        q = asyncio.Queue()
+        self._subscribers.add(q)
+        return q
+
+    def unsubscribe(self, q: asyncio.Queue) -> None:
+        self._subscribers.discard(q)
+
+    async def broadcast(self, data: dict) -> None:
+        for q in list(self._subscribers):
+            try:
+                await q.put(data)
+            except Exception:
+                pass
+
+
+_notification_broadcaster = NotificationBroadcaster()
 
 
 async def api_notify(request):
-    """POST /api/notify — 接收通知推送到 SSE"""
+    """POST /api/notify — 接收通知并广播给所有 SSE 订阅端（启动器或浏览器）"""
     data = await request.json()
-    await _notification_queue.put(data)
+    await _notification_broadcaster.broadcast(data)
     return JSONResponse({'success': True})
 
 
 async def api_notify_stream(request):
-    """GET /api/notify_stream — SSE 端点，启动器订阅接收通知"""
+    """GET /api/notify_stream — SSE 端点，启动器或前端浏览器订阅接收通知"""
+    queue = _notification_broadcaster.subscribe()
+
     async def event_generator():
-        while True:
-            if await request.is_disconnected():
-                break
-            try:
-                n = await asyncio.wait_for(_notification_queue.get(), timeout=30)
-                yield f"data: {json.dumps(n, ensure_ascii=False)}\n\n"
-            except asyncio.TimeoutError:
-                yield ": keepalive\n\n"
+        try:
+            while True:
+                if await request.is_disconnected():
+                    break
+                try:
+                    n = await asyncio.wait_for(queue.get(), timeout=30)
+                    yield f"data: {json.dumps(n, ensure_ascii=False)}\n\n"
+                except asyncio.TimeoutError:
+                    yield ": keepalive\n\n"
+        finally:
+            _notification_broadcaster.unsubscribe(queue)
 
     return StreamingResponse(
         event_generator(),

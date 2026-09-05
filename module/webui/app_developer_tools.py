@@ -22,6 +22,7 @@ from module.webui.app_dependencies import (
     put_row,
     put_scope,
     put_text,
+    notify_or_toast,
     put_warning,
     raise_exception,
     t,
@@ -180,28 +181,20 @@ class DeveloperToolsMixin(WebUIMixinBase):
         put_button(label=t("重启Alas"), onclick=_force_restart, scope="develop_detail")
 
         def _test_notify_update():
-            from module.notify.notify import notify_webui
-
             instance = getattr(self, "alas_name", DEFAULT_CONFIG_NAME)
-            notify_webui(
-                instance=instance,
+            notify_or_toast(
                 title="发现更新喵！",
-                content="测试更新推送逻辑，启动器应显示专用标题。",
-                update=True,
+                content=f"[{instance}] 测试更新推送，外壳环境走系统原生通知，浏览器环境走界面Toast。",
+                color="success",
             )
-            toast("已发送更新测试通知", color="success")
 
         def _test_notify_announcement():
-            from module.notify.notify import notify_webui
-
             instance = getattr(self, "alas_name", DEFAULT_CONFIG_NAME)
-            notify_webui(
-                instance=instance,
+            notify_or_toast(
                 title="新公告喵！",
-                content="测试公告推送逻辑，启动器应显示专用标题。",
-                updata=False,
+                content=f"[{instance}] 测试公告推送，外壳环境走系统原生通知，浏览器环境走界面Toast。",
+                color="info",
             )
-            toast("已发送公告测试通知", color="info")
 
         def _test_notify_error():
             from module.notify import handle_notify

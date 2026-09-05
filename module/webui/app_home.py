@@ -24,6 +24,7 @@ from module.webui.app_dependencies import (
     t,
     threading,
     time,
+    notify_or_toast,
     toast,
     updater,
     use_scope,
@@ -384,13 +385,11 @@ class HomeMixin(WebUIMixinBase):
                 return
             self._update_notified = True
 
-            from module.notify.notify import notify_webui
-
-            notify_webui(
-                instance="Alas",
+            notify_or_toast(
                 title=t("Gui.Toast.ClickToUpdate"),
                 content="检测到了新更新喵~ 指挥官快来更新喵~",
-                updata=True,
+                color="info",
+                duration=10,
             )
 
             self._show_update_notice(goto_update)

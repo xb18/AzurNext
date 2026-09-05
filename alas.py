@@ -1910,6 +1910,16 @@ class AzurLaneAutoScript:
         if is_cycle_end and bool(self._get_global_scheduler_attr('RunSingleCycle', False)):
             logger.hr('[全局调度] 单轮多配置任务已全部完成，结束调度', level=0)
             self._update_global_scheduler_status("idle", task="单轮已完成", config_list=config_list)
+            try:
+                from module.notify import notify_cycle_completed
+                notify_cycle_completed(
+                    title="🌐 全局调度完成",
+                    content="所有配置单轮任务已全部完成，调度器已自动退出。",
+                    config_list=config_list,
+                    config_name=self.config_name,
+                )
+            except Exception as e:
+                logger.warning(f"[全局调度] 发送完成通知失败: {e}")
             return False
 
         if not is_cycle_end:
@@ -1973,6 +1983,16 @@ class AzurLaneAutoScript:
         if is_cycle_end and bool(self._get_global_scheduler_attr('RunSingleCycle', False)):
             logger.hr('[全局调度] 单轮多配置任务已结束（含异常跳过），退出调度', level=0)
             self._update_global_scheduler_status("idle", task="单轮结束(遇错跳过)", config_list=config_list)
+            try:
+                from module.notify import notify_cycle_completed
+                notify_cycle_completed(
+                    title="⚠️ 全局调度单轮结束",
+                    content="单轮多配置任务已结束（部分配置遇到异常跳过），调度器已自动退出。",
+                    config_list=config_list,
+                    config_name=self.config_name,
+                )
+            except Exception as e:
+                logger.warning(f"[全局调度] 发送完成通知失败: {e}")
             return False
 
         if not is_cycle_end:

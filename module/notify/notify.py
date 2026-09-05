@@ -8,6 +8,9 @@
     - notify_webui(): 向本地 WebUI 服务发送 HTTP POST 通知。
 """
 
+import os
+import sys
+
 import onepush.core
 import yaml
 from onepush import get_notifier
@@ -104,7 +107,7 @@ def notify_webui(instance: str, title: str, content: str, **kwargs) -> bool:
     """推送通知到 WebUI 本地端口，供启动器接收。
 
     向本地 WebUI 服务发送 HTTP POST 请求，传递实例名、标题和内容。
-    默认端口为 25548，可通过配置自定义。
+    优先感知环境变量 WEBUI_PORT 中的动态端口，回退使用配置文件端口或默认端口 25548。
 
     Args:
         instance: 触发通知的实例名称。
@@ -115,16 +118,25 @@ def notify_webui(instance: str, title: str, content: str, **kwargs) -> bool:
     Returns:
         推送成功返回 True，失败返回 False。
     """
-    try:
-        from deploy.utils import get_default_webui_port
-        default_port = get_default_webui_port()
-    except Exception:
-        default_port = 25548
-    try:
-        from module.webui.setting import State
-        port = int(State.deploy_config.WebuiPort) or default_port
-    except Exception:
-        port = default_port
+    port = None
+    if os.environ.get("WEBUI_PORT"):
+        try:
+            port = int(os.environ["WEBUI_PORT"])
+        except Exception:
+            port = None
+    if port is None:
+        try:
+            from module.webui.setting import State
+            port = int(State.deploy_config.WebuiPort)
+        except Exception:
+            port = None
+    if port is None:
+        try:
+            from deploy.utils import get_default_webui_port
+            port = get_default_webui_port()
+        except Exception:
+            port = 25548
+
     try:
         import requests
         payload = {"instance": instance, "title": title, "content": content}
@@ -137,3 +149,49 @@ def notify_webui(instance: str, title: str, content: str, **kwargs) -> bool:
         return True
     except Exception:
         return False
+
+
+def notify_cycle_completed(
+    title: str = "🌐 全局调度完成",
+    content: str = "单轮多配置任务已全部完成，调度器已自动退出。",
+    config_list: list[str] | None = None,
+    config_name: str = "Alas",
+) -> None:
+    """全局调度单轮结束时触发统一通知。
+
+    将通知推送到本地 WebUI：
+    - 若在桌面启动器外壳中运行（有壳），启动器通过 SSE 接收后由 Rust 原生
+      弹出带应用标识的 Windows 系统 Toast 通知（支持点击唤醒窗口）；
+    - 若在纯浏览器中运行（无壳），由 WebUI 界面展示前端 UI 通知；
+    - Python 端绝不直接调度操作系统级通知 API。
+    若配置了 OnePush（微信/钉钉/邮件等），同时触发第三方推送。
+
+    Args:
+        title: 通知标题。
+        content: 通知正文。
+        config_list: 本轮涉及的配置实例列表。
+        config_name: 当前正在执行收尾退出的实例名称。
+    """
+    full_content = content
+    if config_list:
+        cfg_str = ", ".join(config_list)
+        if "已执行配置" not in full_content and "执行配置" not in full_content:
+            full_content = f"{content} (已执行配置: {cfg_str})"
+
+    logger.info(f"[全局调度通知] 标题: {title} | 内容: {full_content}")
+
+    # 1. 统一推送到本地 WebUI 服务（有壳走壳通知，无壳走 Web 界面 UI 通知）
+    notify_webui(instance=config_name, title=title, content=full_content)
+
+    # 2. 尝试发送 OnePush 第三方推送（如微信、邮件、钉钉、Bark 等）
+    try:
+        from module.config.config import AzurLaneConfig
+        from module.config.utils import get_default_main_instance
+        main_name = config_name or get_default_main_instance()
+        cfg = AzurLaneConfig(config_name=main_name)
+        onepush_config = getattr(cfg, "Error_OnePushConfig", None)
+        if onepush_config:
+            handle_notify(onepush_config, title=title, content=full_content)
+    except Exception:
+        pass
+

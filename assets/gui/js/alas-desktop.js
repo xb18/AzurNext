@@ -81,8 +81,17 @@
         downloadLauncherLog: () => invoke('download_today_launcher_log'),
         saveAs: (filename, data) => invoke('save_as', { filename, data }),
         // 系统级开机自启
-        getAutostart: () => invoke('get_autostart_status'),
-        setAutostart: (enabled) => invoke('set_autostart_status', { enabled }),
+        // 常用桌面能力暴露
+        // 原生系统通知（Windows Toast / 系统通知）
+        showNotification: (title, content) => invoke('show_notification', { title, content }),
+        // 唤醒并聚焦主窗口
+        focus: () => invoke('focus_window'),
+        // 系统浏览器打开外部链接
+        openExternal: (url) => invoke('open_external', { url }),
+        // 系统资源管理器定位目录/文件
+        openFolder: (path) => invoke('open_folder', { path }),
+        // 获取启动器版本和系统平台信息
+        getInfo: () => invoke('get_launcher_info'),
         // 退出提示框
         openClosePrompt: () => setCloseMenuOpen(true),
     };
