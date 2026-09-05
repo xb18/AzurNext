@@ -115,6 +115,42 @@ body.is-tauri-client .alas-desktop-controls {
     to { transform: rotate(360deg); }
 }
 
+/* 客户端版本号徽标 */
+.alas-desktop-version-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 18px;
+    padding: 0 7px;
+    font-size: 11px;
+    font-weight: 500;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "JetBrains Mono", monospace;
+    line-height: 1;
+    border-radius: 9px;
+    color: rgba(135, 135, 145, .95);
+    background: rgba(120, 120, 128, .12);
+    border: 1px solid rgba(120, 120, 128, .2);
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    white-space: nowrap;
+    box-sizing: border-box;
+    transition: background 150ms ease, border-color 150ms ease, color 150ms ease, transform 100ms ease;
+    letter-spacing: 0.2px;
+    app-region: no-drag !important;
+    -webkit-app-region: no-drag !important;
+}
+
+.alas-desktop-version-badge:hover {
+    color: #3b82f6;
+    background: rgba(59, 130, 246, .15);
+    border-color: rgba(59, 130, 246, .35);
+}
+
+.alas-desktop-version-badge:active {
+    transform: scale(0.96);
+}
+
 /* 更新进度徽标/药丸 */
 .alas-desktop-update-badge {
     display: inline-flex;

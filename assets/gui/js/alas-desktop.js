@@ -121,6 +121,9 @@
             updateFailedLabel: '更新失败',
             updateReadyLabel: '更新已就绪，重启生效',
             confirmRestartPrompt: '更新已下载完毕，是否立即重启启动器以完成更新？',
+            clientVersionLabel: '客户端',
+            copiedLabel: '已复制!',
+            copyHint: '点击复制版本号',
         },
         'zh-TW': {
             hideLabel: '最小化至系統匣',
@@ -146,6 +149,9 @@
             updateFailedLabel: '更新失敗',
             updateReadyLabel: '更新已就緒，重新啟動生效',
             confirmRestartPrompt: '更新已下載完畢，是否立即重新啟動啟動器以完成更新？',
+            clientVersionLabel: '用戶端',
+            copiedLabel: '已複製!',
+            copyHint: '點擊複製版本號',
         },
         'ja': {
             hideLabel: 'トレイに最小化',
@@ -171,6 +177,9 @@
             updateFailedLabel: '更新失敗',
             updateReadyLabel: '更新準備完了、再起動で適用',
             confirmRestartPrompt: 'アップデートのダウンロードが完了しました。今すぐ再起動して適用しますか？',
+            clientVersionLabel: 'クライアント',
+            copiedLabel: 'コピー完了!',
+            copyHint: 'クリックしてバージョンをコピー',
         },
         'en': {
             hideLabel: 'Minimize to tray',
@@ -196,6 +205,9 @@
             updateFailedLabel: 'Update failed',
             updateReadyLabel: 'Update ready, restart to apply',
             confirmRestartPrompt: 'Update downloaded. Restart the launcher now to apply?',
+            clientVersionLabel: 'Client',
+            copiedLabel: 'Copied!',
+            copyHint: 'Click to copy version',
         }
     };
 
@@ -306,6 +318,37 @@
         }
     };
 
+    let launcherInfoCache = null;
+    const getLauncherInfo = async () => {
+        if (launcherInfoCache) return launcherInfoCache;
+        try {
+            launcherInfoCache = await invoke('get_launcher_info');
+            if (launcherInfoCache && window.alasDesktop) {
+                window.alasDesktop.version = launcherInfoCache.version;
+                window.alasDesktop.platform = launcherInfoCache.platform;
+            }
+            return launcherInfoCache;
+        } catch (e) {
+            console.warn('Failed to get launcher info', e);
+            return null;
+        }
+    };
+
+    const updateLogWatermark = () => {
+        if (!launcherInfoCache || !launcherInfoCache.version) return;
+        const logContainer = document.getElementById('pywebio-scope-log-container');
+        if (logContainer) {
+            const currentStyle = logContainer.getAttribute('style') || '';
+            if (currentStyle.includes('--version:') && !currentStyle.includes('Client v')) {
+                const newStyle = currentStyle.replace(
+                    /--version:\s*'([^']*)';/,
+                    `--version: '$1 · Client v${launcherInfoCache.version}';`
+                );
+                logContainer.setAttribute('style', newStyle);
+            }
+        }
+    };
+
     const initHeaderControls = header => {
         if (!header || header.querySelector('.alas-desktop-controls')) {
             return;
@@ -317,6 +360,7 @@
         const controls = document.createElement('div');
         controls.className = 'alas-desktop-controls';
         controls.innerHTML = `
+            <span class="alas-desktop-version-badge" style="display:none;" title=""></span>
             <span class="alas-desktop-update-badge" style="display:none;" title=""></span>
             <button type="button" class="alas-desktop-btn alas-desktop-btn-update" data-action="update" aria-label="${i18n.checkUpdateLabel}" title="${i18n.checkUpdateLabel}">
                 <svg viewBox="0 0 16 16"><path d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/><path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/></svg>
@@ -338,6 +382,50 @@
 
         const maxBtn = controls.querySelector('[data-action="maximize"]');
         syncMaximizeState(maxBtn);
+
+        // 客户端版本展示与点击复制
+        const versionBadge = controls.querySelector('.alas-desktop-version-badge');
+        const applyVersion = (info) => {
+            if (!info || !info.version) return;
+            versionBadge.textContent = 'v' + info.version;
+            const platformText = info.platform ? ` (${info.platform})` : '';
+            versionBadge.title = `${i18n.clientVersionLabel || '客户端'} v${info.version}${platformText} · ${i18n.copyHint || '点击复制'}`;
+            versionBadge.style.display = 'inline-flex';
+        };
+
+        if (launcherInfoCache) {
+            applyVersion(launcherInfoCache);
+        } else {
+            getLauncherInfo().then(info => {
+                applyVersion(info);
+                updateLogWatermark();
+            });
+        }
+
+        versionBadge.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            if (!launcherInfoCache || !launcherInfoCache.version) return;
+            const textToCopy = `v${launcherInfoCache.version}`;
+            try {
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    await navigator.clipboard.writeText(textToCopy);
+                } else {
+                    const input = document.createElement('input');
+                    input.value = textToCopy;
+                    document.body.appendChild(input);
+                    input.select();
+                    document.execCommand('copy');
+                    input.remove();
+                }
+                const originalText = versionBadge.textContent;
+                versionBadge.textContent = i18n.copiedLabel || '已复制!';
+                setTimeout(() => {
+                    versionBadge.textContent = originalText;
+                }, 1200);
+            } catch (err) {
+                console.warn('Failed to copy version', err);
+            }
+        });
 
         // 更新状态控制器
         const badge = controls.querySelector('.alas-desktop-update-badge');
@@ -551,13 +639,14 @@
         if (maxBtn) syncMaximizeState(maxBtn);
     });
 
-    // 监听 DOM 树变化，确保 #pywebio-scope-header 重新渲染时 controls 能够自动挂载
+    // 监听 DOM 树变化，确保 #pywebio-scope-header 重新渲染时 controls 能够自动挂载与日志水印同步
     const checkAndMount = () => {
         cleanupLegacyLauncherElements();
         const header = document.getElementById('pywebio-scope-header');
         if (header) {
             initHeaderControls(header);
         }
+        updateLogWatermark();
     };
 
     const observer = new MutationObserver(() => {
@@ -569,10 +658,15 @@
         subtree: true,
     });
 
-    // 首次挂载尝试
+    // 预拉取客户端版本信息并执行首次挂载
+    getLauncherInfo().then(() => {
+        updateLogWatermark();
+    });
+
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', checkAndMount, { once: true });
     } else {
         checkAndMount();
     }
 })();
+
