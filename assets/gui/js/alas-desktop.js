@@ -149,6 +149,9 @@
         startDragging: () => invoke('window_start_dragging'),
         // 软件更新
         triggerUpdate: () => invoke('trigger_update'),
+        checkUpdate: () => invoke('check_launcher_update'),
+        downloadUpdate: () => invoke('start_download_launcher_update'),
+        cancelUpdate: () => invoke('cancel_or_dismiss_update'),
         getUpdateStatus: () => invoke('get_update_status'),
         getUpdateMethod: () => invoke('get_update_method'),
         setUpdateMethod: (method) => invoke('set_update_method', { method }),
@@ -201,6 +204,8 @@
             updateFailedLabel: '检查更新失败',
             updateReadyLabel: '启动器更新已就绪，重启生效',
             clientUpdateReadyLabel: '启动器更新已就绪',
+            updateAvailableBadge: '发现新版',
+            confirmDownloadPrompt: '发现启动器新版本{version}，是否立即下载更新？',
             confirmRestartPrompt: '启动器更新已下载完毕，是否立即重启启动器以完成更新？',
             confirmRestartPromptWithVer: '启动器更新{version}已下载就绪，是否立即重启启动器以完成更新？',
             clientVersionLabel: '启动器',
@@ -208,6 +213,7 @@
             copyHint: '点击复制版本号',
             toastChecking: '正在检查启动器更新...',
             toastUpdating: '正在下载启动器更新...',
+            toastAvailable: '发现启动器新版本{version}，请点击确认下载。',
             toastAlreadyLatest: '启动器当前已是最新版本。',
             toastUpdateReady: '启动器更新已就绪，重启应用后生效。',
             toastUpdateFailed: '检查启动器更新失败：',
@@ -236,6 +242,8 @@
             updateFailedLabel: '檢查更新失敗',
             updateReadyLabel: '啟動器更新已就緒，重新啟動生效',
             clientUpdateReadyLabel: '啟動器更新已就緒',
+            updateAvailableBadge: '發現新版',
+            confirmDownloadPrompt: '發現啟動器新版本{version}，是否立即下載更新？',
             confirmRestartPrompt: '啟動器更新已下載完畢，是否立即重新啟動啟動器以完成更新？',
             confirmRestartPromptWithVer: '啟動器更新{version}已下載就緒，是否立即重新啟動啟動器以完成更新？',
             clientVersionLabel: '啟動器',
@@ -243,6 +251,7 @@
             copyHint: '點擊複製版本號',
             toastChecking: '正在檢查啟動器更新...',
             toastUpdating: '正在下載啟動器更新...',
+            toastAvailable: '發現啟動器新版本{version}，請點擊確認下載。',
             toastAlreadyLatest: '啟動器目前已經是最新版本。',
             toastUpdateReady: '啟動器更新已就緒，重新啟動應用程式後生效。',
             toastUpdateFailed: '檢查啟動器更新失敗：',
@@ -271,6 +280,8 @@
             updateFailedLabel: '更新確認失敗',
             updateReadyLabel: 'ランチャー更新準備完了、再起動で適用',
             clientUpdateReadyLabel: 'ランチャー更新準備完了',
+            updateAvailableBadge: '新版あり',
+            confirmDownloadPrompt: 'ランチャーの新バージョン{version}が見つかりました。今すぐダウンロードしますか？',
             confirmRestartPrompt: 'ランチャーのアップデートが完了しました。今すぐ再起動して適用しますか？',
             confirmRestartPromptWithVer: 'ランチャーの更新{version}がダウンロードされました。今すぐ再起動して適用しますか？',
             clientVersionLabel: 'ランチャー',
@@ -278,6 +289,7 @@
             copyHint: 'クリックしてバージョンをコピー',
             toastChecking: 'ランチャーの更新を確認中...',
             toastUpdating: 'ランチャーの更新をダウンロード中...',
+            toastAvailable: 'ランチャーの新バージョン{version}が利用可能です。',
             toastAlreadyLatest: 'ランチャーはすでに最新バージョンです。',
             toastUpdateReady: 'ランチャーの更新が準備できました。再起動後に適用されます。',
             toastUpdateFailed: 'ランチャーの更新確認に失敗しました：',
@@ -306,6 +318,8 @@
             updateFailedLabel: 'Update check failed',
             updateReadyLabel: 'Launcher update ready, restart to apply',
             clientUpdateReadyLabel: 'Launcher update ready',
+            updateAvailableBadge: 'Update Available',
+            confirmDownloadPrompt: 'Launcher update{version} is available. Download now?',
             confirmRestartPrompt: 'Launcher update downloaded. Restart the launcher now to apply?',
             confirmRestartPromptWithVer: 'Launcher update{version} downloaded. Restart the launcher now to apply?',
             clientVersionLabel: 'Launcher',
@@ -313,6 +327,7 @@
             copyHint: 'Click to copy version',
             toastChecking: 'Checking for launcher updates...',
             toastUpdating: 'Downloading launcher update...',
+            toastAvailable: 'Launcher update{version} is available for download.',
             toastAlreadyLatest: 'Launcher is already up to date.',
             toastUpdateReady: 'Launcher update is ready. Restart to apply.',
             toastUpdateFailed: 'Check launcher update failed: ',
@@ -564,6 +579,7 @@
             if (s === 'Checking') {
                 updateBtn.classList.add('is-spinning');
                 updateBtn.classList.remove('is-ready');
+                updateBtn.classList.remove('is-available');
                 updateBtn.title = i18n.checkingLabel;
                 badge.style.display = 'inline-flex';
                 badge.className = 'alas-desktop-update-badge is-updating';
@@ -573,9 +589,47 @@
                 if (activeToast) {
                     activeToast.update(i18n.toastChecking, 'loading', 0);
                 }
+            } else if (s === 'Available') {
+                updateBtn.classList.remove('is-spinning');
+                updateBtn.classList.remove('is-ready');
+                updateBtn.classList.add('is-available');
+                const version = (status && status.version) ? status.version : '';
+                const verText = version ? ` v${version}` : '';
+                const badgeText = `${i18n.updateAvailableBadge || '发现新版'}${verText}`;
+                const promptMsg = (i18n.confirmDownloadPrompt || '发现启动器新版本{version}，是否立即下载更新？').replace('{version}', verText);
+                updateBtn.title = promptMsg;
+                badge.style.display = 'inline-flex';
+                badge.className = 'alas-desktop-update-badge is-available';
+                badge.textContent = `★ ${badgeText}`;
+                badge.title = promptMsg;
+                badge.style.background = '';
+
+                if (activeToast) {
+                    const toastText = (i18n.toastAvailable || '发现启动器新版本{version}').replace('{version}', verText);
+                    activeToast.update(toastText, 'info', 6000);
+                    activeToast = null;
+                }
+
+                if (Date.now() - triggerTime < 10000) {
+                    setTimeout(() => {
+                        if (badge.classList.contains('is-available')) {
+                            if (confirm(promptMsg)) {
+                                if (activeToast) activeToast.close();
+                                activeToast = showToast(i18n.toastUpdating, 'loading', 0);
+                                applyStatus({ status: 'Updating', progress: 8 });
+                                startPolling();
+                                invoke('start_download_launcher_update').catch(e => {
+                                    console.error('Failed to start launcher update download', e);
+                                    applyStatus({ status: 'Failed', detail: e ? e.toString() : '' });
+                                });
+                            }
+                        }
+                    }, 150);
+                }
             } else if (s === 'Updating') {
                 updateBtn.classList.add('is-spinning');
                 updateBtn.classList.remove('is-ready');
+                updateBtn.classList.remove('is-available');
                 const progress = (typeof status.progress === 'number') ? status.progress : 0;
                 const title = status.title || i18n.updatingLabel;
                 const detail = status.detail || '';
@@ -598,8 +652,9 @@
             } else if (s === 'ReadyToRestart') {
                 updateBtn.classList.remove('is-spinning');
                 updateBtn.classList.add('is-ready');
+                updateBtn.classList.remove('is-available');
                 const version = (status && status.version) ? status.version : '';
-                const verText = version ? ` (v${version})` : '';
+                const verText = version ? ` v${version}` : '';
                 const desc = `${i18n.clientUpdateReadyLabel || i18n.updateReadyLabel}${verText}`;
                 updateBtn.title = `${desc} · ${i18n.restartToApply}`;
                 badge.style.display = 'inline-flex';
@@ -615,6 +670,7 @@
             } else if (s === 'AlreadyLatest') {
                 updateBtn.classList.remove('is-spinning');
                 updateBtn.classList.remove('is-ready');
+                updateBtn.classList.remove('is-available');
                 updateBtn.title = i18n.alreadyLatestLabel;
                 badge.style.display = 'inline-flex';
                 badge.className = 'alas-desktop-update-badge is-latest';
@@ -634,6 +690,7 @@
             } else if (s === 'Failed') {
                 updateBtn.classList.remove('is-spinning');
                 updateBtn.classList.remove('is-ready');
+                updateBtn.classList.remove('is-available');
                 const detail = status.detail || '';
                 const fullDesc = `${i18n.updateFailedLabel}: ${detail}`.trim();
                 updateBtn.title = fullDesc;
@@ -659,6 +716,7 @@
                 }
                 updateBtn.classList.remove('is-spinning');
                 updateBtn.classList.remove('is-ready');
+                updateBtn.classList.remove('is-available');
                 updateBtn.title = i18n.checkUpdateLabel;
                 badge.style.display = 'none';
                 badge.style.background = '';
@@ -731,6 +789,25 @@
                 } catch (err) {
                     console.error('Failed to restart application', err);
                 }
+                return;
+            }
+
+            if (badge.classList.contains('is-available')) {
+                try {
+                    const currentStatus = await invoke('get_update_status');
+                    const version = (currentStatus && currentStatus.version) ? ` v${currentStatus.version}` : '';
+                    const prompt = (i18n.confirmDownloadPrompt || '发现启动器新版本{version}，是否立即下载更新？').replace('{version}', version);
+                    if (confirm(prompt)) {
+                        if (activeToast) activeToast.close();
+                        activeToast = showToast(i18n.toastUpdating, 'loading', 0);
+                        applyStatus({ status: 'Updating', progress: 8 });
+                        startPolling();
+                        await invoke('start_download_launcher_update');
+                    }
+                } catch (err) {
+                    console.error('Failed to start launcher update download', err);
+                }
+                return;
             }
         });
 
@@ -776,6 +853,25 @@
                                 break;
                             }
 
+                            // 如果是有新版本可用状态，点击提示确认下载
+                            if (updateBtn.classList.contains('is-available') || badge.classList.contains('is-available')) {
+                                try {
+                                    const currentStatus = await invoke('get_update_status');
+                                    const version = (currentStatus && currentStatus.version) ? ` v${currentStatus.version}` : '';
+                                    const prompt = (i18n.confirmDownloadPrompt || '发现启动器新版本{version}，是否立即下载更新？').replace('{version}', version);
+                                    if (confirm(prompt)) {
+                                        if (activeToast) activeToast.close();
+                                        activeToast = showToast(i18n.toastUpdating, 'loading', 0);
+                                        applyStatus({ status: 'Updating', progress: 8 });
+                                        startPolling();
+                                        await invoke('start_download_launcher_update');
+                                    }
+                                } catch (e) {
+                                    console.error('Failed to start launcher update download on click', e);
+                                }
+                                break;
+                            }
+
                             // 记录触发时间戳
                             triggerTime = Date.now();
                             if (activeToast) {
@@ -788,9 +884,9 @@
                             startPolling();
 
                             try {
-                                await invoke('trigger_update');
+                                await invoke('check_launcher_update');
                             } catch (e) {
-                                console.error('Failed to trigger update', e);
+                                console.error('Failed to check launcher update', e);
                                 applyStatus({ status: 'Failed', detail: e ? e.toString() : '' });
                             }
                             break;
