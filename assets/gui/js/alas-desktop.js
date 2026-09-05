@@ -148,10 +148,9 @@
         exit: () => invoke('window_exit_application'),
         startDragging: () => invoke('window_start_dragging'),
         // 软件更新
-        triggerUpdate: () => invoke('trigger_update'),
-        checkUpdate: () => invoke('check_launcher_update').catch(() => invoke('trigger_update')),
-        downloadUpdate: () => invoke('start_download_launcher_update').catch(() => invoke('trigger_update')),
-        cancelUpdate: () => invoke('cancel_or_dismiss_update').catch(() => {}),
+        checkUpdate: () => invoke('check_launcher_update'),
+        downloadUpdate: () => invoke('start_download_launcher_update'),
+        cancelUpdate: () => invoke('cancel_or_dismiss_update'),
         getUpdateStatus: () => invoke('get_update_status'),
         getUpdateMethod: () => invoke('get_update_method'),
         setUpdateMethod: (method) => invoke('set_update_method', { method }),
@@ -618,7 +617,7 @@
                                 activeToast = showToast(i18n.toastUpdating, 'loading', 0);
                                 applyStatus({ status: 'Updating', progress: 8 });
                                 startPolling();
-                                invoke('start_download_launcher_update').catch(() => invoke('trigger_update')).catch(e => {
+                                invoke('start_download_launcher_update').catch(e => {
                                     console.error('Failed to start launcher update download', e);
                                     applyStatus({ status: 'Failed', detail: e ? e.toString() : '' });
                                 });
@@ -802,7 +801,7 @@
                         activeToast = showToast(i18n.toastUpdating, 'loading', 0);
                         applyStatus({ status: 'Updating', progress: 8 });
                         startPolling();
-                        await invoke('start_download_launcher_update').catch(() => invoke('trigger_update'));
+                        await invoke('start_download_launcher_update');
                     }
                 } catch (err) {
                     console.error('Failed to start launcher update download', err);
@@ -864,7 +863,7 @@
                                         activeToast = showToast(i18n.toastUpdating, 'loading', 0);
                                         applyStatus({ status: 'Updating', progress: 8 });
                                         startPolling();
-                                        await invoke('start_download_launcher_update').catch(() => invoke('trigger_update'));
+                                        await invoke('start_download_launcher_update');
                                     }
                                 } catch (e) {
                                     console.error('Failed to start launcher update download on click', e);
@@ -886,13 +885,8 @@
                             try {
                                 await invoke('check_launcher_update');
                             } catch (e) {
-                                console.warn('check_launcher_update not supported, falling back to trigger_update', e);
-                                try {
-                                    await invoke('trigger_update');
-                                } catch (fallbackErr) {
-                                    console.error('Failed to check launcher update', fallbackErr);
-                                    applyStatus({ status: 'Failed', detail: fallbackErr ? fallbackErr.toString() : '' });
-                                }
+                                console.error('Failed to check launcher update', e);
+                                applyStatus({ status: 'Failed', detail: e ? e.toString() : '' });
                             }
                             break;
                         case 'hide':
