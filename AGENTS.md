@@ -559,8 +559,18 @@ server.server = 'en'
 ## 桌面外壳与 Web 交互规范（Thin Shell）
 
 - **Rust/桌面外壳定位**：纯粹的底层系统能力提供者（窗口控制、系统原生 Toast 通知、打开外部链接/文件夹、文件保存等），严禁承载应用层业务逻辑，不通过长连接反向轮询 WebUI。
-- **接口统一收拢在 `window.alasDesktop`**：外壳底层接口全部统一挂载在 `window.alasDesktop.*` 下（如 `window.alasDesktop.showNotification(title, content)`），代码中严禁暴露散落的全局变量。
+- **接口统一收拢在 `window.alasDesktop`**：外壳底层接口全部统一挂载在 `window.alasDesktop.*` 下（如 `window.alasDesktop.showNotification(title, content)`，`window.alasDesktop.checkUpdate()` 等），代码中严禁暴露散落的全局变量。
 - **业务逻辑归属 Web 端**：通知触发时机、提示文案、多环境自适应（有壳调用 `window.alasDesktop` 底层能力，无壳回退为 WebUI 界面 Toast 提示）全部由 Web 端（Python / 前端 JS）自行处理与决策。
+- **启动器外壳多步交互更新规范**：
+  - **职责解耦**：右上角仅负责启动器外壳（Launcher）更新，主工程/WebUI 更新由内部机制独立负责，互不耦合；
+  - **四步交互流程**：
+    1. **检查版本（`Checking`）**：仅比对版本号，禁止自动静默下载；
+    2. **新版可用（`Available`）**：徽标展示琥珀高亮药丸（`★ 发现新版 vX.Y.Z`），主动弹出确认框询问是否下载；用户取消则保留徽标随时可点；
+    3. **分块下载与推流（`Updating`）**：用户确认后启动下载推流，徽标以线性渐变背景实时渲染动态进度条与数字；
+    4. **就绪重启（`ReadyToRestart`）**：SHA-256 校验完毕后徽标变绿，弹出重启确认框，用户确认后退出由 helper 进程替换重启。
+- **版本号与 Git Tag 命名规范**：
+  - **Git Tag**：统一推荐使用带 `v` 前缀的 SemVer 格式（如 `v2.1.27`），符合 GitHub Release 与主流开源社区规范；
+  - **配置文件**：代码与配置文件（`Cargo.toml`、`tauri.conf.json`、`pyproject.toml`）内部版本号遵循严格 SemVer，保持纯数字（如 `2.1.27`），严禁包含 `v`；CI 打包脚本自动剥离 Tag 的 `v` 前缀后写入配置。
 
 ---
 
