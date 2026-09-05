@@ -756,7 +756,6 @@ def notify_or_toast(title: str, content: str = "", color: str = "info", duration
                 title=title,
                 content=content or "",
             )
-            return
     except Exception:
         pass
 

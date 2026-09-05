@@ -57,6 +57,85 @@
         reader.readAsDataURL(blob);
     };
 
+    // 桌面原生风格轻量 UI Toast 组件
+    let toastContainer = null;
+    const ensureToastContainer = () => {
+        if (!toastContainer || !document.contains(toastContainer)) {
+            toastContainer = document.getElementById('alas-desktop-toast-container');
+            if (!toastContainer) {
+                toastContainer = document.createElement('div');
+                toastContainer.id = 'alas-desktop-toast-container';
+                document.body.appendChild(toastContainer);
+            }
+        }
+        return toastContainer;
+    };
+
+    const showToast = (message, type = 'info', duration = 3500) => {
+        const container = ensureToastContainer();
+        const toast = document.createElement('div');
+        toast.className = `alas-desktop-toast alas-desktop-toast-${type}`;
+
+        let iconSvg = '';
+        if (type === 'loading') {
+            iconSvg = '<svg class="alas-desktop-toast-spin" viewBox="0 0 16 16" width="14" height="14"><path d="M8 2a6 6 0 1 0 6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+        } else if (type === 'success') {
+            iconSvg = '<svg viewBox="0 0 16 16" width="14" height="14"><circle cx="8" cy="8" r="7" fill="none" stroke="currentColor" stroke-width="1.5"/><polyline points="5,8.5 7.2,10.7 11.5,5.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+        } else if (type === 'error') {
+            iconSvg = '<svg viewBox="0 0 16 16" width="14" height="14"><circle cx="8" cy="8" r="7" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="5.5" y1="5.5" x2="10.5" y2="10.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="10.5" y1="5.5" x2="5.5" y2="10.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>';
+        } else {
+            iconSvg = '<svg viewBox="0 0 16 16" width="14" height="14"><circle cx="8" cy="8" r="7" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="8" y1="7" x2="8" y2="12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="4.5" r="0.75" fill="currentColor"/></svg>';
+        }
+
+        toast.innerHTML = `
+            <span class="alas-desktop-toast-icon">${iconSvg}</span>
+            <span class="alas-desktop-toast-msg"></span>
+        `;
+        toast.querySelector('.alas-desktop-toast-msg').textContent = message;
+
+        container.appendChild(toast);
+        requestAnimationFrame(() => {
+            toast.classList.add('is-visible');
+        });
+
+        let timer = null;
+        const hide = () => {
+            if (timer) clearTimeout(timer);
+            toast.classList.remove('is-visible');
+            setTimeout(() => { if (toast.parentNode) toast.remove(); }, 250);
+        };
+
+        toast.addEventListener('click', hide);
+        if (duration > 0) {
+            timer = setTimeout(hide, duration);
+        }
+
+        return {
+            update: (newMsg, newType, newDuration = 3500) => {
+                if (timer) clearTimeout(timer);
+                toast.querySelector('.alas-desktop-toast-msg').textContent = newMsg;
+                if (newType) {
+                    toast.className = `alas-desktop-toast alas-desktop-toast-${newType} is-visible`;
+                    let newIconSvg = '';
+                    if (newType === 'loading') {
+                        newIconSvg = '<svg class="alas-desktop-toast-spin" viewBox="0 0 16 16" width="14" height="14"><path d="M8 2a6 6 0 1 0 6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+                    } else if (newType === 'success') {
+                        newIconSvg = '<svg viewBox="0 0 16 16" width="14" height="14"><circle cx="8" cy="8" r="7" fill="none" stroke="currentColor" stroke-width="1.5"/><polyline points="5,8.5 7.2,10.7 11.5,5.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+                    } else if (newType === 'error') {
+                        newIconSvg = '<svg viewBox="0 0 16 16" width="14" height="14"><circle cx="8" cy="8" r="7" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="5.5" y1="5.5" x2="10.5" y2="10.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="10.5" y1="5.5" x2="5.5" y2="10.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>';
+                    } else {
+                        newIconSvg = '<svg viewBox="0 0 16 16" width="14" height="14"><circle cx="8" cy="8" r="7" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="8" y1="7" x2="8" y2="12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="4.5" r="0.75" fill="currentColor"/></svg>';
+                    }
+                    toast.querySelector('.alas-desktop-toast-icon').innerHTML = newIconSvg;
+                }
+                if (newDuration > 0) {
+                    timer = setTimeout(hide, newDuration);
+                }
+            },
+            close: hide,
+        };
+    };
+
     // 挂载全局 alasDesktop 客户端能力对象，方便 Web 前端任意模块直接调用
     window.alasDesktop = {
         isAvailable: true,
@@ -80,10 +159,11 @@
         downloadGuiLog: () => invoke('download_today_gui_log'),
         downloadLauncherLog: () => invoke('download_today_launcher_log'),
         saveAs: (filename, data) => invoke('save_as', { filename, data }),
-        // 系统级开机自启
         // 常用桌面能力暴露
         // 原生系统通知（Windows Toast / 系统通知）
         showNotification: (title, content) => invoke('show_notification', { title, content }),
+        // 界面轻量 Toast 提示
+        toast: (message, type, duration) => showToast(message, type, duration),
         // 唤醒并聚焦主窗口
         focus: () => invoke('focus_window'),
         // 系统浏览器打开外部链接
@@ -126,6 +206,11 @@
             clientVersionLabel: '客户端',
             copiedLabel: '已复制!',
             copyHint: '点击复制版本号',
+            toastChecking: '正在检查 AzurNext 更新...',
+            toastUpdating: '正在更新 AzurNext 仓库与依赖...',
+            toastAlreadyLatest: '当前已经是最新版本。',
+            toastUpdateReady: 'AzurNext 更新已就绪，重启应用后生效。',
+            toastUpdateFailed: '检查或应用更新失败：',
         },
         'zh-TW': {
             hideLabel: '最小化至系統匣',
@@ -156,6 +241,11 @@
             clientVersionLabel: '用戶端',
             copiedLabel: '已複製!',
             copyHint: '點擊複製版本號',
+            toastChecking: '正在檢查 AzurNext 更新...',
+            toastUpdating: '正在更新 AzurNext 倉庫與依賴...',
+            toastAlreadyLatest: '目前已經是最新版本。',
+            toastUpdateReady: 'AzurNext 更新已就緒，重新啟動應用程式後生效。',
+            toastUpdateFailed: '檢查或套用更新失敗：',
         },
         'ja': {
             hideLabel: 'トレイに最小化',
@@ -186,6 +276,11 @@
             clientVersionLabel: 'クライアント',
             copiedLabel: 'コピー完了!',
             copyHint: 'クリックしてバージョンをコピー',
+            toastChecking: 'AzurNext の更新を確認中...',
+            toastUpdating: 'AzurNext のリポジトリと依存関係を更新中...',
+            toastAlreadyLatest: 'すでに最新バージョンです。',
+            toastUpdateReady: 'AzurNext の更新が準備できました。再起動後に適用されます。',
+            toastUpdateFailed: '更新の確認または適用に失敗しました：',
         },
         'en': {
             hideLabel: 'Minimize to tray',
@@ -216,6 +311,11 @@
             clientVersionLabel: 'Client',
             copiedLabel: 'Copied!',
             copyHint: 'Click to copy version',
+            toastChecking: 'Checking for AzurNext updates...',
+            toastUpdating: 'Updating AzurNext repository and dependencies...',
+            toastAlreadyLatest: 'Already up to date.',
+            toastUpdateReady: 'AzurNext update is ready. Restart to apply.',
+            toastUpdateFailed: 'Check or update failed: ',
         }
     };
 
@@ -448,8 +548,10 @@
         let pollTimer = null;
         let fadeTimer = null;
         let isTriggeringUpdate = false;
+        let triggerTime = 0;
+        let activeToast = null;
 
-        const applyStatus = (status) => {
+        const applyStatus = (status, isEvent = false) => {
             if (!status) return;
             const s = (typeof status === 'string') ? status : (status && status.status);
             if (!s) return;
@@ -468,6 +570,9 @@
                 badge.textContent = i18n.checkingLabel;
                 badge.title = i18n.checkingLabel;
                 badge.style.background = '';
+                if (activeToast) {
+                    activeToast.update(i18n.toastChecking, 'loading', 0);
+                }
             } else if (s === 'Updating') {
                 updateBtn.classList.add('is-spinning');
                 updateBtn.classList.remove('is-ready');
@@ -485,6 +590,11 @@
                 const fullDesc = `[${title} ${progress}%] ${detail}`.trim();
                 badge.title = fullDesc;
                 updateBtn.title = fullDesc;
+
+                const toastMsg = progress > 0 ? `${i18n.toastUpdating} (${progress}%)` : (title || i18n.toastUpdating);
+                if (activeToast) {
+                    activeToast.update(toastMsg, 'loading', 0);
+                }
             } else if (s === 'ReadyToRestart') {
                 updateBtn.classList.remove('is-spinning');
                 updateBtn.classList.add('is-ready');
@@ -497,19 +607,30 @@
                 badge.textContent = `✔ ${i18n.restartToApply}${verText}`;
                 badge.title = `${desc} · ${i18n.restartToApply}`;
                 badge.style.background = '';
+
+                if (activeToast) {
+                    activeToast.update(i18n.toastUpdateReady, 'success', 6000);
+                    activeToast = null;
+                }
             } else if (s === 'AlreadyLatest') {
                 updateBtn.classList.remove('is-spinning');
                 updateBtn.classList.remove('is-ready');
                 updateBtn.title = i18n.alreadyLatestLabel;
                 badge.style.display = 'inline-flex';
                 badge.className = 'alas-desktop-update-badge is-latest';
-                badge.textContent = i18n.alreadyLatestLabel;
+                badge.textContent = `✔ ${i18n.alreadyLatestLabel}`;
                 badge.title = i18n.alreadyLatestLabel;
                 badge.style.background = '';
+
+                if (activeToast) {
+                    activeToast.update(i18n.toastAlreadyLatest, 'success', 3500);
+                    activeToast = null;
+                }
+
                 fadeTimer = setTimeout(() => {
                     badge.style.display = 'none';
                     updateBtn.title = i18n.checkUpdateLabel;
-                }, 3000);
+                }, 3500);
             } else if (s === 'Failed') {
                 updateBtn.classList.remove('is-spinning');
                 updateBtn.classList.remove('is-ready');
@@ -521,17 +642,30 @@
                 badge.textContent = `✖ ${i18n.updateFailedLabel}`;
                 badge.title = fullDesc;
                 badge.style.background = '';
+
+                if (activeToast) {
+                    activeToast.update((i18n.toastUpdateFailed || '') + (detail ? detail : ''), 'error', 5000);
+                    activeToast = null;
+                }
+
                 fadeTimer = setTimeout(() => {
                     badge.style.display = 'none';
                     updateBtn.title = i18n.checkUpdateLabel;
                 }, 5000);
             } else {
                 // Idle
+                if (Date.now() - triggerTime < 4000) {
+                    return;
+                }
                 updateBtn.classList.remove('is-spinning');
                 updateBtn.classList.remove('is-ready');
                 updateBtn.title = i18n.checkUpdateLabel;
                 badge.style.display = 'none';
                 badge.style.background = '';
+                if (activeToast) {
+                    activeToast.close();
+                    activeToast = null;
+                }
             }
         };
 
@@ -547,20 +681,42 @@
                 const status = await invoke('get_update_status');
                 applyStatus(status);
                 const s = (typeof status === 'string') ? status : (status && status.status);
+                if (Date.now() - triggerTime < 4000) {
+                    return;
+                }
                 if (s !== 'Checking' && s !== 'Updating') {
                     stopPolling();
                 }
             } catch (e) {
                 console.error('Failed to poll update status', e);
-                stopPolling();
+                if (Date.now() - triggerTime >= 4000) {
+                    stopPolling();
+                }
             }
         };
 
         const startPolling = () => {
-            if (pollTimer) return;
-            pollStatus();
-            pollTimer = setInterval(pollStatus, 800);
+            stopPolling();
+            pollTimer = setInterval(pollStatus, 600);
+            setTimeout(stopPolling, 300000);
         };
+
+        // 尝试监听 Tauri 事件（若可用则实现 0 延时实时同步）
+        try {
+            if (window.__TAURI__ && window.__TAURI__.event && typeof window.__TAURI__.event.listen === 'function') {
+                window.__TAURI__.event.listen('update-status-changed', event => {
+                    if (event && event.payload) {
+                        applyStatus(event.payload, true);
+                        const s = (typeof event.payload === 'string') ? event.payload : (event.payload && event.payload.status);
+                        if (s !== 'Checking' && s !== 'Updating' && Date.now() - triggerTime >= 4000) {
+                            stopPolling();
+                        }
+                    }
+                });
+            }
+        } catch (err) {
+            console.warn('Tauri event listen not available', err);
+        }
 
         badge.addEventListener('click', async (e) => {
             e.stopPropagation();
@@ -620,7 +776,14 @@
                                 break;
                             }
 
-                            // 极速视觉响应：立刻呈现“正在检查更新...”与转动动画，绝无延迟感
+                            // 记录触发时间戳
+                            triggerTime = Date.now();
+                            if (activeToast) {
+                                activeToast.close();
+                            }
+                            activeToast = showToast(i18n.toastChecking, 'loading', 0);
+
+                            // 极速视觉响应：立刻呈现“正在检查更新...”与转动动画
                             applyStatus({ status: 'Checking' });
                             startPolling();
 
