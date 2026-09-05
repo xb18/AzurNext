@@ -174,12 +174,11 @@ class GlobalSchedulerMixin(WebUIMixinBase):
                 </div>
                 {f'<div style="font-size: 0.95rem; opacity: 0.9;">下次唤醒: <strong>{next_run}</strong></div>' if next_run and not is_running else ''}
             </div>
-            <div id="gs_action_buttons"></div>
+            <div id="pywebio-scope-gs_btns"></div>
         </div>
         """
         put_html(control_html)
 
-        put_scope("gs_btns")
         with use_scope("gs_btns"):
             if is_running:
                 put_button(
@@ -336,7 +335,6 @@ class GlobalSchedulerMixin(WebUIMixinBase):
                 </div>
             </div>
             """)
-            put_scope("gs_tasks_refresh_btn")
             with use_scope("gs_tasks_refresh_btn"):
                 put_button(
                     label="🔄 刷新",
