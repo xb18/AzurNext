@@ -120,7 +120,9 @@
             alreadyLatestLabel: '已是最新版本',
             updateFailedLabel: '更新失败',
             updateReadyLabel: '更新已就绪，重启生效',
+            clientUpdateReadyLabel: '客户端更新已就绪',
             confirmRestartPrompt: '更新已下载完毕，是否立即重启启动器以完成更新？',
+            confirmRestartPromptWithVer: '客户端更新{version}已下载就绪，是否立即重启客户端以完成更新？',
             clientVersionLabel: '客户端',
             copiedLabel: '已复制!',
             copyHint: '点击复制版本号',
@@ -148,7 +150,9 @@
             alreadyLatestLabel: '已是最新版本',
             updateFailedLabel: '更新失敗',
             updateReadyLabel: '更新已就緒，重新啟動生效',
+            clientUpdateReadyLabel: '用戶端更新已就緒',
             confirmRestartPrompt: '更新已下載完畢，是否立即重新啟動啟動器以完成更新？',
+            confirmRestartPromptWithVer: '用戶端更新{version}已下載就緒，是否立即重新啟動用戶端以完成更新？',
             clientVersionLabel: '用戶端',
             copiedLabel: '已複製!',
             copyHint: '點擊複製版本號',
@@ -176,7 +180,9 @@
             alreadyLatestLabel: '最新バージョンです',
             updateFailedLabel: '更新失敗',
             updateReadyLabel: '更新準備完了、再起動で適用',
+            clientUpdateReadyLabel: 'クライアント更新準備完了',
             confirmRestartPrompt: 'アップデートのダウンロードが完了しました。今すぐ再起動して適用しますか？',
+            confirmRestartPromptWithVer: 'クライアントの更新{version}がダウンロードされました。今すぐ再起動して適用しますか？',
             clientVersionLabel: 'クライアント',
             copiedLabel: 'コピー完了!',
             copyHint: 'クリックしてバージョンをコピー',
@@ -204,7 +210,9 @@
             alreadyLatestLabel: 'Already up to date',
             updateFailedLabel: 'Update failed',
             updateReadyLabel: 'Update ready, restart to apply',
+            clientUpdateReadyLabel: 'Client update ready',
             confirmRestartPrompt: 'Update downloaded. Restart the launcher now to apply?',
+            confirmRestartPromptWithVer: 'Client update{version} downloaded. Restart the client now to apply?',
             clientVersionLabel: 'Client',
             copiedLabel: 'Copied!',
             copyHint: 'Click to copy version',
@@ -359,24 +367,31 @@
 
         const controls = document.createElement('div');
         controls.className = 'alas-desktop-controls';
+        controls.setAttribute('data-tauri-drag-region', 'false');
+
+        // 彻底阻断控制栏区域内的点击与指针事件向 header 拖拽区域冒泡，防止点击被 Windows/Tauri 拖拽捕获
+        ['pointerdown', 'mousedown', 'touchstart', 'dblclick'].forEach(evt => {
+            controls.addEventListener(evt, e => e.stopPropagation());
+        });
+
         controls.innerHTML = `
-            <span class="alas-desktop-version-badge" style="display:none;" title=""></span>
-            <span class="alas-desktop-update-badge" style="display:none;" title=""></span>
-            <button type="button" class="alas-desktop-btn alas-desktop-btn-update" data-action="update" aria-label="${i18n.checkUpdateLabel}" title="${i18n.checkUpdateLabel}">
-                <svg viewBox="0 0 16 16"><path d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/><path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/></svg>
+            <span class="alas-desktop-version-badge" data-tauri-drag-region="false" style="display:none;" title=""></span>
+            <span class="alas-desktop-update-badge" data-tauri-drag-region="false" style="display:none;" title=""></span>
+            <button type="button" class="alas-desktop-btn alas-desktop-btn-update" data-tauri-drag-region="false" data-action="update" aria-label="${i18n.checkUpdateLabel}" title="${i18n.checkUpdateLabel}">
+                <svg viewBox="0 0 16 16" data-tauri-drag-region="false"><path d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/><path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/></svg>
             </button>
-            <button type="button" class="alas-desktop-btn alas-desktop-btn-hide" data-action="hide" aria-label="${i18n.hideLabel}" title="${i18n.hideLabel}">
-                <svg viewBox="0 0 6 6"><rect x="1" y="1" width="4" height="4" rx="1"/><path d="M2 3h2"/></svg>
+            <button type="button" class="alas-desktop-btn alas-desktop-btn-hide" data-tauri-drag-region="false" data-action="hide" aria-label="${i18n.hideLabel}" title="${i18n.hideLabel}">
+                <svg viewBox="0 0 6 6" data-tauri-drag-region="false"><rect x="1" y="1" width="4" height="4" rx="1"/><path d="M2 3h2"/></svg>
             </button>
-            <button type="button" class="alas-desktop-btn alas-desktop-btn-minimize" data-action="minimize" aria-label="${i18n.minimizeLabel}" title="${i18n.minimizeTitle}">
-                <svg viewBox="0 0 6 6"><line x1="1" y1="3" x2="5" y2="3"/></svg>
+            <button type="button" class="alas-desktop-btn alas-desktop-btn-minimize" data-tauri-drag-region="false" data-action="minimize" aria-label="${i18n.minimizeLabel}" title="${i18n.minimizeTitle}">
+                <svg viewBox="0 0 6 6" data-tauri-drag-region="false"><line x1="1" y1="3" x2="5" y2="3"/></svg>
             </button>
-            <button type="button" class="alas-desktop-btn alas-desktop-btn-maximize" data-action="maximize" aria-label="${i18n.maximizeLabel}" title="${i18n.maximizeTitle}">
-                <svg viewBox="0 0 6 6" class="svg-restore" style="display:none"><polyline points="1,3 1,1 3,1"/><polyline points="3,5 5,5 5,3"/></svg>
-                <svg viewBox="0 0 6 6" class="svg-maximize"><polyline points="1,2.5 1,1 2.5,1"/><polyline points="3.5,5 5,5 5,3.5"/></svg>
+            <button type="button" class="alas-desktop-btn alas-desktop-btn-maximize" data-tauri-drag-region="false" data-action="maximize" aria-label="${i18n.maximizeLabel}" title="${i18n.maximizeTitle}">
+                <svg viewBox="0 0 6 6" class="svg-restore" data-tauri-drag-region="false" style="display:none"><polyline points="1,3 1,1 3,1"/><polyline points="3,5 5,5 5,3"/></svg>
+                <svg viewBox="0 0 6 6" class="svg-maximize" data-tauri-drag-region="false"><polyline points="1,2.5 1,1 2.5,1"/><polyline points="3.5,5 5,5 5,3.5"/></svg>
             </button>
-            <button type="button" class="alas-desktop-btn alas-desktop-btn-close" data-action="close" aria-label="${i18n.closeLabel}" title="${i18n.closeTitle}">
-                <svg viewBox="0 0 6 6"><line x1="1" y1="1" x2="5" y2="5"/><line x1="5" y1="1" x2="1" y2="5"/></svg>
+            <button type="button" class="alas-desktop-btn alas-desktop-btn-close" data-tauri-drag-region="false" data-action="close" aria-label="${i18n.closeLabel}" title="${i18n.closeTitle}">
+                <svg viewBox="0 0 6 6" data-tauri-drag-region="false"><line x1="1" y1="1" x2="5" y2="5"/><line x1="5" y1="1" x2="1" y2="5"/></svg>
             </button>
         `;
 
@@ -432,6 +447,7 @@
         const updateBtn = controls.querySelector('.alas-desktop-btn-update');
         let pollTimer = null;
         let fadeTimer = null;
+        let isTriggeringUpdate = false;
 
         const applyStatus = (status) => {
             if (!status) return;
@@ -472,11 +488,14 @@
             } else if (s === 'ReadyToRestart') {
                 updateBtn.classList.remove('is-spinning');
                 updateBtn.classList.add('is-ready');
-                updateBtn.title = i18n.updateReadyLabel;
+                const version = (status && status.version) ? status.version : '';
+                const verText = version ? ` (v${version})` : '';
+                const desc = `${i18n.clientUpdateReadyLabel || i18n.updateReadyLabel}${verText}`;
+                updateBtn.title = `${desc} · ${i18n.restartToApply}`;
                 badge.style.display = 'inline-flex';
                 badge.className = 'alas-desktop-update-badge is-ready';
-                badge.textContent = `✔ ${i18n.restartToApply}`;
-                badge.title = i18n.updateReadyLabel;
+                badge.textContent = `✔ ${i18n.restartToApply}${verText}`;
+                badge.title = `${desc} · ${i18n.restartToApply}`;
                 badge.style.background = '';
             } else if (s === 'AlreadyLatest') {
                 updateBtn.classList.remove('is-spinning');
@@ -546,9 +565,15 @@
         badge.addEventListener('click', async (e) => {
             e.stopPropagation();
             if (badge.classList.contains('is-ready')) {
-                if (confirm(i18n.confirmRestartPrompt)) {
-                    try { await invoke('window_exit_application'); }
-                    catch (err) { console.error('Failed to restart application', err); }
+                try {
+                    const currentStatus = await invoke('get_update_status');
+                    const version = (currentStatus && currentStatus.version) ? ` v${currentStatus.version}` : '';
+                    const prompt = (i18n.confirmRestartPromptWithVer || i18n.confirmRestartPrompt).replace('{version}', version);
+                    if (confirm(prompt)) {
+                        await invoke('window_exit_application');
+                    }
+                } catch (err) {
+                    console.error('Failed to restart application', err);
                 }
             }
         });
@@ -574,24 +599,36 @@
                 try {
                     switch (action) {
                         case 'update':
-                            try {
-                                const currentStatus = await invoke('get_update_status');
-                                const s = (typeof currentStatus === 'string') ? currentStatus : (currentStatus && currentStatus.status);
-                                if (s === 'ReadyToRestart') {
-                                    if (confirm(i18n.confirmRestartPrompt)) {
+                            if (isTriggeringUpdate) {
+                                break;
+                            }
+                            isTriggeringUpdate = true;
+                            setTimeout(() => { isTriggeringUpdate = false; }, 2000);
+
+                            // 如果已经是就绪状态，点击直接提示重启
+                            if (updateBtn.classList.contains('is-ready') || badge.classList.contains('is-ready')) {
+                                try {
+                                    const currentStatus = await invoke('get_update_status');
+                                    const version = (currentStatus && currentStatus.version) ? ` v${currentStatus.version}` : '';
+                                    const prompt = (i18n.confirmRestartPromptWithVer || i18n.confirmRestartPrompt).replace('{version}', version);
+                                    if (confirm(prompt)) {
                                         await invoke('window_exit_application');
-                                        break;
                                     }
+                                } catch (e) {
+                                    console.error('Failed to restart on update button click', e);
                                 }
-                                if (s === 'Checking' || s === 'Updating') {
-                                    startPolling();
-                                    break;
-                                }
-                                applyStatus({ status: 'Checking' });
-                                startPolling();
+                                break;
+                            }
+
+                            // 极速视觉响应：立刻呈现“正在检查更新...”与转动动画，绝无延迟感
+                            applyStatus({ status: 'Checking' });
+                            startPolling();
+
+                            try {
                                 await invoke('trigger_update');
                             } catch (e) {
                                 console.error('Failed to trigger update', e);
+                                applyStatus({ status: 'Failed', detail: e ? e.toString() : '' });
                             }
                             break;
                         case 'hide':
