@@ -616,6 +616,10 @@ AzurPilot 桌面端采用 **Thin Shell（瘦外壳）** 架构设计（外壳为
    - **通知设计原则**：有外壳（`window.alasDesktop?.showNotification` 可用）时走系统原生通知，无外壳（纯浏览器访问）时回退为 WebUI 界面 Toast（如使用 `notify_or_toast(...)`）；
    - **严禁用 Python 调度系统通知**：Python 端不直接调度操作系统级通知 API（如 powershell/winrt 等），所有系统原生通知统一由前端 Web 页面在有壳环境下通过 `window.alasDesktop.showNotification` 触发。
 
+3. **全平台（Windows / macOS / Linux）支持要求**：
+   - 桌面外壳与 Web 交互接口必须在 Windows、macOS 和 Linux 上均有完整的底层实现，严禁平台缺失；
+   - 任何涉及外壳功能增强或接口调整，必须保证三端代码兼容，不可引入破坏其他平台的特定依赖。
+
 ---
 
 ## Git 提交规范
