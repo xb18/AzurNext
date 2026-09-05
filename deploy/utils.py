@@ -39,7 +39,11 @@ def is_production_environment(root_dir: Optional[str] = None) -> bool:
     Returns:
         bool: True 表示生产环境，False 表示开发环境。
     """
-    env = os.environ.get("AZURPILOT_ENV") or os.environ.get("ALAS_ENV")
+    env = (
+        os.environ.get("AZURNEXT_ENV")
+        or os.environ.get("AZURPILOT_ENV")
+        or os.environ.get("ALAS_ENV")
+    )
     if env:
         env_lower = env.strip().lower()
         if env_lower in ("dev", "development"):

@@ -88,6 +88,6 @@ class AlasManager(DeployConfig):
             self.execute(f'taskkill /f /pid {row[2]}', allow_failure=True, output=False)
 
     def alas_kill(self):
-        logger.hr(f'Kill existing AzurPilot', 0)
+        logger.hr(f'Kill existing AzurNext', 0)
         self.kill_by_name('alas.exe')
         self.kill_by_name('python.exe')

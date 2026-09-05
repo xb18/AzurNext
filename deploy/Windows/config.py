@@ -280,6 +280,6 @@ class DeployConfig(ConfigModel):
         logger.info(f"Last command: {command}")
         logger.info(
             "Please check your deploy settings in config/deploy.yaml "
-            "and re-open AzurPilot.exe"
+            "and re-open AzurNext.exe"
         )
         logger.info("Take the screenshot of entire window if you need help")

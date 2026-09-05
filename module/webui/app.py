@@ -170,7 +170,7 @@ html:not(.alas-initial-ready) #pywebio-scope-ROOT:empty::before {{
 html:not(.alas-initial-ready) #pywebio-scope-ROOT:empty::after {{
     position: absolute;
     top: calc(50% + 34px);
-    content: "AzurPilot";
+    content: "AzurNext";
     font: 600 14px/1.5 system-ui, sans-serif;
     letter-spacing: .04em;
 }}
@@ -326,7 +326,7 @@ def app():
             # 正常首屏已预载正确主题，避免通过 WebSocket 删除并重复发送 CSS。
             AlasGUI.theme = session_theme
             State.theme = session_theme
-        set_env(title="AzurPilot", output_animation=False)
+        set_env(title="AzurNext", output_animation=False)
         load_webui_styles(
             theme=AlasGUI.theme,
             is_mobile=info.user_agent.is_mobile,

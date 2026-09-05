@@ -310,7 +310,7 @@ class HomeMixin(WebUIMixinBase):
 
     def run(self, initial_page="home", localstorage=None) -> None:
         # setup gui
-        set_env(title="AzurPilot", output_animation=False)
+        set_env(title="AzurNext", output_animation=False)
         load_webui_styles(theme=self.theme, is_mobile=self.is_mobile)
 
         # OOBE 不依赖浏览器偏好，直接绘制，避免一次无意义的 WebSocket 往返。

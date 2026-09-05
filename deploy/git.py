@@ -210,7 +210,7 @@ class GitManager(DeployConfig):
             logger.warning('Failed to access cloud update control, skip update check')
 
     def git_install(self):
-        logger.hr('Update AzurPilot', 0)
+        logger.hr('Update AzurNext', 0)
 
         cloud_update = self.cloud_auto_update_enabled()
         if cloud_update is None:

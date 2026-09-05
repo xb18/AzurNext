@@ -13,9 +13,11 @@ from typing import Optional, Union
 from urllib.parse import urlparse
 
 
-BOOTSTRAPPED_ENV = "AZURPILOT_UV_BOOTSTRAPPED"
-BOOTSTRAP_UV_ENV = "AZURPILOT_BOOTSTRAP_UV"
-NO_BOOTSTRAP_ENV = "AZURPILOT_NO_UV_BOOTSTRAP"
+BOOTSTRAPPED_ENV = "AZURNEXT_UV_BOOTSTRAPPED"
+BOOTSTRAP_UV_ENV = "AZURNEXT_BOOTSTRAP_UV"
+LEGACY_BOOTSTRAP_UV_ENV = "AZURPILOT_BOOTSTRAP_UV"
+NO_BOOTSTRAP_ENV = "AZURNEXT_NO_UV_BOOTSTRAP"
+LEGACY_NO_BOOTSTRAP_ENV = "AZURPILOT_NO_UV_BOOTSTRAP"
 DEPENDENCY_SYNC_TIMEOUT = 30 * 60
 
 
@@ -151,7 +153,7 @@ def _resolve_uv(root: Path, bootstrap_uv: Optional[PathLikeArg] = None) -> Path:
     candidates = []
     if bootstrap_uv:
         candidates.append(Path(bootstrap_uv))
-    env_bootstrap = os.environ.get(BOOTSTRAP_UV_ENV)
+    env_bootstrap = os.environ.get(BOOTSTRAP_UV_ENV) or os.environ.get(LEGACY_BOOTSTRAP_UV_ENV)
     if env_bootstrap:
         candidates.append(Path(env_bootstrap))
     candidates.append(venv_uv(root))
@@ -166,7 +168,7 @@ def _resolve_uv(root: Path, bootstrap_uv: Optional[PathLikeArg] = None) -> Path:
             return Path(str(candidate))
 
     raise RuntimeError(
-        "uv is required to prepare AzurPilot's Python environment. "
+        "uv is required to prepare AzurNext's Python environment. "
         "Use the launcher package or install uv first."
     )
 

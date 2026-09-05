@@ -887,7 +887,7 @@ def run_webui_supervisor() -> None:
                 else:
                     time.sleep(startup_failures)
                 continue
-            logger.info(f"[GUI] 启动AzurPilot Web服务 (PID: {process.pid})")
+            logger.info(f"[GUI] 启动AzurNext Web服务 (PID: {process.pid})")
 
             try:
                 ready = _wait_for_webui_ready(process, ready_event)
@@ -1014,7 +1014,7 @@ def run_webui_supervisor() -> None:
     finally:
         _stop_webui_process_tree(process)
         _stop_dependency_sync_service(service, service_request_queue)
-        logger.info("[GUI] AzurPilot Web服务已成功退出")
+        logger.info("[GUI] AzurNext Web服务已成功退出")
 
 
 if __name__ == "__main__":

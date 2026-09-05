@@ -737,19 +737,19 @@ class AzurLaneAutoScript:
         logger.error_context(
             title=f'敏感任务失败，禁止自动重启（{task_name}）',
             reason=f'任务抛出了 {type(error).__name__}，且该任务被配置为重启敏感任务。',
-            impact='为避免状态或数据损坏，AzurPilot 将停止运行。',
+            impact='为避免状态或数据损坏，AzurNext 将停止运行。',
             action='查看错误现场并手动确认游戏状态；修复配置或根因后再启动。',
             exc=error,
             level=50,
         )
         handle_notify(
             self.config.Error_OnePushConfig,
-            title=f"AzurPilot <{self.config_name}> 敏感任务出错",
-            content=f"<{self.config_name}> 敏感任务 `{task_name}` 出错，AzurPilot 已停止运行\n{error}",
+            title=f"AzurNext <{self.config_name}> 敏感任务出错",
+            content=f"<{self.config_name}> 敏感任务 `{task_name}` 出错，AzurNext 已停止运行\n{error}",
         )
         notify_webui(
             self.config_name,
-            title=f"敏感任务 {task_name} 出错喵！AzurPilot 已停止喵！",
+            title=f"敏感任务 {task_name} 出错喵！AzurNext 已停止喵！",
             content=f"因为 {task_name} 是敏感任务，出错后不会重启喵~\n{error}",
         )
         exit(1)
@@ -795,7 +795,7 @@ class AzurLaneAutoScript:
             self._check_sensitive_exit(command, e)
             handle_notify(
                 self.config.Error_OnePushConfig,
-                title=f"AzurPilot <{self.config_name}> 警告",
+                title=f"AzurNext <{self.config_name}> 警告",
                 content=f"<{self.config_name}> 游戏未运行 - 将自动重启游戏",
             )
             notify_webui(
@@ -829,10 +829,10 @@ class AzurLaneAutoScript:
                         return 'recoverable'
 
             logger.warning(f'[Alas] 游戏卡住，{self.device.package} 将在10秒后重启')
-            logger.warning('[Alas] 如果您正在手动操作，请停止 AzurPilot')
+            logger.warning('[Alas] 如果您正在手动操作，请停止 AzurNext')
             handle_notify(
                 self.config.Error_OnePushConfig,
-                title=f"AzurPilot <{self.config_name}> 警告",
+                title=f"AzurNext <{self.config_name}> 警告",
                 content=f"<{self.config_name}> 游戏卡住 - 将自动重启游戏",
             )
             notify_webui(
@@ -849,16 +849,16 @@ class AzurLaneAutoScript:
                 title='游戏客户端发生异常',
                 reason='检测到碧蓝航线客户端的异常状态。',
                 impact='当前任务已中断，正在重启游戏尝试恢复。',
-                action='等待自动重启；若反复出现，请更新游戏和 AzurPilot，并保留错误现场。',
+                action='等待自动重启；若反复出现，请更新游戏和 AzurNext，并保留错误现场。',
                 exc=e,
             )
             self.save_error_log()
             self._check_sensitive_exit(command, e)
-            logger.warning('[Alas] 碧蓝航线游戏客户端发生错误，AzurPilot 无法处理')
+            logger.warning('[Alas] 碧蓝航线游戏客户端发生错误，AzurNext 无法处理')
             logger.warning(f'[Alas] 正在重启 {self.device.package} 以修复问题')
             handle_notify(
                 self.config.Error_OnePushConfig,
-                title=f"AzurPilot <{self.config_name}> 警告",
+                title=f"AzurNext <{self.config_name}> 警告",
                 content=f"<{self.config_name}> 游戏客户端错误 - 将自动重启游戏",
             )
             notify_webui(
@@ -878,7 +878,7 @@ class AzurLaneAutoScript:
                     title='无法识别游戏页面',
                     reason='服务器可用，但当前截图不符合任何已知游戏页面。',
                     impact='当前任务中断，将尝试重启游戏恢复。',
-                    action='确认游戏版本、服务器和分辨率；若更新后出现，请更新 AzurPilot 资源。',
+                    action='确认游戏版本、服务器和分辨率；若更新后出现，请更新 AzurNext 资源。',
                     exc=e,
                 )
                 self.save_error_log()
@@ -886,7 +886,7 @@ class AzurLaneAutoScript:
                 logger.warning('[Alas] 无法识别游戏页面，尝试重启游戏恢复')
                 handle_notify(
                     self.config.Error_OnePushConfig,
-                    title=f"AzurPilot <{self.config_name}> 警告",
+                    title=f"AzurNext <{self.config_name}> 警告",
                     content=f"<{self.config_name}> 无法识别页面 - 将自动重启游戏",
                 )
                 notify_webui(
@@ -915,13 +915,13 @@ class AzurLaneAutoScript:
                 logger.error_context(
                     title='ScriptError 重试次数已达上限',
                     reason=f'脚本错误已连续发生 {self.script_error_count} 次，可能是代码 bug。',
-                    impact='重试无意义，AzurPilot 将退出。',
+                    impact='重试无意义，AzurNext 将退出。',
                     action='查看错误现场中的 log.txt 和截图，修复代码后重新启动。',
                     level=50,
                 )
                 handle_notify(
                     self.config.Error_OnePushConfig,
-                    title=f"AzurPilot <{self.config_name}> 崩溃",
+                    title=f"AzurNext <{self.config_name}> 崩溃",
                     content=f"<{self.config_name}> ScriptError (连续 {self.script_error_count} 次)",
                 )
                 notify_webui(
@@ -934,7 +934,7 @@ class AzurLaneAutoScript:
             logger.warning(f'[Alas] ScriptError 第 {self.script_error_count}/3 次，尝试重启恢复')
             handle_notify(
                 self.config.Error_OnePushConfig,
-                title=f"AzurPilot <{self.config_name}> 警告",
+                title=f"AzurNext <{self.config_name}> 警告",
                 content=f"<{self.config_name}> ScriptError - 将尝试重启恢复 ({self.script_error_count}/3)",
             )
             notify_webui(
@@ -960,7 +960,7 @@ class AzurLaneAutoScript:
             self.config.task_call('Restart')
             handle_notify(
                 self.config.Error_OnePushConfig,
-                title=f"AzurPilot <{self.config_name}> 警告",
+                title=f"AzurNext <{self.config_name}> 警告",
                 content=f"<{self.config_name}> 模拟器离线 - 正在尝试重启模拟器",
             )
             notify_webui(
@@ -986,7 +986,7 @@ class AzurLaneAutoScript:
             self.config.task_call('Restart')
             handle_notify(
                 self.config.Error_OnePushConfig,
-                title=f"AzurPilot <{self.config_name}> 警告",
+                title=f"AzurNext <{self.config_name}> 警告",
                 content=f"<{self.config_name}> 需要人工介入 - 正在尝试自动重启恢复",
             )
             notify_webui(
@@ -1010,7 +1010,7 @@ class AzurLaneAutoScript:
             self.config.task_call('Restart')
             handle_notify(
                 self.config.Error_OnePushConfig,
-                title=f"AzurPilot <{self.config_name}> 警告",
+                title=f"AzurNext <{self.config_name}> 警告",
                 content=f"<{self.config_name}> 自动搜索设置失败 - 将自动重启游戏",
             )
             notify_webui(
@@ -1049,7 +1049,7 @@ class AzurLaneAutoScript:
             self.config.task_call('Restart')
             handle_notify(
                 self.config.Error_OnePushConfig,
-                title=f"AzurPilot <{self.config_name}> 警告",
+                title=f"AzurNext <{self.config_name}> 警告",
                 content=f"<{self.config_name}> 发生异常 - 正在尝试自动重启恢复",
             )
             notify_webui(
@@ -2223,7 +2223,7 @@ class AzurLaneAutoScript:
                             task_display = _get_task_display_name(task)
                             handle_notify(
                                 self.config.Error_OnePushConfig,
-                                title=f"[AzurPilot] <{self.config_name}> {task_display} {status}",
+                                title=f"[AzurNext] <{self.config_name}> {task_display} {status}",
                                 content=f"<{self.config_name}> 任务 {task_display} —— {status}",
                             )
                     except Exception:
@@ -2263,13 +2263,13 @@ class AzurLaneAutoScript:
                     logger.error_context(
                         title=f'敏感任务失败，禁止自动重启（{task}）',
                         reason=f'该任务是重启敏感任务，已连续失败 {failed} 次。',
-                        impact='为避免状态或数据损坏，AzurPilot 将停止运行。',
+                        impact='为避免状态或数据损坏，AzurNext 将停止运行。',
                         action='查看错误现场并手动确认游戏状态；如需自动恢复，请关闭对应任务的 StrictRestart。',
                         level=50,
                     )
                     handle_notify(
                         self.config.Error_OnePushConfig,
-                        title=f"AzurPilot <{self.config_name}> crashed",
+                        title=f"AzurNext <{self.config_name}> crashed",
                         content=f"<{self.config_name}> RequestHumanTakeover\nTask `{task}` failed {failed} or more times.",
                     )
                     notify_webui(
@@ -2278,7 +2278,7 @@ class AzurLaneAutoScript:
                         content=f"因为 {task} 任务失败次数过多喵！",
                     )
                     logger.warning("[Alas] 任务连续失败次数过多，正在上报错误日志...")
-                    ApiClient.submit_bug_log(f"AzurPilot <{self.config_name}> crashed\nTask `{task}` failed {failed} or more times.")
+                    ApiClient.submit_bug_log(f"AzurNext <{self.config_name}> crashed\nTask `{task}` failed {failed} or more times.")
                     exit(1)
 
                 if failed >= 3:
@@ -2301,7 +2301,7 @@ class AzurLaneAutoScript:
                     )
                     handle_notify(
                         self.config.Error_OnePushConfig,
-                        title=f"AzurPilot <{self.config_name}> 警告",
+                        title=f"AzurNext <{self.config_name}> 警告",
                         content=f"<{self.config_name}> 任务 `{task}` 连续失败 {failed} 次，将强制重启恢复",
                     )
                     notify_webui(
@@ -2380,7 +2380,7 @@ class AzurLaneAutoScript:
                         self.save_error_log()
                         logger.warning("[Alas] 首次全局异常，正在上报错误日志...")
                         ApiClient.submit_bug_log(
-                            f"AzurPilot <{self.config_name}> 调度器发生异常。\n"
+                            f"AzurNext <{self.config_name}> 调度器发生异常。\n"
                             f"调度器将自动重试恢复（永不退出）。\n"
                             f"{traceback.format_exc()}"
                         )

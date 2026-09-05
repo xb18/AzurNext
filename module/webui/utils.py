@@ -535,7 +535,7 @@ class Icon:
     ALAS = (
         '<img class="alas-icon" '
         'src="static/assets/spa/spa-icon-192x192.png" '
-        'alt="AzurPilot" width="42" height="42" decoding="async" fetchpriority="high">'
+        'alt="AzurNext" width="42" height="42" decoding="async" fetchpriority="high">'
     )
     SETTING = _read(filepath_icon("setting"))
     RUN = _read(filepath_icon("run"))
@@ -663,7 +663,7 @@ def _input_webui_password():
     try:
         while True:
             data = input_group(
-                label="AzurPilot",
+                label="AzurNext",
                 inputs=[
                     input(
                         name="password",

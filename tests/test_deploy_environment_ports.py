@@ -43,13 +43,18 @@ class TestDeployEnvironmentPorts(unittest.TestCase):
         """测试通过显式环境变量覆盖环境判断。"""
         current_root = str(Path(__file__).resolve().parents[1])
 
-        # 强制指定为 production
+        # 强制指定为 production (AZURNEXT_ENV)
+        with patch.dict(os.environ, {"AZURNEXT_ENV": "production"}, clear=True):
+            self.assertTrue(is_production_environment(current_root))
+            self.assertEqual(get_default_webui_port(current_root), 25548)
+
+        # 强制指定为 production (AZURPILOT_ENV 兼容)
         with patch.dict(os.environ, {"AZURPILOT_ENV": "production"}, clear=True):
             self.assertTrue(is_production_environment(current_root))
             self.assertEqual(get_default_webui_port(current_root), 25548)
 
         # 强制指定为 development (开发环境同样使用生产端口 25548)
-        with patch.dict(os.environ, {"AZURPILOT_ENV": "development"}, clear=True):
+        with patch.dict(os.environ, {"AZURNEXT_ENV": "development"}, clear=True):
             self.assertFalse(is_production_environment(r"F:\code\alas-launcher"))
             self.assertEqual(get_default_webui_port(r"F:\code\alas-launcher"), 25548)
 
