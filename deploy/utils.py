@@ -19,7 +19,7 @@ def is_production_environment(root_dir: Optional[str] = None) -> bool:
     """判断当前运行环境是否为生产环境。
 
     判断依据与优先级：
-    1. 环境变量显式指定 (AZURPILOT_ENV / ALAS_ENV):
+    1. 环境变量显式指定 (AZURNEXT_ENV / AZURPILOT_ENV / ALAS_ENV):
        - 'prod' 或 'production' -> True (生产环境)
        - 'dev' 或 'development' -> False (开发环境)
     2. 启动器环境：
