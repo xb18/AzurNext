@@ -72,7 +72,6 @@ class TestWebUIUrlRouting(unittest.TestCase):
             "menu": "Overview",
             "url_aside": "Home",
             "url_menu": "Setting",
-            "clarity_notice_shown": "1",
         }
 
         with (
@@ -113,7 +112,6 @@ class TestWebUIUrlRouting(unittest.TestCase):
             "menu": "HomePage",
             "url_aside": "alas",
             "url_menu": "Campaign",
-            "clarity_notice_shown": "1",
         }
 
         with (
@@ -153,7 +151,6 @@ class TestWebUIUrlRouting(unittest.TestCase):
             "menu": "Overview",
             "url_aside": "Manage",
             "url_menu": "ManageList",
-            "clarity_notice_shown": "1",
         }
 
         with (
@@ -192,7 +189,6 @@ class TestWebUIUrlRouting(unittest.TestCase):
         mock_localstorage = {
             "aside": "alas",
             "menu": "Commission",
-            "clarity_notice_shown": "1",
         }
 
         with (
@@ -237,7 +233,6 @@ class TestWebUIUrlRouting(unittest.TestCase):
             "menu": "Overview",
             "url_aside": "non_existent_instance",
             "url_menu": "Campaign",
-            "clarity_notice_shown": "1",
         }
 
         with (

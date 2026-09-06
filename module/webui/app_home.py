@@ -278,18 +278,10 @@ class HomeMixin(WebUIMixinBase):
             toast("正在获取公告... / Fetching announcement...", color="info")
 
     def _load_deferred_client_assets(self) -> None:
-        """在首次绘制后再加载非关键的分析和交互脚本。"""
+        """在首次绘制后再加载非关键的交互脚本。"""
         run_js(
             "(function() {"
             "function load() {"
-            "if (!document.getElementById('microsoft-clarity-script')) {"
-            "(function(c,l,a,r,i,t,y){"
-            "c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};"
-            "t=l.createElement(r);t.id='microsoft-clarity-script';t.async=1;"
-            "t.src='https://www.clarity.ms/tag/'+i;"
-            "y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);"
-            "})(window,document,'clarity','script','xszl2nrp3q');"
-            "}"
             "if (!document.querySelector('link[rel=\"manifest\"]')) {"
             "var manifest=document.createElement('link');"
             "manifest.rel='manifest';manifest.href='static/assets/spa/manifest.json';"
@@ -325,7 +317,7 @@ class HomeMixin(WebUIMixinBase):
         # RPC 较慢，用户也能立即看到真实外壳，且该读取不再阻塞首条内容。
         self.mount_shell()
         if localstorage is None:
-            localstorage = get_localstorage_values(("clarity_notice_shown", "aside", "menu"))
+            localstorage = get_localstorage_values(("aside", "menu"))
         all_instances = alas_instance()
         url_aside = localstorage.get("url_aside")
         url_menu = localstorage.get("url_menu")
@@ -340,7 +332,6 @@ class HomeMixin(WebUIMixinBase):
 
         self._stored_aside = aside
         self._stored_menu = menu
-        show_clarity_notice = localstorage.get("clarity_notice_shown") != "1"
         restore_instance = initial_page == "home" and aside in all_instances
         if initial_page == "manage" or aside == "Manage":
             self.ui_manage()
@@ -451,13 +442,6 @@ class HomeMixin(WebUIMixinBase):
         if restore_instance:
             self.ui_alas(aside, initial_menu=menu)
 
-        if show_clarity_notice:
-            set_localstorage("clarity_notice_shown", "1")
-            toast(
-                "本 WebUI 使用 Microsoft Clarity 收集页面访问、点击交互和性能数据，用于分析并改进使用体验。",
-                color="info",
-                duration=12,
-            )
         self._load_deferred_client_assets()
 
         # 启动任务处理器

@@ -220,7 +220,7 @@ class TestInitialRendering(unittest.TestCase):
             HomeMixin.run(gui)
 
         self.assertEqual(
-            ["shell", ("localstorage", ("clarity_notice_shown", "aside"))],
+            ["shell", ("localstorage", ("aside", "menu"))],
             events,
         )
 
