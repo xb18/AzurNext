@@ -22,6 +22,7 @@ THEME_OPTIONS = [
 ]
 REMOTE_ACCESS_MODE_OPTIONS = ["auto", "webrtc", "ssh"]
 TURN_CREDENTIAL_MODE_OPTIONS = ["static", "ephemeral"]
+CLOSE_ACTION_OPTIONS = ["ask", "minimize", "exit"]
 INVALID_INSTANCE_CHARS = set(".\\/:*?\"'<>|")
 
 
@@ -85,7 +86,13 @@ DEPLOY_GROUPS: tuple[tuple[str, tuple[DeployField, ...]], ...] = (
             DeployField("AutoRestartTime", "nullable_string"),
         ),
     ),
-    ("Misc", (DeployField("DiscordRichPresence", "bool"),)),
+    (
+        "Misc",
+        (
+            DeployField("DiscordRichPresence", "bool"),
+            DeployField("CloseAction", "select", tuple(CLOSE_ACTION_OPTIONS)),
+        ),
+    ),
     (
         "RemoteAccess",
         (

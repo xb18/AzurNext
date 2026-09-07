@@ -18,6 +18,7 @@ if sys.platform != "win32":
     except Exception:
         pass
 
+from deploy.utils import find_available_port, get_default_webui_port
 from deploy.uv import (
     DEPENDENCY_SYNC_TIMEOUT,
     dependency_sync_service,
@@ -202,13 +203,20 @@ def func(
     args, _ = parser.parse_known_args()
 
     # 配置服务器设置
-    host = args.host or State.deploy_config.WebuiHost or "0.0.0.0"
-    port = args.port or int(State.deploy_config.WebuiPort) or 25548
+    host = args.host or State.deploy_config.WebuiHost or "127.0.0.1"
+    default_port = get_default_webui_port()
+    if args.port:
+        # 生产环境（由 Launcher 分配并传入空闲端口）
+        port = args.port
+    else:
+        # 开发环境固定使用 25548
+        port = int(State.deploy_config.WebuiPort) if State.deploy_config.WebuiPort else default_port
     ssl_key = args.ssl_key or State.deploy_config.WebuiSSLKey
     ssl_cert = args.ssl_cert or State.deploy_config.WebuiSSLCert
     ssl = ssl_key is not None and ssl_cert is not None
     State.electron = args.electron
     State.webui_host = host
+    os.environ["WEBUI_PORT"] = str(port)
 
     # 记录启动器配置
     logger.hr("Launcher config")
@@ -693,7 +701,7 @@ def run_webui_supervisor() -> int:
                     raise FatalStartupError("WebUI 子进程连续启动失败")
                 time.sleep(startup_failures)
                 continue
-            logger.info(f"[GUI] 启动AzurPilot Web服务 (PID: {process.pid})")
+            logger.info(f"[GUI] 启动AzurNext Web服务 (PID: {process.pid})")
 
             try:
                 ready = _wait_for_webui_ready(process, ready_event)
@@ -823,9 +831,9 @@ def run_webui_supervisor() -> int:
         _stop_webui_process_tree(process)
         _stop_dependency_sync_service(service, service_request_queue)
         if fatal_error is None:
-            logger.info("[GUI] AzurPilot Web服务已成功退出")
+            logger.info("[GUI] AzurNext Web服务已成功退出")
         else:
-            logger.error("[GUI] AzurPilot Web服务启动失败：%s", fatal_error.reason)
+            logger.error("[GUI] AzurNext Web服务启动失败：%s", fatal_error.reason)
 
     return EXIT_STARTUP_FAILURE if fatal_error is not None else 0
 
