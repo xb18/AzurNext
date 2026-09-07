@@ -16,3 +16,10 @@ def notify_webui(*args, **kwargs):
     """
     from module.notify.notify import notify_webui
     return notify_webui(*args, **kwargs)
+
+
+def notify_cycle_completed(*args, **kwargs):
+    """全局调度单轮结束时触发统一通知。"""
+    from module.notify.notify import notify_cycle_completed
+    return notify_cycle_completed(*args, **kwargs)
+
