@@ -6,6 +6,7 @@ from module.base.button import ButtonGrid
 from module.base.decorator import cached_property
 from module.base.timer import Timer
 from module.combat.assets import *
+from module.exception import OilMaxed
 from module.logger import logger
 from module.reward.assets import *
 from module.ui.navbar import Navbar
@@ -85,6 +86,9 @@ class Reward(UI):
         clicked = False
         click_interval = Timer(1, count=2)
         for _ in self.loop():
+            if self.appear(OIL_LIMIT, offset=(20, 20)):
+                logger.warning('[奖励-任务] 检测到资源超出上限: OIL_LIMIT')
+                raise OilMaxed
             if clicked and not self.ui_page_appear(page_mission):
                 return clicked
             if click_interval.reached():
@@ -114,6 +118,9 @@ class Reward(UI):
         logger.info('[奖励-任务] 领取任务奖励')
         timeout = Timer(2, count=6).start()
         for _ in self.loop():
+            if self.appear(OIL_LIMIT, offset=(20, 20)):
+                logger.warning('[奖励-任务] 检测到资源超出上限: OIL_LIMIT')
+                raise OilMaxed
             if self.ui_page_appear(page_mission):
                 state = self._reward_get_state()
                 if state:
@@ -156,13 +163,7 @@ class Reward(UI):
             if timeout.reached():
                 return 'timeout'
 
-    def _reward_mission_collect(self):
-        """
-        统一处理"全部"和"每周"页面的任务奖励领取。
-
-        Returns:
-            Button | str: 最终状态，Button 对象或状态字符串。
-        """
+    def _reward_mission_collect_once(self):
         state = self._reward_wait_mission_list()
         while 1:
             logger.attr('任务状态', state)
@@ -185,6 +186,37 @@ class Reward(UI):
 
         return state
 
+    def _reward_mission_collect(self, upper=1):
+        """
+        统一处理"全部"和"每周"页面的任务奖励领取。
+        遇到石油超出上限时，前往后宅购买食物消耗石油后重试。
+
+        Args:
+            upper (int): 侧边导航栏编号（1 全部，5 每周）。
+
+        Returns:
+            Button | str: 最终状态，Button 对象或状态字符串。
+        """
+        for retry in range(3):
+            try:
+                return self._reward_mission_collect_once()
+            except OilMaxed:
+                amount = int(getattr(self.config, 'Reward_DormFoodOnOilMaxed', 20))
+                if amount > 0:
+                    logger.info(f'[奖励-石油] 资源超出上限，前往后宅购买 {amount} 份食物消耗石油 (重试 {retry + 1}/3)')
+                    from module.dorm.dorm import RewardDorm
+                    RewardDorm(self.config, self.device).dorm_food_run(amount=amount)
+                    self.ui_ensure(page_mission)
+                    self.reward_side_navbar_ensure(upper=upper)
+                    self.handle_info_bar()
+                else:
+                    logger.warning('[奖励-石油] 资源超出上限，但配置不购买后宅食物，结束本次任务奖励领取')
+                    break
+        else:
+            logger.warning('[奖励-石油] 尝试3次后仍超出资源上限，结束本次任务奖励领取以防死循环')
+
+        return 'oil_maxed'
+
     def _reward_mission_all(self):
         """
         领取"全部"页面的任务奖励。
@@ -193,7 +225,7 @@ class Reward(UI):
             bool: 是否已处理。
         """
         self.reward_side_navbar_ensure(upper=1)
-        return self._reward_mission_collect()
+        return self._reward_mission_collect(upper=1)
 
     def _reward_mission_weekly(self):
         """
@@ -207,7 +239,7 @@ class Reward(UI):
             return False
 
         self.reward_side_navbar_ensure(upper=5)
-        return self._reward_mission_collect()
+        return self._reward_mission_collect(upper=5)
 
     def reward_mission_notice(self):
         """
