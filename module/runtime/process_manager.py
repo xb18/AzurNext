@@ -169,7 +169,7 @@ class ProcessManager:
             return None
         return self._state_override
 
-    def start(self, func: str | None, ev: threading.Event | None = None) -> None:
+    def start(self, func: str | None = None, ev: threading.Event | None = None) -> None:
         """启动实例子进程运行指定任务或调度器。
 
         Args:
