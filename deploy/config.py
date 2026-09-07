@@ -1,3 +1,5 @@
+import copy
+import subprocess
 import sys
 from typing import Optional, Union
 
@@ -48,6 +50,7 @@ class ConfigModel:
 
     # 杂项
     DiscordRichPresence: bool = False
+    CloseAction: str = "ask"
 
     # 远程访问
     EnableRemoteAccess: bool = False
@@ -63,7 +66,7 @@ class ConfigModel:
     TurnCredentialMode: str = "static"
 
     # WebUI 配置
-    WebuiHost: str = "0.0.0.0"
+    WebuiHost: str = "127.0.0.1"
     WebuiPort: int = 25548
     WebuiSSLKey: Optional[str] = None
     WebuiSSLCert: Optional[str] = None
@@ -150,6 +153,11 @@ class DeployConfig(DeployConfigTransaction, ConfigModel):
         if self.Repository in ['cn']:
             super().__setattr__('Repository', GIT_OVER_CDN_REPOSITORY)
 
+        # 开发环境与生产环境 WebUI 端口统一使用生产端口
+        if self.WebuiPort in (DEVELOPMENT_WEBUI_PORT, PRODUCTION_WEBUI_PORT):
+            self.WebuiPort = PRODUCTION_WEBUI_PORT
+            self.config['WebuiPort'] = PRODUCTION_WEBUI_PORT
+
     def _redirect_github_repository(self):
         """为官方 GitHub 源一次性选择适合当前网络的更新镜像。"""
         if self._github_location_checked or self.Repository != GITHUB_REPOSITORY:
@@ -206,7 +214,11 @@ class DeployConfig(DeployConfigTransaction, ConfigModel):
         if not output:
             command = command + ' >nul 2>nul'
         logger.info(command)
-        error_code = os.system(command)
+        kwargs = {}
+        if os.name == 'nt':
+            kwargs['creationflags'] = getattr(subprocess, 'CREATE_NO_WINDOW', 0x08000000)
+        res = subprocess.run(command, shell=True, **kwargs)
+        error_code = res.returncode
         if error_code:
             if allow_failure:
                 logger.info(f"[ allowed failure ], error_code: {error_code}")
@@ -226,6 +238,6 @@ class DeployConfig(DeployConfigTransaction, ConfigModel):
         logger.info(f"Last command: {command}")
         logger.info(
             "Please check your deploy settings in config/deploy.yaml "
-            "and re-open AzurPilot.exe"
+            "and re-open AzurNext.exe"
         )
         logger.info("Take the screenshot of entire window if you need help")

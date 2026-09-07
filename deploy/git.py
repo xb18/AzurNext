@@ -74,7 +74,7 @@ class GitManager(DeployConfig):
         for i in range(max_retry):
             git = f'"{self.git}" -c http.userAgent={ua}'
             logger.info(f'Use git User-Agent: {ua}')
-            if self.execute(f'{git} fetch {source} {branch}'):
+            if self.execute(f'{git} fetch --depth 1 --update-shallow {source} {branch}'):
                 return
             logger.warning(f'git fetch failed with UA {ua}, attempt {i + 1}/{max_retry}')
             if i < max_retry - 1:
@@ -127,9 +127,10 @@ class GitManager(DeployConfig):
                 logger.info(f'Lock file {lock_file} exists, removing')
                 os.remove(lock_file)
         self.execute(f'{git} reset --hard {source}/{branch}')
-        # pull 联网，与 fetch 用不同 UA，降低同源请求的可归集性
-        git = f'"{self.git}" -c http.userAgent={self.git_user_agent()}'
-        self.execute(f'{git} pull --ff-only {source} {branch}')
+        if not self.execute(f'{git} checkout -B {branch} {source}/{branch}', allow_failure=True):
+            # pull 联网，与 fetch 用不同 UA，降低同源请求的可归集性
+            git = f'"{self.git}" -c http.userAgent={self.git_user_agent()}'
+            self.execute(f'{git} pull --ff-only {source} {branch}', allow_failure=True)
 
         logger.hr('Show Version', 1)
         self.execute(f'{git} --no-pager log --no-merges -1')
@@ -212,7 +213,7 @@ class GitManager(DeployConfig):
             logger.warning('Failed to access cloud update control, skip update check')
 
     def git_install(self):
-        logger.hr('Update AzurPilot', 0)
+        logger.hr('Update AzurNext', 0)
 
         cloud_update = self.cloud_auto_update_enabled()
         if cloud_update is None:

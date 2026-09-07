@@ -27,12 +27,12 @@ REPOSITORY="${REPOSITORY:-https://gitcode.com/ddl2/AzurLaneAutoScript}"
 IMAGE="${IMAGE:-crpi-gukwnnx8iuh9qpez.cn-shanghai.personal.cr.aliyuncs.com/hajiming/ap:latest}"
 OWNER_HOME="${OWNER_HOME:-$(detect_owner_home)}"
 APP_DIR="${APP_DIR:-${OWNER_HOME}/AP}"
-CONTAINER="AzurPilot"
+CONTAINER="AzurNext"
 WEBUI_PORT="${WEBUI_PORT:-}"
 DEFAULT_WEBUI_PORT=25548
-APP_WORKDIR="/app/AzurPilot"
+APP_WORKDIR="/app/AzurNext"
 VENV_VOLUME="${CONTAINER}-venv"
-AP_DOCKER_CONFIG="${AP_DOCKER_CONFIG:-${OWNER_HOME}/.azurpilot/docker}"
+AP_DOCKER_CONFIG="${AP_DOCKER_CONFIG:-${OWNER_HOME}/.azurnext/docker}"
 TOTAL_STEPS=8
 CURRENT_STEP=0
 LANGUAGE="${LANGUAGE:-}"
@@ -49,8 +49,8 @@ RESET='\033[0m'
 t() {
     local key="$1"
     case "${LANGUAGE}:${key}" in
-        en:title) printf 'AzurPilot Docker Deployment\n' ;;
-        en:subtitle) printf 'Automated installer for AzurPilot WebUI\n' ;;
+        en:title) printf 'AzurNext Docker Deployment\n' ;;
+        en:subtitle) printf 'Automated installer for AzurNext WebUI\n' ;;
         en:language_title) printf 'Select language / 选择语言\n' ;;
         en:language_hint) printf '1) 简体中文  2) English\n' ;;
         en:language_prompt) printf 'Please choose [1-2], default 1: ' ;;
@@ -87,8 +87,8 @@ t() {
         en:unsupported_tools) printf 'Unsupported system. Please install git and curl manually and rerun this script.\n' ;;
         en:missing_command) printf 'Missing command: %s\n' "${2:-}" ;;
         en:ip_failed) printf 'Unavailable\n' ;;
-        zh:title) printf 'AzurPilot Docker 部署向导\n' ;;
-        zh:subtitle) printf '为 AzurPilot WebUI 准备运行环境\n' ;;
+        zh:title) printf 'AzurNext Docker 部署向导\n' ;;
+        zh:subtitle) printf '为 AzurNext WebUI 准备运行环境\n' ;;
         zh:language_title) printf 'Select language / 选择语言\n' ;;
         zh:language_hint) printf '1) 简体中文  2) English\n' ;;
         zh:language_prompt) printf '请选择 [1-2]，默认 1：' ;;
