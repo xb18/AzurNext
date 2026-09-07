@@ -69,6 +69,7 @@ MenuDevelop:
   Remote:
   Setting:
   Utils:
+  GlobalScheduler:
 
 Overview:
   Scheduler:
@@ -294,6 +295,8 @@ DeploySetting:
   AutoRestartTimeHelp:
   DiscordRichPresence:
   DiscordRichPresenceHelp:
+  CloseAction:
+  CloseActionHelp:
   EnableRemoteAccess:
   EnableRemoteAccessHelp:
   RemoteAccessMode:
