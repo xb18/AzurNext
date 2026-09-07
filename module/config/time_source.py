@@ -24,8 +24,10 @@ from datetime import datetime, timezone
 NTP_EPOCH_DELTA = 2208988800  # NTP 时间纪元与 Unix 时间纪元的差值（秒）
 NTP_PORT = 123
 NTP_PACKET = b'\x1b' + b'\0' * 47
-NTP_SERVERS_ENV = 'AZURPILOT_NTP_SERVERS'
-NTP_DISABLE_ENV = 'AZURPILOT_NTP_DISABLE'
+NTP_SERVERS_ENV = 'AZURNEXT_NTP_SERVERS'
+NTP_SERVERS_LEGACY_ENV = 'AZURPILOT_NTP_SERVERS'
+NTP_DISABLE_ENV = 'AZURNEXT_NTP_DISABLE'
+NTP_DISABLE_LEGACY_ENV = 'AZURPILOT_NTP_DISABLE'
 # 默认 NTP 服务器列表（中国优先）
 DEFAULT_NTP_SERVERS = (
     'ntp.ntsc.ac.cn',
@@ -58,12 +60,18 @@ class NetworkTimeSource:
 
     @property
     def enabled(self):
-        value = os.environ.get(NTP_DISABLE_ENV, '').strip().lower()
+        value = (
+            os.environ.get(NTP_DISABLE_ENV, '').strip()
+            or os.environ.get(NTP_DISABLE_LEGACY_ENV, '').strip()
+        ).lower()
         return value not in {'1', 'true', 'yes', 'on'}
 
     @property
     def servers(self):
-        value = os.environ.get(NTP_SERVERS_ENV, '').strip()
+        value = (
+            os.environ.get(NTP_SERVERS_ENV, '').strip()
+            or os.environ.get(NTP_SERVERS_LEGACY_ENV, '').strip()
+        )
         if value:
             servers = [item.strip() for item in value.replace(';', ',').split(',')]
             servers = [item for item in servers if item]

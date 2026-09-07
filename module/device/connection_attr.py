@@ -20,17 +20,33 @@ from module.exception import RequestHumanTakeover
 from module.logger import logger
 
 
-def platform_tools_url():
+def platform_tools_urls():
     """
-    返回当前平台对应的 Android platform-tools 下载地址。
+    返回当前平台对应的 Android platform-tools 下载候选地址列表。
+    按优先级回退尝试：腾讯云镜像主节点 -> 腾讯云镜像备用节点 -> 清华镜像 -> Google 官方源。
     """
     if sys.platform == 'win32':
-        return 'https://dl.google.com/android/repository/platform-tools-latest-windows.zip'
+        return [
+            'https://mirrors.cloud.tencent.com/AndroidSDK/platform-tools_r34.0.1-windows.zip',
+            'https://mirrors.tencent.com/AndroidSDK/platform-tools_r34.0.1-windows.zip',
+            'https://mirrors.tuna.tsinghua.edu.cn/android/repository/platform-tools-latest-windows.zip',
+            'https://dl.google.com/android/repository/platform-tools-latest-windows.zip',
+        ]
     if sys.platform == 'darwin':
-        return 'https://dl.google.com/android/repository/platform-tools-latest-darwin.zip'
+        return [
+            'https://mirrors.cloud.tencent.com/AndroidSDK/platform-tools_r34.0.1-darwin.zip',
+            'https://mirrors.tencent.com/AndroidSDK/platform-tools_r34.0.1-darwin.zip',
+            'https://mirrors.tuna.tsinghua.edu.cn/android/repository/platform-tools-latest-darwin.zip',
+            'https://dl.google.com/android/repository/platform-tools-latest-darwin.zip',
+        ]
     if sys.platform.startswith('linux'):
-        return 'https://dl.google.com/android/repository/platform-tools-latest-linux.zip'
-    return None
+        return [
+            'https://mirrors.cloud.tencent.com/AndroidSDK/platform-tools_r34.0.1-linux.zip',
+            'https://mirrors.tencent.com/AndroidSDK/platform-tools_r34.0.1-linux.zip',
+            'https://mirrors.tuna.tsinghua.edu.cn/android/repository/platform-tools-latest-linux.zip',
+            'https://dl.google.com/android/repository/platform-tools-latest-linux.zip',
+        ]
+    return []
 
 
 class ConnectionAttr:
@@ -47,6 +63,7 @@ class ConnectionAttr:
     def download_adb_binary(self, target):
         """
         下载官方 Android platform-tools，并把 adb 放到目标路径。
+        支持多源自动回退（腾讯 -> 清华 -> Google）。
 
         Args:
             target (str): 期望的 adb 可执行文件路径，通常是 .venv/bin/adb。
@@ -54,8 +71,8 @@ class ConnectionAttr:
         Returns:
             str | None: 安装成功后的 adb 绝对路径。
         """
-        url = platform_tools_url()
-        if url is None:
+        urls = platform_tools_urls()
+        if not urls:
             logger.warning(f'[设备] 当前平台不支持自动下载 ADB: {sys.platform}')
             return None
 
@@ -73,13 +90,29 @@ class ConnectionAttr:
         source = tools_dir / executable
 
         logger.hr('下载ADB', level=2)
-        logger.warning(f'[设备] 未找到 ADB，正在下载 Android platform-tools: {url}')
         tools_dir.parent.mkdir(parents=True, exist_ok=True)
-        try:
-            urllib.request.urlretrieve(url, archive)
-        except Exception as e:
-            archive.unlink(missing_ok=True)
-            logger.warning(f'[设备] ADB 下载失败: {e}')
+
+        download_success = False
+        for url in urls:
+            logger.warning(f'[设备] 未找到 ADB，尝试下载 Android platform-tools: {url}')
+            try:
+                import requests
+                headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
+                with requests.get(url, headers=headers, stream=True, timeout=15) as r:
+                    r.raise_for_status()
+                    with open(archive, 'wb') as f:
+                        for chunk in r.iter_content(chunk_size=1024 * 64):
+                            if chunk:
+                                f.write(chunk)
+                download_success = True
+                logger.info(f'[设备] ADB 下载完成: {url}')
+                break
+            except Exception as e:
+                archive.unlink(missing_ok=True)
+                logger.warning(f'[设备] 下载源 {url} 失败: {e}，正在尝试备用源...')
+
+        if not download_success:
+            logger.error('[设备] 所有 ADB 下载源均失败')
             return None
 
         if tools_dir.exists():
@@ -355,8 +388,8 @@ class ConnectionAttr:
                 with OpenKey(HKEY_LOCAL_MACHINE, r"SOFTWARE\BlueStacks_nxt_cn") as key:
                     directory = QueryValueEx(key, 'UserDefinedDir')[0]
             except FileNotFoundError:
-                logger.error('[设备-属性] 未找到注册表 HKEY_LOCAL_MACHINE\SOFTWARE\BlueStacks_nxt '
-                             '或 HKEY_LOCAL_MACHINE\SOFTWARE\BlueStacks_nxt_cn')
+                logger.error(r'[设备-属性] 未找到注册表 HKEY_LOCAL_MACHINE\SOFTWARE\BlueStacks_nxt '
+                             r'或 HKEY_LOCAL_MACHINE\SOFTWARE\BlueStacks_nxt_cn')
                 logger.error('[设备-属性] 请确认使用的是蓝叠 5 Hyper-V 版本，而非普通蓝叠 5')
                 raise RequestHumanTakeover
         logger.info(f"配置文件目录: {directory}")

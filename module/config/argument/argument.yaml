@@ -102,6 +102,10 @@ Emulator:
   PackageName:
     value: auto
     option: [auto]
+  M4399HideFloatingBall:
+    type: checkbox
+    value: true
+    option: [true, false]
   ServerName:
     value: disabled
     option: [disabled]
@@ -330,6 +334,24 @@ Retirement:
   RetireMode:
     value: one_click_retire
     option: [one_click_retire, enhance, old_retire]
+  RetireSRBulin:
+    type: checkbox
+    value: true
+  RetireSRBulinThreshold:
+    value: 3
+    validate: [0, 50]
+  RetireSRBulinKeepCount:
+    value: 5
+    validate: [0, 50]
+  RetireSSRBulin:
+    type: checkbox
+    value: false
+  RetireSSRBulinThreshold:
+    value: 1
+    validate: [0, 50]
+  RetireSSRBulinKeepCount:
+    value: 5
+    validate: [0, 50]
 PublicEmotion:
   Enable: false
   Tasks:
@@ -353,6 +375,28 @@ PublicEmotion:
     option: [not_in_dormitory, dormitory_floor_1, dormitory_floor_2]
   FleetOath: false
   FleetOnsen: false
+GlobalScheduler:
+  Enable:
+    type: checkbox
+    value: false
+    option: [true, false]
+  ConfigList:
+    type: textarea
+    value: auto
+  RunSingleCycle:
+    type: checkbox
+    value: false
+    option: [true, false]
+  WhenTaskQueueEmpty:
+    value: close_emulator
+    option: [close_emulator, app_stop, goto_main, stay_there]
+  WaitBetweenConfigs:
+    value: 5
+    validate: [0, 60]
+  SwitchOnError:
+    type: checkbox
+    value: true
+    option: [true, false]
 YukikazeTaskManager:
   TaskPriorityAdjustment:
     type: task_priority
@@ -709,7 +753,7 @@ EventDaily:
 Raid:
   Mode:
     value: hard
-    option: [easy, normal, hard, ex]
+    option: [easy, normal, hard, ex, easy_15_normal_15_hard]
   UseTicket: false
 RaidDaily:
   StageFilter: |-
@@ -813,6 +857,9 @@ Commission:
     type: textarea
     value: ""
   DoMajorCommission: false
+  DormFoodOnOilMaxed:
+    value: 20
+    validate: [0, 100]
   CommissionNotifyReward:
     type: checkbox
     value: false
@@ -939,6 +986,7 @@ MeowfficerTrain:
   MaxFeedLevel: 5
 GuildLogistics:
   Enable: true
+  BuySupply: true
   SelectNewMission: false
   ExchangeFilter: |-
     PlateTorpedoT1 > PlateAntiAirT1 > PlatePlaneT1 > PlateGunT1 > PlateGeneralT1
@@ -958,6 +1006,9 @@ Reward:
   CollectExp: true
   CollectMission: true
   CollectWeeklyMission: false
+  DormFoodOnOilMaxed:
+    value: 20
+    validate: [0, 100]
 Awaken:
   LevelCap:
     value: level120

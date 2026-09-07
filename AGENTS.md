@@ -123,6 +123,31 @@ def some_function(self, skip_first_screenshot=True):
 
 AI 自行创建 PR 或执行任何涉及提 PR 的操作时，必须按 [.github/PULL_REQUEST_TEMPLATE.md](.github/PULL_REQUEST_TEMPLATE.md) 模板填写：如实勾选变更类型与代码质量确认项（未执行的检查不勾选），并在描述中说明变更原因、验证结果与相关 Issue。
 
+## 桌面外壳与 Web 交互规范（Thin Shell）
+
+AzurNext 桌面端采用 **Thin Shell（瘦外壳）** 架构设计（外壳为 Tauri 2 + Rust 构建的 `alas-launcher`）：
+
+1. **Rust 只暴露底层接口到 `window.alasDesktop`**：
+   - Rust 外壳仅作为纯粹的底层系统能力提供者，所有能力必须统一收拢挂载在 `window.alasDesktop` 顶级命名空间下（严禁暴露分散的全局函数）；
+   - Rust 端严禁承载业务调度判定、状态机逻辑，严禁 Rust 端后台轮询/SSE 读取 WebUI 业务数据；
+   - 核心暴露接口包括：
+     - `window.alasDesktop.showNotification(title, content)`：调用系统原生 Toast 通知（点击唤醒主窗口）；
+     - `window.alasDesktop.focus()`：唤醒并置顶聚焦主窗口；
+     - `window.alasDesktop.openExternal(url)`：使用系统默认浏览器打开外部链接；
+     - `window.alasDesktop.openFolder(path)`：在系统文件资源管理器中定位目录或文件；
+     - `window.alasDesktop.getInfo()`：获取启动器版本与系统平台信息；
+     - `window.alasDesktop.minimize()` / `toggleMaximize()` / `minimizeToTray()` / `close()` / `exit()`：窗口与托盘管理；
+     - `window.alasDesktop.triggerUpdate()` / `getUpdateStatus()`：软件更新管理。
+
+2. **Web 端做业务逻辑开发**：
+   - 全权由 Web 端（Python WebUI / 前端 JS）负责业务逻辑判断、流程状态推进与通知时机决策；
+   - **通知设计原则**：有外壳（`window.alasDesktop?.showNotification` 可用）时走系统原生通知，无外壳（纯浏览器访问）时回退为 WebUI 界面 Toast（如使用 `notify_or_toast(...)`）；
+   - **严禁用 Python 调度系统通知**：Python 端不直接调度操作系统级通知 API（如 powershell/winrt 等），所有系统原生通知统一由前端 Web 页面在有壳环境下通过 `window.alasDesktop.showNotification` 触发。
+
+3. **全平台（Windows / macOS / Linux）支持要求**：
+   - 桌面外壳与 Web 交互接口必须在 Windows、macOS 和 Linux 上均有完整的底层实现，严禁平台缺失；
+   - 任何涉及外壳功能增强或接口调整，必须保证三端代码兼容，不可引入破坏其他平台的特定依赖。
+
 ## 维护这些指令
 
 共享规范只在本文件维护，`CLAUDE.md` 仅负责导入。新增规则应针对实际工作流或已证实的陷阱；条件性细节放在相关文档并注明何时查阅。不要重新堆积完整 API 清单、易过期的数量或版本副本，也不要将单次任务的偏好扩展为所有任务的固定流程。

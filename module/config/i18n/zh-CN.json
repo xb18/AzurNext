@@ -532,6 +532,12 @@
       "com.bilibili.blhx.bilibiliMove": "国服 迁移渠道服 com.bilibili.blhx.bilibiliMove",
       "com.hkmanjuu.azurlane.gp.mc": "台服 com.hkmanjuu.azurlane.gp.mc"
     },
+    "M4399HideFloatingBall": {
+      "name": "隐藏 4399 悬浮球",
+      "help": "针对 4399 渠道服，在登录或重启时自动检测并隐藏顶部悬浮球以防遮挡 UI。\n【首次使用说明】：若悬浮球位置被手动移开导致无法识别，请手动将悬浮球拖动至屏幕底部区域，弹窗提示后点击【取消】，悬浮球将自动重置回顶部默认位置（即软件可识别的标准位置）。",
+      "True": "开启",
+      "False": "关闭"
+    },
     "ServerName": {
       "name": "游戏内服务器",
       "help": "选择游戏内所在的服务器以启用服务器状态检测\n当服务器维护或网络不可用时挂起直到恢复",
@@ -1087,6 +1093,30 @@
       "one_click_retire": "一键退役",
       "enhance": "强化",
       "old_retire": "传统退役"
+    },
+    "RetireSRBulin": {
+      "name": "退役泛用型布里(紫布里)",
+      "help": "当一键退役无法清理出足够船坞容量，且船坞剩余容量小于等于阈值时，自动退役多余的紫布里以释放船坞空间。"
+    },
+    "RetireSRBulinThreshold": {
+      "name": "退役紫布里船坞剩余容量阈值",
+      "help": "当常规退役后船坞剩余容量小于等于此数值（且未能清理出有效空间）时触发退役紫布里。设为0表示仅在船坞完全满载时触发。"
+    },
+    "RetireSRBulinKeepCount": {
+      "name": "退役紫布里最少保留数量",
+      "help": "退役紫布里时最少在船坞中保留的紫布里数量，防止将所有紫布里全部退役。设为0表示不保留全部退役。"
+    },
+    "RetireSSRBulin": {
+      "name": "退役试作型布里MKII(金布里)",
+      "help": "当一键退役和紫布里退役均无法清理出足够船坞容量，且船坞剩余容量小于等于阈值时，自动退役多余的金布里以释放船坞空间。"
+    },
+    "RetireSSRBulinThreshold": {
+      "name": "退役金布里船坞剩余容量阈值",
+      "help": "当紫布里退役后船坞剩余容量依然小于等于此数值时触发退役金布里。设为0表示仅在船坞完全满载时触发。"
+    },
+    "RetireSSRBulinKeepCount": {
+      "name": "退役金布里最少保留数量",
+      "help": "退役金布里时最少在船坞中保留的金布里数量，防止将所有金布里全部退役。设为0表示不保留全部退役。"
     }
   },
   "PublicEmotion": {
@@ -1132,6 +1162,46 @@
     "FleetOnsen": {
       "name": "全员已放置温泉 (+10/h)",
       "help": ""
+    }
+  },
+  "GlobalScheduler": {
+    "_info": {
+      "name": "全局调度设置",
+      "help": "支持按顺序轮流执行已创建的所有 Alas 配置（如官服 + 4399服、小号等）。\n当前配置当期任务全部完成后自动收尾并切换到下一个配置，全部配置任务完成后统一等待最早到期任务。"
+    },
+    "Enable": {
+      "name": "启用全局调度",
+      "help": "开启后，调度器将按顺序轮流执行所有已创建的配置实例。\n默认关闭。",
+      "True": "开启",
+      "False": "关闭"
+    },
+    "ConfigList": {
+      "name": "配置列表",
+      "help": "填写 `auto` 或留空时，将自动按顺序执行所有已创建的配置。\n也可手动输入配置名称（如 `alas, alas4399`），支持自定义运行顺序或删除不需要运行的配置。"
+    },
+    "RunSingleCycle": {
+      "name": "只执行一轮",
+      "help": "开启后，所有配置的一轮任务全部完成后直接结束调度器（默认开启，适合刷完日常即停）；\n若关闭，将计算所有配置的最早到期时间并进入全局动态等待流程，持续循环运行。",
+      "True": "开启",
+      "False": "关闭"
+    },
+    "WhenTaskQueueEmpty": {
+      "name": "单个配置完成动作",
+      "help": "当某个配置的所有到期任务均执行完毕时，在切换到下一个配置前执行的操作。\n推荐选择【关闭游戏】以释放内存与模拟器资源。",
+      "close_emulator": "关闭模拟器",
+      "app_stop": "关闭游戏",
+      "goto_main": "返回游戏主界面",
+      "stay_there": "停留在当前界面"
+    },
+    "WaitBetweenConfigs": {
+      "name": "配置切换缓冲时间",
+      "help": "切换到下一个配置时的等待缓冲时间（秒），默认 5 秒。"
+    },
+    "SwitchOnError": {
+      "name": "遇错自动跳过",
+      "help": "当某一配置发生严重错误或连续失败时，自动记录并跳至下一配置，防止单个配置卡死导致全局停摆。",
+      "True": "开启",
+      "False": "关闭"
     }
   },
   "YukikazeTaskManager": {
@@ -2030,7 +2100,8 @@
       "easy": "简单",
       "normal": "普通",
       "hard": "困难",
-      "ex": "EX"
+      "ex": "EX",
+      "easy_15_normal_15_hard": "简单15次-普通15次-之后困难"
     },
     "UseTicket": {
       "name": "使用演习券",
@@ -2216,6 +2287,10 @@
     "DoMajorCommission": {
       "name": "做主要委托（1200油/1000油委托）",
       "help": "1200油委托现在已经过时，收益很低，建议关闭"
+    },
+    "DormFoodOnOilMaxed": {
+      "name": "石油溢出时购买后宅食物数量",
+      "help": "当领取奖励或派遣委托遇到石油达到上限时，自动前往后宅购买指定数量的海军咖喱（每份消耗50石油）以腾出容量。设为0则不自动购买。"
     },
     "CommissionNotifyReward": {
       "name": "委托奖励推送通知",
@@ -2498,6 +2573,10 @@
       "name": "启用大舰队后勤",
       "help": "领取大舰队任务, 提交筹备物资, 领取舰队奖励"
     },
+    "BuySupply": {
+      "name": "购买补给",
+      "help": "司令/副司令自动购买补给（消耗舰队资金）。关闭时若补给已由其他官员购买，仍会自动免费领取"
+    },
     "SelectNewMission": {
       "name": "选择新的每周舰队任务",
       "help": "这个帐号需要是舰队司令或者副司令，才能开启\n默认选择最容易完成的塞壬歼灭Ⅲ，任务是击沉任意敌人300艘"
@@ -2561,6 +2640,10 @@
     "CollectWeeklyMission": {
       "name": "领取周任务奖励",
       "help": ""
+    },
+    "DormFoodOnOilMaxed": {
+      "name": "石油溢出时购买后宅食物数量",
+      "help": "当领取任务奖励遇到石油达到上限时，自动前往后宅购买指定数量的海军咖喱（每份消耗50石油）以腾出容量。设为0则不自动购买。"
     }
   },
   "Awaken": {
@@ -6524,7 +6607,8 @@
       "Update": "更新器",
       "Remote": "远程控制",
       "Setting": "设置",
-      "Utils": "开发者工具"
+      "Utils": "开发者工具",
+      "GlobalScheduler": "全局调度"
     },
     "Overview": {
       "Scheduler": "调度器",
@@ -6750,6 +6834,8 @@
       "AutoRestartTimeHelp": "有更新时每天自动重启的时间，留空表示禁用。",
       "DiscordRichPresence": "Discord 富状态",
       "DiscordRichPresenceHelp": "在 Discord 中展示 AzurPilot 运行状态。",
+      "CloseAction": "关闭窗口行为",
+      "CloseActionHelp": "点击右上角关闭按钮时的行为：ask（每次询问）、minimize（最小化到托盘）、exit（退出程序）。",
       "EnableRemoteAccess": "启用远程访问",
       "EnableRemoteAccessHelp": "通过 SSH 反向隧道暴露 WebUI。公网使用前请务必设置密码。",
       "RemoteAccessMode": "远程访问模式",

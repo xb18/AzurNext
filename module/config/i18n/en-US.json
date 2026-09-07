@@ -532,6 +532,12 @@
       "com.bilibili.blhx.bilibiliMove": "National service com.bilibili.blhx.bilibiliMove",
       "com.hkmanjuu.azurlane.gp.mc": "Taiwan server com.hkmanjuu.azurlane.gp.mc"
     },
+    "M4399HideFloatingBall": {
+      "name": "Hide 4399 Floating Ball",
+      "help": "Automatically hide the top floating ball for 4399 channel server during login/restart.\n[First-time Use]: If the floating ball position was moved and cannot be recognized, manually drag it to the bottom area and click [Cancel] on the prompt to reset it back to the default top position.",
+      "True": "Enable",
+      "False": "Disable"
+    },
     "ServerName": {
       "name": "In-game server",
       "help": "Select the server where the game is located to enable server status detection\nSuspend until resumed during server maintenance or network unavailability",
@@ -1087,6 +1093,30 @@
       "one_click_retire": "Retire with one click",
       "enhance": "Enhance",
       "old_retire": "Traditional retirement"
+    },
+    "RetireSRBulin": {
+      "name": "Retire Universal Bulin (SR)",
+      "help": "When Quick Retire cannot free up enough dock capacity and remaining dock space is less than or equal to the threshold, automatically retire excess Universal Bulins (Purple Bulins)."
+    },
+    "RetireSRBulinThreshold": {
+      "name": "Retire Bulin Remaining Dock Threshold",
+      "help": "Trigger Bulin retirement when remaining dock space is <= this number after normal retirement. Set to 0 to trigger only when dock is 100% full."
+    },
+    "RetireSRBulinKeepCount": {
+      "name": "Retire Bulin Minimum Reserve Count",
+      "help": "Minimum number of Universal Bulins to keep in dock during retirement to avoid retiring all of them. Set to 0 to keep none."
+    },
+    "RetireSSRBulin": {
+      "name": "Retire Prototype Bulin MKII (SSR)",
+      "help": "When Quick Retire and Purple Bulin retirement cannot free up enough dock capacity and remaining dock space is <= threshold, automatically retire excess Gold Bulins."
+    },
+    "RetireSSRBulinThreshold": {
+      "name": "Retire Gold Bulin Remaining Dock Threshold",
+      "help": "Trigger Gold Bulin retirement only if remaining dock space is still <= this number after purple bulin retirement."
+    },
+    "RetireSSRBulinKeepCount": {
+      "name": "Retire Gold Bulin Minimum Reserve Count",
+      "help": "Minimum number of Gold Bulins to keep in dock during retirement to avoid retiring all of them."
     }
   },
   "PublicEmotion": {
@@ -1132,6 +1162,46 @@
     "FleetOnsen": {
       "name": "All members have placed hot springs (+10/h)",
       "help": ""
+    }
+  },
+  "GlobalScheduler": {
+    "_info": {
+      "name": "Global Scheduler Settings",
+      "help": "Support running all created Alas configurations in sequential order (e.g. Official server + 4399 server, alts, etc.).\nAutomatically closes game and switches to the next config when current tasks finish; waits for earliest next run when all configs are idle."
+    },
+    "Enable": {
+      "name": "Enable Global Scheduler",
+      "help": "When enabled, scheduler runs all created configs in sequential order.\nDisabled by default.",
+      "True": "Enable",
+      "False": "Disable"
+    },
+    "ConfigList": {
+      "name": "Config List",
+      "help": "When set to `auto` or left empty, all created configs will be executed in order automatically.\nYou can also manually specify config names (e.g. `alas, alas4399`) to customize order or exclude configs."
+    },
+    "RunSingleCycle": {
+      "name": "Single Cycle Only",
+      "help": "When enabled (default), scheduler stops after all configs complete one round of due tasks.\nWhen disabled, enters dynamic global wait and loops continuously.",
+      "True": "Enable",
+      "False": "Disable"
+    },
+    "WhenTaskQueueEmpty": {
+      "name": "Action on Config Finished",
+      "help": "Action to perform after all due tasks of a config are finished, before switching to the next config.\n[Close Game] is recommended to release resources.",
+      "close_emulator": "Close Emulator",
+      "app_stop": "Close Game",
+      "goto_main": "Go to Main Page",
+      "stay_there": "Stay There"
+    },
+    "WaitBetweenConfigs": {
+      "name": "Wait Between Configs",
+      "help": "Buffer wait time (seconds) before switching to the next config. Default 5 seconds."
+    },
+    "SwitchOnError": {
+      "name": "Switch to Next Config on Error",
+      "help": "When a config encounters an unrecoverable error or max retries, automatically log and switch to the next config to avoid blocking the global queue.",
+      "True": "Enable",
+      "False": "Disable"
     }
   },
   "YukikazeTaskManager": {
@@ -2030,7 +2100,8 @@
       "easy": "Easy",
       "normal": "Normal",
       "hard": "Hard",
-      "ex": "EX"
+      "ex": "EX",
+      "easy_15_normal_15_hard": "15 Easy, 15 Normal, then Hard"
     },
     "UseTicket": {
       "name": "Use exercise tickets",
@@ -2216,6 +2287,10 @@
     "DoMajorCommission": {
       "name": "Run major commissions (1200/1000 oil)",
       "help": "The 1200 oil commission is now obsolete and the yield is very low. It is recommended to disable it."
+    },
+    "DormFoodOnOilMaxed": {
+      "name": "Dorm Food Bought When Oil Maxed",
+      "help": "When claiming rewards or dispatching commissions with max oil, automatically buy the specified amount of Naval Curry in Dorm (50 oil each) to free up space. Set to 0 to disable."
     },
     "CommissionNotifyReward": {
       "name": "Commission reward push notification",
@@ -2498,6 +2573,10 @@
       "name": "Enable guild logistics",
       "help": "Receive guild missions, submit preparation materials, and receive fleet rewards"
     },
+    "BuySupply": {
+      "name": "Buy Supply",
+      "help": "Guild master/officers will automatically buy supply (costs guild funds). If disabled, will still claim supply if already bought by other leaders."
+    },
     "SelectNewMission": {
       "name": "Select new weekly fleet mission",
       "help": "This account needs to be the fleet commander or deputy commander to enable.\nBy default, Siren Annihilation III, which is the easiest to complete, is selected. The mission is to sink 300 enemy ships."
@@ -2561,6 +2640,10 @@
     "CollectWeeklyMission": {
       "name": "Collect weekly mission rewards",
       "help": ""
+    },
+    "DormFoodOnOilMaxed": {
+      "name": "Dorm Food Bought When Oil Maxed",
+      "help": "When claiming mission rewards with max oil, automatically buy the specified amount of Naval Curry in Dorm (50 oil each) to free up space. Set to 0 to disable."
     }
   },
   "Awaken": {
@@ -6524,7 +6607,8 @@
       "Update": "Updater",
       "Remote": "Remote Control",
       "Setting": "Settings",
-      "Utils": "Utils"
+      "Utils": "Utils",
+      "GlobalScheduler": "Global Scheduler"
     },
     "Overview": {
       "Scheduler": "Scheduler",
@@ -6750,6 +6834,8 @@
       "AutoRestartTimeHelp": "Daily restart time when an update is available. Leave empty to disable.",
       "DiscordRichPresence": "Discord Rich Presence",
       "DiscordRichPresenceHelp": "Show AzurPilot status in Discord.",
+      "CloseAction": "Window Close Action",
+      "CloseActionHelp": "Behavior when clicking the top-right close button: ask (ask every time), minimize (minimize to tray), exit (exit application).",
       "EnableRemoteAccess": "Enable Remote Access",
       "EnableRemoteAccessHelp": "Expose WebUI through an SSH reverse tunnel. Set a password before public access.",
       "RemoteAccessMode": "Remote Access Mode",

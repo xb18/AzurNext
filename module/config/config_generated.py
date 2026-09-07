@@ -93,6 +93,7 @@ class GeneratedConfig:
     # 配置组 `Emulator`
     Emulator_Serial = 'auto'
     Emulator_PackageName = 'auto'  # auto, com.bilibili.azurlane, com.YoStarEN.AzurLane, com.YoStarJP.AzurLane, com.hkmanjuu.azurlane.gp, com.bilibili.blhx.huawei, com.bilibili.blhx.honor, com.bilibili.blhx.mi, com.tencent.tmgp.bilibili.blhx, com.bilibili.blhx.baidu, com.bilibili.blhx.qihoo, com.bilibili.blhx.nearme.gamecenter, com.bilibili.blhx.vivo, com.bilibili.blhx.mz, com.bilibili.blhx.dl, com.bilibili.blhx.lenovo, com.bilibili.blhx.uc, com.bilibili.blhx.mzw, com.yiwu.blhx.yx15, com.bilibili.blhx.m4399, com.bilibili.blhx.bilibiliMove, com.hkmanjuu.azurlane.gp.mc
+    Emulator_M4399HideFloatingBall = True  # True, False
     Emulator_ServerName = 'disabled'  # disabled, cn_android-0, cn_android-1, cn_android-2, cn_android-3, cn_android-4, cn_android-5, cn_android-6, cn_android-7, cn_android-8, cn_android-9, cn_android-10, cn_android-11, cn_android-12, cn_android-13, cn_android-14, cn_android-15, cn_android-16, cn_android-17, cn_android-18, cn_android-19, cn_android-20, cn_android-21, cn_android-22, cn_android-23, cn_android-24, cn_android-25, cn_android-26, cn_android-27, cn_android-28, cn_android-29, cn_ios-0, cn_ios-1, cn_ios-2, cn_ios-3, cn_ios-4, cn_ios-5, cn_ios-6, cn_ios-7, cn_ios-8, cn_ios-9, cn_ios-10, cn_channel-0, cn_channel-1, cn_channel-2, cn_channel-3, cn_channel-4, cn_channel-5, en-0, en-1, en-2, en-3, en-4, en-5, en-6, jp-0, jp-1, jp-2, jp-3, jp-4, jp-5, jp-6, jp-7, jp-8, jp-9, jp-10, jp-11, jp-12, jp-13, jp-14, jp-15, jp-16, jp-17, tw-0, tw-1, tw-2, tw-3, tw-4
     Emulator_ScreenshotMethod = 'auto'  # auto, ADB, ADB_nc, uiautomator2, aScreenCap, aScreenCap_nc, DroidCast, DroidCast_raw, nemu_ipc, ldopengl
     Emulator_ControlMethod = 'MaaTouch'  # ADB, uiautomator2, minitouch, Hermit, MaaTouch, nemu_ipc
@@ -184,6 +185,12 @@ class GeneratedConfig:
 
     # 配置组 `Retirement`
     Retirement_RetireMode = 'one_click_retire'  # one_click_retire, enhance, old_retire
+    Retirement_RetireSRBulin = True
+    Retirement_RetireSRBulinThreshold = 3
+    Retirement_RetireSRBulinKeepCount = 5
+    Retirement_RetireSSRBulin = False
+    Retirement_RetireSSRBulinThreshold = 1
+    Retirement_RetireSSRBulinKeepCount = 5
 
     # 配置组 `PublicEmotion`
     PublicEmotion_Enable = False
@@ -194,6 +201,14 @@ class GeneratedConfig:
     PublicEmotion_FleetRecover = 'not_in_dormitory'  # not_in_dormitory, dormitory_floor_1, dormitory_floor_2
     PublicEmotion_FleetOath = False
     PublicEmotion_FleetOnsen = False
+
+    # 配置组 `GlobalScheduler`
+    GlobalScheduler_Enable = False  # True, False
+    GlobalScheduler_ConfigList = 'auto'
+    GlobalScheduler_RunSingleCycle = False  # True, False
+    GlobalScheduler_WhenTaskQueueEmpty = 'close_emulator'  # close_emulator, app_stop, goto_main, stay_there
+    GlobalScheduler_WaitBetweenConfigs = 5
+    GlobalScheduler_SwitchOnError = True  # True, False
 
     # 配置组 `YukikazeTaskManager`
     YukikazeTaskManager_TaskPriorityAdjustment = 'Restart\n> OpsiCrossMonth\n> Commission > Tactical > Research\n> Exercise\n> Dorm > Meowfficer > Guild > Gacha\n> Reward\n> ShopFrequent > ShopOnce > Shipyard > Freebies\n> PrivateQuarters\n> OpsiExplore\n> OpsiPreventActionPointOverflow\n> Minigame > Awaken\n> OpsiAshBeacon\n> OpsiDaily > OpsiShop > OpsiVoucher > EventShop\n> OpsiAbyssal > OpsiStronghold > OpsiObscure > OpsiArchive\n> Daily > Hard > OpsiAshBeacon > OpsiAshAssist > OpsiMonthBoss\n> Sos > EventSp > EventA > EventB > EventC > EventD\n> RaidDaily > CoalitionSp > WarArchives > MaritimeEscort\n> IslandJuuEatery > IslandJuuCoffee > IslandGrill > IslandTeahouse > IslandRestaurant\n> IslandFarm > IslandRancher > IslandMineForest > IslandDailyGather > IslandManufacture\n> IslandAirDrop > IslandBusiness > IslandDailyOrder > IslandDailyInteract > IslandPearlSell > IslandCargoPreparation\n> Event > Event2 > Event3 > Raid > Hospital > HospitalEvent > Coalition > RaidScuttle > Main > Main2 > Main3\n> OpsiScheduling\n> OpsiMeowfficerFarming\n> GemsFarming\n> Ambush11\n> OpsiHazard1Leveling\n> ThreeOilLowCost\n> OperationHandover'
@@ -353,7 +368,7 @@ class GeneratedConfig:
     EventDaily_LastStage = 0
 
     # 配置组 `Raid`
-    Raid_Mode = 'hard'  # easy, normal, hard, ex
+    Raid_Mode = 'hard'  # easy, normal, hard, ex, easy_15_normal_15_hard
     Raid_UseTicket = False
 
     # 配置组 `RaidDaily`
@@ -397,6 +412,7 @@ class GeneratedConfig:
     Commission_CustomFilter = 'DailyEvent > Gem-4 > Gem-2 > Gem-8 > ExtraCube-0:30\n> UrgentCube-1:30 > UrgentCube-1:45 > UrgentCube-3\n> ExtraDrill-5:20 > ExtraDrill-2 > ExtraDrill-3:20\n> UrgentCube-2:15 > UrgentCube-4\n> ExtraDrill-1 > UrgentCube-6 > ExtraCube-1:30\n> ExtraDrill-2:40 > ExtraDrill-0:20\n> Major > DailyChip > DailyResource\n> ExtraPart-0:30 > ExtraOil-1 > UrgentBox-6\n> ExtraCube-3 > ExtraPart-1 > UrgentBox-3\n> ExtraCube-4 > ExtraPart-1:30 > ExtraOil-4\n> UrgentBox-1 > ExtraCube-5 > UrgentBox-1\n> ExtraCube-8 > ExtraOil-8\n> UrgentDrill-4 > UrgentDrill-2:40 > UrgentDrill-2\n> UrgentDrill-1 > UrgentDrill-1:30 > UrgentDrill-1:10\n> Extra-0:20 > Extra-0:30 > Extra-1:00 > Extra-1:30 > Extra-2:00\n> shortest'
     Commission_Blacklist = None
     Commission_DoMajorCommission = False
+    Commission_DormFoodOnOilMaxed = 20
     Commission_CommissionNotifyReward = False
     Commission_CommissionNotifyRewardStatistics = True
     Commission_DetectShipDrop = False  # True, False
@@ -458,6 +474,7 @@ class GeneratedConfig:
 
     # 配置组 `GuildLogistics`
     GuildLogistics_Enable = True
+    GuildLogistics_BuySupply = True
     GuildLogistics_SelectNewMission = False
     GuildLogistics_ExchangeFilter = 'PlateTorpedoT1 > PlateAntiAirT1 > PlatePlaneT1 > PlateGunT1 > PlateGeneralT1\n> PlateTorpedoT2 > PlateAntiAirT2 > PlatePlaneT2 > PlateGunT2 > PlateGeneralT2\n> PlateTorpedoT3 > PlateAntiAirT3 > PlatePlaneT3 > PlateGunT3 > PlateGeneralT3\n> OxyCola > Coolant > Merit > Coin > Oil'
 
@@ -475,6 +492,7 @@ class GeneratedConfig:
     Reward_CollectExp = True
     Reward_CollectMission = True
     Reward_CollectWeeklyMission = False
+    Reward_DormFoodOnOilMaxed = 20
 
     # 配置组 `Awaken`
     Awaken_LevelCap = 'level120'  # level120, level125

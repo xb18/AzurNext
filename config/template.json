@@ -71,6 +71,7 @@
     "Emulator": {
       "Serial": "auto",
       "PackageName": "auto",
+      "M4399HideFloatingBall": true,
       "ServerName": "disabled",
       "ScreenshotMethod": "auto",
       "ControlMethod": "MaaTouch",
@@ -161,6 +162,14 @@
       "RestartIntervalHours": 4,
       "DeepRestartAfterFailures": 0
     },
+    "GlobalScheduler": {
+      "Enable": false,
+      "ConfigList": "auto",
+      "RunSingleCycle": false,
+      "WhenTaskQueueEmpty": "close_emulator",
+      "WaitBetweenConfigs": 5,
+      "SwitchOnError": true
+    },
     "Storage": {
       "Storage": {}
     }
@@ -172,7 +181,13 @@
       "ZipMethod": "zip"
     },
     "Retirement": {
-      "RetireMode": "one_click_retire"
+      "RetireMode": "one_click_retire",
+      "RetireSRBulin": true,
+      "RetireSRBulinThreshold": 3,
+      "RetireSRBulinKeepCount": 5,
+      "RetireSSRBulin": false,
+      "RetireSSRBulinThreshold": 1,
+      "RetireSSRBulinKeepCount": 5
     },
     "OneClickRetire": {
       "KeepLimitBreak": "keep_limit_break"
@@ -2041,6 +2056,7 @@
       "CustomFilter": "DailyEvent > Gem-4 > Gem-2 > Gem-8 > ExtraCube-0:30\n> UrgentCube-1:30 > UrgentCube-1:45 > UrgentCube-3\n> ExtraDrill-5:20 > ExtraDrill-2 > ExtraDrill-3:20\n> UrgentCube-2:15 > UrgentCube-4\n> ExtraDrill-1 > UrgentCube-6 > ExtraCube-1:30\n> ExtraDrill-2:40 > ExtraDrill-0:20\n> Major > DailyChip > DailyResource\n> ExtraPart-0:30 > ExtraOil-1 > UrgentBox-6\n> ExtraCube-3 > ExtraPart-1 > UrgentBox-3\n> ExtraCube-4 > ExtraPart-1:30 > ExtraOil-4\n> UrgentBox-1 > ExtraCube-5 > UrgentBox-1\n> ExtraCube-8 > ExtraOil-8\n> UrgentDrill-4 > UrgentDrill-2:40 > UrgentDrill-2\n> UrgentDrill-1 > UrgentDrill-1:30 > UrgentDrill-1:10\n> Extra-0:20 > Extra-0:30 > Extra-1:00 > Extra-1:30 > Extra-2:00\n> shortest",
       "Blacklist": null,
       "DoMajorCommission": false,
+      "DormFoodOnOilMaxed": 20,
       "CommissionNotifyReward": false,
       "CommissionNotifyRewardStatistics": true,
       "DetectShipDrop": false,
@@ -2177,6 +2193,7 @@
     },
     "GuildLogistics": {
       "Enable": true,
+      "BuySupply": true,
       "SelectNewMission": false,
       "ExchangeFilter": "PlateTorpedoT1 > PlateAntiAirT1 > PlatePlaneT1 > PlateGunT1 > PlateGeneralT1\n> PlateTorpedoT2 > PlateAntiAirT2 > PlatePlaneT2 > PlateGunT2 > PlateGeneralT2\n> PlateTorpedoT3 > PlateAntiAirT3 > PlatePlaneT3 > PlateGunT3 > PlateGeneralT3\n> OxyCola > Coolant > Merit > Coin > Oil"
     },
@@ -2208,7 +2225,8 @@
       "CollectCoin": true,
       "CollectExp": true,
       "CollectMission": true,
-      "CollectWeeklyMission": false
+      "CollectWeeklyMission": false,
+      "DormFoodOnOilMaxed": 20
     },
     "Storage": {
       "Storage": {}

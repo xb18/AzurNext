@@ -248,6 +248,14 @@
           "com.hkmanjuu.azurlane.gp.mc"
         ]
       },
+      "M4399HideFloatingBall": {
+        "type": "checkbox",
+        "value": true,
+        "option": [
+          true,
+          false
+        ]
+      },
       "ServerName": {
         "type": "select",
         "value": "disabled",
@@ -865,6 +873,54 @@
         ]
       }
     },
+    "GlobalScheduler": {
+      "Enable": {
+        "type": "checkbox",
+        "value": false,
+        "option": [
+          true,
+          false
+        ]
+      },
+      "ConfigList": {
+        "type": "textarea",
+        "value": "auto"
+      },
+      "RunSingleCycle": {
+        "type": "checkbox",
+        "value": false,
+        "option": [
+          true,
+          false
+        ]
+      },
+      "WhenTaskQueueEmpty": {
+        "type": "select",
+        "value": "close_emulator",
+        "option": [
+          "close_emulator",
+          "app_stop",
+          "goto_main",
+          "stay_there"
+        ]
+      },
+      "WaitBetweenConfigs": {
+        "type": "input",
+        "value": 5,
+        "validate": [
+          0,
+          60
+        ]
+      },
+      "SwitchOnError": {
+        "type": "checkbox",
+        "value": true,
+        "option": [
+          true,
+          false
+        ]
+      }
+    },
     "Storage": {
       "Storage": {
         "type": "storage",
@@ -908,6 +964,46 @@
           "one_click_retire",
           "enhance",
           "old_retire"
+        ]
+      },
+      "RetireSRBulin": {
+        "type": "checkbox",
+        "value": true
+      },
+      "RetireSRBulinThreshold": {
+        "type": "input",
+        "value": 3,
+        "validate": [
+          0,
+          50
+        ]
+      },
+      "RetireSRBulinKeepCount": {
+        "type": "input",
+        "value": 5,
+        "validate": [
+          0,
+          50
+        ]
+      },
+      "RetireSSRBulin": {
+        "type": "checkbox",
+        "value": false
+      },
+      "RetireSSRBulinThreshold": {
+        "type": "input",
+        "value": 1,
+        "validate": [
+          0,
+          50
+        ]
+      },
+      "RetireSSRBulinKeepCount": {
+        "type": "input",
+        "value": 5,
+        "validate": [
+          0,
+          50
         ]
       }
     },
@@ -5519,7 +5615,8 @@
           "easy",
           "normal",
           "hard",
-          "ex"
+          "ex",
+          "easy_15_normal_15_hard"
         ]
       },
       "UseTicket": {
@@ -5812,7 +5909,8 @@
           "easy",
           "normal",
           "hard",
-          "ex"
+          "ex",
+          "easy_15_normal_15_hard"
         ]
       },
       "UseTicket": {
@@ -10987,6 +11085,14 @@
         "type": "checkbox",
         "value": false
       },
+      "DormFoodOnOilMaxed": {
+        "type": "input",
+        "value": 20,
+        "validate": [
+          0,
+          100
+        ]
+      },
       "CommissionNotifyReward": {
         "type": "checkbox",
         "value": false
@@ -11563,6 +11669,10 @@
         "type": "checkbox",
         "value": true
       },
+      "BuySupply": {
+        "type": "checkbox",
+        "value": true
+      },
       "SelectNewMission": {
         "type": "checkbox",
         "value": false
@@ -11679,6 +11789,14 @@
       "CollectWeeklyMission": {
         "type": "checkbox",
         "value": false
+      },
+      "DormFoodOnOilMaxed": {
+        "type": "input",
+        "value": 20,
+        "validate": [
+          0,
+          100
+        ]
       }
     },
     "Storage": {

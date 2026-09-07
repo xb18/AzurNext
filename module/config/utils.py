@@ -83,6 +83,12 @@ def filepath_config(filename, mod_name='alas'):
         return os.path.join('./config', f'{filename}.{mod_name}.json')
 
 
+def filepath_global_scheduler_status():
+    """全局调度实时状态 JSON 的路径。"""
+    os.makedirs('./cache', exist_ok=True)
+    return os.path.join('./cache', 'globalscheduler_status.json')
+
+
 def filepath_code():
     return './module/config/config_generated.py'
 
@@ -207,22 +213,37 @@ def alas_instance():
     获取所有 Alas 实例名称。
 
     Returns:
-        list[str]: 除 `template` 外的所有 Alas 实例名称。
+        list[str]: 除 `template` / `globalscheduler` / 点开头 外的所有 Alas 实例名称。
+            若不存在任何配置，返回空列表（调用方应自行判断是否需要 OOBE 首次设置流程），
+            绝不自动发明一个不存在的默认配置，避免触发 `AzurLaneConfig()` 自动写回磁盘。
     """
     out = []
     for file in os.listdir('./config'):
         name, extension = os.path.splitext(file)
-        config_name, mod_name = os.path.splitext(name)
-        mod_name = mod_name[1:]
-        if name != 'template' and extension == '.json' and mod_name == '':
+        if not name.startswith(('template', 'globalscheduler', '.')) and extension == '.json':
             out.append(name)
 
     out.extend(list_mod_instance())
 
-    if not len(out):
-        out = [DEFAULT_CONFIG_NAME]
-
     return out
+
+
+def get_default_main_instance() -> str:
+    """
+    获取默认的「主配置」实例名。
+
+    配置名称不应影响选择优先级：只按字典序排序后的第一个实例。
+    若当前没有任何配置文件，仅在此情况下回退到 DEFAULT_CONFIG_NAME
+    （供首次设置 / OOBE 流程使用；此时调用方通常会被 is_oobe_needed
+    拦截，不会走到真正的 AzurLaneConfig.save()，因此不会生成幽灵配置文件）。
+
+    Returns:
+        str: 默认主配置实例名称，仅在没有任何配置时才可能返回一个实际不存在的名称。
+    """
+    instances = alas_instance()
+    if instances:
+        return sorted(instances)[0]
+    return DEFAULT_CONFIG_NAME
 
 
 def parse_value(value, data):
