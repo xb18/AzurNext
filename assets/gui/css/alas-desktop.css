@@ -515,3 +515,191 @@ body.is-tauri-client .alas-desktop-controls {
 .alas-desktop-toast-error .alas-desktop-toast-icon {
     color: #f87171;
 }
+
+/* ============================================================ */
+/* 项目统一风格的桌面 UI 模态确认对话框                          */
+/* ============================================================ */
+#alas-desktop-confirm-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 2147483647;
+    background: rgba(0, 0, 0, 0.46);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 180ms ease;
+    user-select: none;
+    -webkit-user-select: none;
+    box-sizing: border-box;
+}
+
+#alas-desktop-confirm-modal.is-open {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+#alas-desktop-confirm-modal * {
+    box-sizing: border-box;
+}
+
+.alas-desktop-modal-card {
+    position: relative;
+    width: 380px;
+    max-width: calc(100vw - 32px);
+    padding: 22px 24px 20px;
+    border: 1px solid rgba(255, 255, 255, .16);
+    border-radius: 18px;
+    background: rgba(22, 25, 31, .94);
+    box-shadow: 0 24px 64px rgba(0, 0, 0, .55);
+    backdrop-filter: blur(24px) saturate(1.35);
+    -webkit-backdrop-filter: blur(24px) saturate(1.35);
+    color: #fff;
+    transform: translateY(12px) scale(.94);
+    transition: transform 220ms cubic-bezier(.2, .9, .25, 1);
+}
+
+#alas-desktop-confirm-modal.is-open .alas-desktop-modal-card {
+    transform: translateY(0) scale(1);
+}
+
+.alas-desktop-modal-close {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: rgba(255, 255, 255, .45);
+    cursor: pointer;
+    transition: color 140ms ease, background 140ms ease;
+    outline: none;
+}
+
+.alas-desktop-modal-close:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, .1);
+}
+
+.alas-desktop-modal-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.alas-desktop-modal-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    flex: 0 0 auto;
+}
+
+.alas-desktop-modal-icon.is-primary {
+    background: rgba(59, 130, 246, .16);
+    border: 1px solid rgba(59, 130, 246, .35);
+    color: #60a5fa;
+}
+
+.alas-desktop-modal-icon.is-success {
+    background: rgba(34, 197, 94, .16);
+    border: 1px solid rgba(34, 197, 94, .35);
+    color: #4ade80;
+}
+
+.alas-desktop-modal-icon.is-warning {
+    background: rgba(245, 158, 11, .16);
+    border: 1px solid rgba(245, 158, 11, .35);
+    color: #fbbf24;
+}
+
+.alas-desktop-modal-title {
+    margin: 0;
+    font: 600 15px/1.35 "MiSans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: #fff;
+    letter-spacing: .1px;
+}
+
+.alas-desktop-modal-body {
+    margin: 0 0 20px 46px;
+    font: 400 13px/1.55 "MiSans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: rgba(255, 255, 255, .82);
+    word-break: break-word;
+}
+
+.alas-desktop-modal-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.alas-desktop-modal-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 34px;
+    padding: 0 18px;
+    border-radius: 10px;
+    font: 600 12.5px/1 "MiSans", sans-serif;
+    cursor: pointer;
+    transition: background 120ms ease, transform 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
+    outline: none;
+    border: 1px solid transparent;
+}
+
+.alas-desktop-modal-btn:hover {
+    transform: translateY(-1px);
+}
+
+.alas-desktop-modal-btn:active {
+    transform: translateY(0);
+}
+
+.alas-desktop-modal-cancel {
+    background: rgba(255, 255, 255, .1);
+    border-color: rgba(255, 255, 255, .14);
+    color: #fff;
+}
+
+.alas-desktop-modal-cancel:hover {
+    background: rgba(255, 255, 255, .18);
+}
+
+.alas-desktop-modal-ok.is-primary {
+    background: #3b82f6;
+    border-color: #2563eb;
+    color: #fff;
+    box-shadow: 0 2px 10px rgba(59, 130, 246, .35);
+}
+
+.alas-desktop-modal-ok.is-primary:hover {
+    background: #2563eb;
+}
+
+.alas-desktop-modal-ok.is-success {
+    background: #22c55e;
+    border-color: #16a34a;
+    color: #fff;
+    box-shadow: 0 2px 10px rgba(34, 197, 94, .35);
+}
+
+.alas-desktop-modal-ok.is-success:hover {
+    background: #16a34a;
+}
+
