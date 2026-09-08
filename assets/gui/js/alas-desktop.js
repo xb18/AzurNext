@@ -136,6 +136,17 @@
         };
     };
 
+    // 原生系统确认弹窗（通过 Tauri 插件调用系统原生模态对话框，解决 WebView2 下 window.confirm 失效或自动穿透的问题）
+    const askConfirm = async (message, title = 'AzurNext') => {
+        try {
+            const res = await invoke('ask_confirm', { title, message });
+            return res === true;
+        } catch (err) {
+            console.warn('Native ask_confirm failed or not supported', err);
+            return false;
+        }
+    };
+
     // 挂载全局 alasDesktop 客户端能力对象，方便 Web 前端任意模块直接调用
     window.alasDesktop = {
         isAvailable: true,
@@ -154,6 +165,8 @@
         getUpdateStatus: () => invoke('get_update_status'),
         getUpdateMethod: () => invoke('get_update_method'),
         setUpdateMethod: (method) => invoke('set_update_method', { method }),
+        // 原生确认框
+        confirm: (message, title = 'AzurNext') => askConfirm(message, title),
         // 关闭行为偏好 ("ask" / "minimize" / "exit")
         getCloseAction: () => invoke('get_close_action'),
         setCloseAction: (action) => invoke('set_close_action', { action }),
@@ -564,6 +577,9 @@
         let isTriggeringUpdate = false;
         let triggerTime = 0;
         let activeToast = null;
+        let promptedDownloadVersion = null;
+        let isAskingDownloadConfirm = false;
+        let isAskingRestartConfirm = false;
 
         const applyStatus = (status, isEvent = false) => {
             if (!status) return;
@@ -609,19 +625,26 @@
                     activeToast = null;
                 }
 
-                if (Date.now() - triggerTime < 10000) {
-                    setTimeout(() => {
-                        if (badge.classList.contains('is-available')) {
-                            if (confirm(promptMsg)) {
-                                if (activeToast) activeToast.close();
-                                activeToast = showToast(i18n.toastUpdating, 'loading', 0);
-                                applyStatus({ status: 'Updating', progress: 8 });
-                                startPolling();
-                                invoke('start_download_launcher_update').catch(e => {
-                                    console.error('Failed to start launcher update download', e);
-                                    applyStatus({ status: 'Failed', detail: e ? e.toString() : '' });
-                                });
+                if (Date.now() - triggerTime < 10000 && !isAskingDownloadConfirm && promptedDownloadVersion !== version) {
+                    promptedDownloadVersion = version;
+                    isAskingDownloadConfirm = true;
+                    setTimeout(async () => {
+                        try {
+                            if (badge.classList.contains('is-available')) {
+                                const confirmed = await askConfirm(promptMsg, i18n.checkUpdateLabel || '检查启动器更新');
+                                if (confirmed && badge.classList.contains('is-available')) {
+                                    if (activeToast) activeToast.close();
+                                    activeToast = showToast(i18n.toastUpdating, 'loading', 0);
+                                    applyStatus({ status: 'Updating', progress: 8 });
+                                    startPolling();
+                                    invoke('start_download_launcher_update').catch(e => {
+                                        console.error('Failed to start launcher update download', e);
+                                        applyStatus({ status: 'Failed', detail: e ? e.toString() : '' });
+                                    });
+                                }
                             }
+                        } finally {
+                            isAskingDownloadConfirm = false;
                         }
                     }, 150);
                 }
@@ -778,25 +801,33 @@
         badge.addEventListener('click', async (e) => {
             e.stopPropagation();
             if (badge.classList.contains('is-ready')) {
+                if (isAskingRestartConfirm) return;
+                isAskingRestartConfirm = true;
                 try {
                     const currentStatus = await invoke('get_update_status');
                     const version = (currentStatus && currentStatus.version) ? ` v${currentStatus.version}` : '';
                     const prompt = (i18n.confirmRestartPromptWithVer || i18n.confirmRestartPrompt).replace('{version}', version);
-                    if (confirm(prompt)) {
+                    const confirmed = await askConfirm(prompt, i18n.clientUpdateReadyLabel || i18n.updateReadyLabel);
+                    if (confirmed) {
                         await invoke('window_exit_application');
                     }
                 } catch (err) {
                     console.error('Failed to restart application', err);
+                } finally {
+                    isAskingRestartConfirm = false;
                 }
                 return;
             }
 
             if (badge.classList.contains('is-available')) {
+                if (isAskingDownloadConfirm) return;
+                isAskingDownloadConfirm = true;
                 try {
                     const currentStatus = await invoke('get_update_status');
                     const version = (currentStatus && currentStatus.version) ? ` v${currentStatus.version}` : '';
                     const prompt = (i18n.confirmDownloadPrompt || '发现启动器新版本{version}，是否立即下载更新？').replace('{version}', version);
-                    if (confirm(prompt)) {
+                    const confirmed = await askConfirm(prompt, i18n.checkUpdateLabel || '检查启动器更新');
+                    if (confirmed) {
                         if (activeToast) activeToast.close();
                         activeToast = showToast(i18n.toastUpdating, 'loading', 0);
                         applyStatus({ status: 'Updating', progress: 8 });
@@ -805,6 +836,8 @@
                     }
                 } catch (err) {
                     console.error('Failed to start launcher update download', err);
+                } finally {
+                    isAskingDownloadConfirm = false;
                 }
                 return;
             }
@@ -839,26 +872,34 @@
 
                             // 如果已经是就绪状态，点击直接提示重启
                             if (updateBtn.classList.contains('is-ready') || badge.classList.contains('is-ready')) {
+                                if (isAskingRestartConfirm) break;
+                                isAskingRestartConfirm = true;
                                 try {
                                     const currentStatus = await invoke('get_update_status');
                                     const version = (currentStatus && currentStatus.version) ? ` v${currentStatus.version}` : '';
                                     const prompt = (i18n.confirmRestartPromptWithVer || i18n.confirmRestartPrompt).replace('{version}', version);
-                                    if (confirm(prompt)) {
+                                    const confirmed = await askConfirm(prompt, i18n.clientUpdateReadyLabel || i18n.updateReadyLabel);
+                                    if (confirmed) {
                                         await invoke('window_exit_application');
                                     }
                                 } catch (e) {
                                     console.error('Failed to restart on update button click', e);
+                                } finally {
+                                    isAskingRestartConfirm = false;
                                 }
                                 break;
                             }
 
                             // 如果是有新版本可用状态，点击提示确认下载
                             if (updateBtn.classList.contains('is-available') || badge.classList.contains('is-available')) {
+                                if (isAskingDownloadConfirm) break;
+                                isAskingDownloadConfirm = true;
                                 try {
                                     const currentStatus = await invoke('get_update_status');
                                     const version = (currentStatus && currentStatus.version) ? ` v${currentStatus.version}` : '';
                                     const prompt = (i18n.confirmDownloadPrompt || '发现启动器新版本{version}，是否立即下载更新？').replace('{version}', version);
-                                    if (confirm(prompt)) {
+                                    const confirmed = await askConfirm(prompt, i18n.checkUpdateLabel || '检查启动器更新');
+                                    if (confirmed) {
                                         if (activeToast) activeToast.close();
                                         activeToast = showToast(i18n.toastUpdating, 'loading', 0);
                                         applyStatus({ status: 'Updating', progress: 8 });
@@ -867,6 +908,8 @@
                                     }
                                 } catch (e) {
                                     console.error('Failed to start launcher update download on click', e);
+                                } finally {
+                                    isAskingDownloadConfirm = false;
                                 }
                                 break;
                             }
