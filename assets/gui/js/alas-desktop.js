@@ -136,16 +136,8 @@
         };
     };
 
-    // 原生系统确认弹窗（通过 Tauri 插件调用系统原生模态对话框，解决 WebView2 下 window.confirm 失效或自动穿透的问题）
-    const askConfirm = async (message, title = 'AzurNext') => {
-        try {
-            const res = await invoke('ask_confirm', { title, message });
-            return res === true;
-        } catch (err) {
-            console.warn('Native ask_confirm failed or not supported', err);
-            return false;
-        }
-    };
+    // 原生/项目统一风格的模态确认弹窗辅助函数（先声明，后续绑定具体实现）
+    let askConfirm = null;
 
     // 挂载全局 alasDesktop 客户端能力对象，方便 Web 前端任意模块直接调用
     window.alasDesktop = {
@@ -165,8 +157,9 @@
         getUpdateStatus: () => invoke('get_update_status'),
         getUpdateMethod: () => invoke('get_update_method'),
         setUpdateMethod: (method) => invoke('set_update_method', { method }),
-        // 原生确认框
-        confirm: (message, title = 'AzurNext') => askConfirm(message, title),
+        // 项目统一风格确认弹窗
+        confirm: (message, title) => (askConfirm ? askConfirm(message, title) : Promise.resolve(false)),
+        modal: (options) => (window.alasDesktopShowModal ? window.alasDesktopShowModal(options) : Promise.resolve(false)),
         // 关闭行为偏好 ("ask" / "minimize" / "exit")
         getCloseAction: () => invoke('get_close_action'),
         setCloseAction: (action) => invoke('set_close_action', { action }),
@@ -217,9 +210,15 @@
             updateReadyLabel: '启动器更新已就绪，重启生效',
             clientUpdateReadyLabel: '启动器更新已就绪',
             updateAvailableBadge: '发现新版',
+            confirmDownloadTitle: '发现启动器新版本',
             confirmDownloadPrompt: '发现启动器新版本{version}，是否立即下载更新？',
+            confirmDownloadOk: '立即下载',
+            confirmDownloadCancel: '稍后',
+            confirmRestartTitle: '启动器更新已就绪',
             confirmRestartPrompt: '启动器更新已下载完毕，是否立即重启启动器以完成更新？',
             confirmRestartPromptWithVer: '启动器更新{version}已下载就绪，是否立即重启启动器以完成更新？',
+            confirmRestartOk: '立即重启',
+            confirmRestartCancel: '稍后',
             clientVersionLabel: '启动器',
             copiedLabel: '已复制!',
             copyHint: '点击复制版本号',
@@ -255,9 +254,15 @@
             updateReadyLabel: '啟動器更新已就緒，重新啟動生效',
             clientUpdateReadyLabel: '啟動器更新已就緒',
             updateAvailableBadge: '發現新版',
+            confirmDownloadTitle: '發現啟動器新版本',
             confirmDownloadPrompt: '發現啟動器新版本{version}，是否立即下載更新？',
+            confirmDownloadOk: '立即下載',
+            confirmDownloadCancel: '稍後',
+            confirmRestartTitle: '啟動器更新已就緒',
             confirmRestartPrompt: '啟動器更新已下載完畢，是否立即重新啟動啟動器以完成更新？',
             confirmRestartPromptWithVer: '啟動器更新{version}已下載就緒，是否立即重新啟動啟動器以完成更新？',
+            confirmRestartOk: '立即重新啟動',
+            confirmRestartCancel: '稍後',
             clientVersionLabel: '啟動器',
             copiedLabel: '已複製!',
             copyHint: '點擊複製版本號',
@@ -293,9 +298,15 @@
             updateReadyLabel: 'ランチャー更新準備完了、再起動で適用',
             clientUpdateReadyLabel: 'ランチャー更新準備完了',
             updateAvailableBadge: '新版あり',
+            confirmDownloadTitle: 'ランチャーの新バージョン',
             confirmDownloadPrompt: 'ランチャーの新バージョン{version}が見つかりました。今すぐダウンロードしますか？',
+            confirmDownloadOk: '今すぐダウンロード',
+            confirmDownloadCancel: '後で',
+            confirmRestartTitle: 'ランチャー更新準備完了',
             confirmRestartPrompt: 'ランチャーのアップデートが完了しました。今すぐ再起動して適用しますか？',
             confirmRestartPromptWithVer: 'ランチャーの更新{version}がダウンロードされました。今すぐ再起動して適用しますか？',
+            confirmRestartOk: '今すぐ再起動',
+            confirmRestartCancel: '後で',
             clientVersionLabel: 'ランチャー',
             copiedLabel: 'コピー完了!',
             copyHint: 'クリックしてバージョンをコピー',
@@ -331,9 +342,15 @@
             updateReadyLabel: 'Launcher update ready, restart to apply',
             clientUpdateReadyLabel: 'Launcher update ready',
             updateAvailableBadge: 'Update Available',
+            confirmDownloadTitle: 'Launcher Update Available',
             confirmDownloadPrompt: 'Launcher update{version} is available. Download now?',
+            confirmDownloadOk: 'Download Now',
+            confirmDownloadCancel: 'Later',
+            confirmRestartTitle: 'Launcher Update Ready',
             confirmRestartPrompt: 'Launcher update downloaded. Restart the launcher now to apply?',
             confirmRestartPromptWithVer: 'Launcher update{version} downloaded. Restart the launcher now to apply?',
+            confirmRestartOk: 'Restart Now',
+            confirmRestartCancel: 'Later',
             clientVersionLabel: 'Launcher',
             copiedLabel: 'Copied!',
             copyHint: 'Click to copy version',
@@ -355,6 +372,139 @@
     };
 
     const i18n = I18N[getLang()] || I18N['zh-CN'];
+
+    // ------------------------------------------------------------
+    // 项目统一设计风格的桌面 UI 模态确认对话框
+    // ------------------------------------------------------------
+    let confirmModalBackdrop = null;
+    let confirmModalResolver = null;
+
+    const ensureConfirmModal = () => {
+        if (confirmModalBackdrop && document.contains(confirmModalBackdrop)) {
+            return confirmModalBackdrop;
+        }
+        const existing = document.getElementById('alas-desktop-confirm-modal');
+        if (existing) {
+            confirmModalBackdrop = existing;
+            return confirmModalBackdrop;
+        }
+
+        confirmModalBackdrop = document.createElement('div');
+        confirmModalBackdrop.id = 'alas-desktop-confirm-modal';
+        confirmModalBackdrop.setAttribute('role', 'dialog');
+        confirmModalBackdrop.setAttribute('aria-modal', 'true');
+        confirmModalBackdrop.innerHTML = `
+            <div class="alas-desktop-modal-card">
+                <button type="button" class="alas-desktop-modal-close" aria-label="关闭">
+                    <svg viewBox="0 0 16 16" width="12" height="12"><path d="M4 4L12 12M12 4L4 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                </button>
+                <div class="alas-desktop-modal-header">
+                    <span class="alas-desktop-modal-icon"></span>
+                    <h3 class="alas-desktop-modal-title"></h3>
+                </div>
+                <div class="alas-desktop-modal-body"></div>
+                <div class="alas-desktop-modal-actions">
+                    <button type="button" class="alas-desktop-modal-btn alas-desktop-modal-cancel"></button>
+                    <button type="button" class="alas-desktop-modal-btn alas-desktop-modal-ok"></button>
+                </div>
+            </div>
+        `;
+
+        const closeWith = (res) => {
+            confirmModalBackdrop.classList.remove('is-open');
+            if (confirmModalResolver) {
+                const fn = confirmModalResolver;
+                confirmModalResolver = null;
+                fn(res);
+            }
+        };
+
+        confirmModalBackdrop.querySelector('.alas-desktop-modal-close').addEventListener('click', (e) => {
+            e.stopPropagation();
+            closeWith(false);
+        });
+
+        confirmModalBackdrop.querySelector('.alas-desktop-modal-cancel').addEventListener('click', (e) => {
+            e.stopPropagation();
+            closeWith(false);
+        });
+
+        confirmModalBackdrop.querySelector('.alas-desktop-modal-ok').addEventListener('click', (e) => {
+            e.stopPropagation();
+            closeWith(true);
+        });
+
+        confirmModalBackdrop.addEventListener('pointerdown', (e) => {
+            if (e.target === confirmModalBackdrop) {
+                closeWith(false);
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (confirmModalBackdrop && confirmModalBackdrop.classList.contains('is-open')) {
+                if (e.key === 'Escape') {
+                    e.preventDefault();
+                    closeWith(false);
+                } else if (e.key === 'Enter') {
+                    if (document.activeElement !== confirmModalBackdrop.querySelector('.alas-desktop-modal-cancel')) {
+                        e.preventDefault();
+                        closeWith(true);
+                    }
+                }
+            }
+        });
+
+        document.body.appendChild(confirmModalBackdrop);
+        return confirmModalBackdrop;
+    };
+
+    const showConfirmModal = ({
+        title = '',
+        message = '',
+        okText = '',
+        cancelText = '',
+        type = 'primary',
+    } = {}) => {
+        const modal = ensureConfirmModal();
+        const titleEl = modal.querySelector('.alas-desktop-modal-title');
+        const bodyEl = modal.querySelector('.alas-desktop-modal-body');
+        const iconEl = modal.querySelector('.alas-desktop-modal-icon');
+        const cancelBtn = modal.querySelector('.alas-desktop-modal-cancel');
+        const okBtn = modal.querySelector('.alas-desktop-modal-ok');
+
+        titleEl.textContent = title || i18n.clientVersionLabel || 'AzurNext';
+        bodyEl.textContent = message || '';
+        cancelBtn.textContent = cancelText || i18n.confirmDownloadCancel || '稍后';
+        okBtn.textContent = okText || i18n.confirmDownloadOk || '确定';
+
+        let iconSvg = '';
+        if (type === 'success') {
+            iconSvg = '<svg viewBox="0 0 16 16" width="18" height="18"><circle cx="8" cy="8" r="7" fill="none" stroke="currentColor" stroke-width="1.6"/><polyline points="5,8.5 7.2,10.7 11.5,5.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+        } else if (type === 'warning') {
+            iconSvg = '<svg viewBox="0 0 16 16" width="18" height="18"><circle cx="8" cy="8" r="7" fill="none" stroke="currentColor" stroke-width="1.6"/><line x1="8" y1="4.5" x2="8" y2="9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="8" cy="11.5" r="0.75" fill="currentColor"/></svg>';
+        } else {
+            // primary
+            iconSvg = '<svg viewBox="0 0 16 16" width="18" height="18"><circle cx="8" cy="8" r="7" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 4.5v5m0 0l-2-2m2 2l2-2M5.5 12h5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+        }
+        iconEl.innerHTML = iconSvg;
+        iconEl.className = `alas-desktop-modal-icon is-${type}`;
+
+        okBtn.className = `alas-desktop-modal-btn alas-desktop-modal-ok is-${type}`;
+
+        if (confirmModalResolver) {
+            confirmModalResolver(false);
+            confirmModalResolver = null;
+        }
+
+        return new Promise(resolve => {
+            confirmModalResolver = resolve;
+            modal.classList.add('is-open');
+            okBtn.focus({ preventScroll: true });
+        });
+    };
+
+    askConfirm = (message, title) => showConfirmModal({ title, message });
+    window.alasDesktopShowModal = showConfirmModal;
 
     let closeMenu = null;
     const ensureCloseMenu = () => {
@@ -631,7 +781,13 @@
                     setTimeout(async () => {
                         try {
                             if (badge.classList.contains('is-available')) {
-                                const confirmed = await askConfirm(promptMsg, i18n.checkUpdateLabel || '检查启动器更新');
+                                const confirmed = await showConfirmModal({
+                                    title: i18n.confirmDownloadTitle || '发现启动器新版本',
+                                    message: promptMsg,
+                                    okText: i18n.confirmDownloadOk || '立即下载',
+                                    cancelText: i18n.confirmDownloadCancel || '稍后',
+                                    type: 'primary',
+                                });
                                 if (confirmed && badge.classList.contains('is-available')) {
                                     if (activeToast) activeToast.close();
                                     activeToast = showToast(i18n.toastUpdating, 'loading', 0);
@@ -807,7 +963,13 @@
                     const currentStatus = await invoke('get_update_status');
                     const version = (currentStatus && currentStatus.version) ? ` v${currentStatus.version}` : '';
                     const prompt = (i18n.confirmRestartPromptWithVer || i18n.confirmRestartPrompt).replace('{version}', version);
-                    const confirmed = await askConfirm(prompt, i18n.clientUpdateReadyLabel || i18n.updateReadyLabel);
+                    const confirmed = await showConfirmModal({
+                        title: i18n.confirmRestartTitle || '启动器更新已就绪',
+                        message: prompt,
+                        okText: i18n.confirmRestartOk || '立即重启',
+                        cancelText: i18n.confirmRestartCancel || '稍后',
+                        type: 'success',
+                    });
                     if (confirmed) {
                         await invoke('window_exit_application');
                     }
@@ -826,7 +988,13 @@
                     const currentStatus = await invoke('get_update_status');
                     const version = (currentStatus && currentStatus.version) ? ` v${currentStatus.version}` : '';
                     const prompt = (i18n.confirmDownloadPrompt || '发现启动器新版本{version}，是否立即下载更新？').replace('{version}', version);
-                    const confirmed = await askConfirm(prompt, i18n.checkUpdateLabel || '检查启动器更新');
+                    const confirmed = await showConfirmModal({
+                        title: i18n.confirmDownloadTitle || '发现启动器新版本',
+                        message: prompt,
+                        okText: i18n.confirmDownloadOk || '立即下载',
+                        cancelText: i18n.confirmDownloadCancel || '稍后',
+                        type: 'primary',
+                    });
                     if (confirmed) {
                         if (activeToast) activeToast.close();
                         activeToast = showToast(i18n.toastUpdating, 'loading', 0);
@@ -878,7 +1046,13 @@
                                     const currentStatus = await invoke('get_update_status');
                                     const version = (currentStatus && currentStatus.version) ? ` v${currentStatus.version}` : '';
                                     const prompt = (i18n.confirmRestartPromptWithVer || i18n.confirmRestartPrompt).replace('{version}', version);
-                                    const confirmed = await askConfirm(prompt, i18n.clientUpdateReadyLabel || i18n.updateReadyLabel);
+                                    const confirmed = await showConfirmModal({
+                                        title: i18n.confirmRestartTitle || '启动器更新已就绪',
+                                        message: prompt,
+                                        okText: i18n.confirmRestartOk || '立即重启',
+                                        cancelText: i18n.confirmRestartCancel || '稍后',
+                                        type: 'success',
+                                    });
                                     if (confirmed) {
                                         await invoke('window_exit_application');
                                     }
@@ -898,7 +1072,13 @@
                                     const currentStatus = await invoke('get_update_status');
                                     const version = (currentStatus && currentStatus.version) ? ` v${currentStatus.version}` : '';
                                     const prompt = (i18n.confirmDownloadPrompt || '发现启动器新版本{version}，是否立即下载更新？').replace('{version}', version);
-                                    const confirmed = await askConfirm(prompt, i18n.checkUpdateLabel || '检查启动器更新');
+                                    const confirmed = await showConfirmModal({
+                                        title: i18n.confirmDownloadTitle || '发现启动器新版本',
+                                        message: prompt,
+                                        okText: i18n.confirmDownloadOk || '立即下载',
+                                        cancelText: i18n.confirmDownloadCancel || '稍后',
+                                        type: 'primary',
+                                    });
                                     if (confirmed) {
                                         if (activeToast) activeToast.close();
                                         activeToast = showToast(i18n.toastUpdating, 'loading', 0);
