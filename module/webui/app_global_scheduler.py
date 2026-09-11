@@ -93,15 +93,19 @@ class GlobalSchedulerMixin(WebUIMixinBase):
         return {}
 
     def _is_gs_running(self) -> bool:
-        """检查是否有任何调度器实例正在运行。"""
+        """检查是否有全局调度实例正在运行。"""
         running = ProcessManager.running_instances()
-        return len(running) > 0
+        for mgr in running:
+            if getattr(mgr, "is_global_scheduler", False):
+                return True
+        return False
 
     def _get_active_running_instance_name(self) -> str | None:
-        """获取当前正在运行的实例名称。"""
+        """获取当前正在运行的全局调度实例名称。"""
         running = ProcessManager.running_instances()
-        if running:
-            return running[0].config_name
+        for mgr in running:
+            if getattr(mgr, "is_global_scheduler", False):
+                return mgr.config_name
         return None
 
     def _format_task_name(self, task_name: str) -> str:
@@ -566,7 +570,7 @@ class GlobalSchedulerMixin(WebUIMixinBase):
                     atomic_write(filepath_global_scheduler_status(), json.dumps(payload, ensure_ascii=False, indent=2))
                 except Exception:
                     pass
-                mgr.start(None)
+                mgr.start(None, is_global_scheduler=True)
                 toast(f"🚀 全局调度已启动 (起始实例: {start_config_name})！", color="success")
             else:
                 # 若已有实例运行，先停止再重新启动，以确保读取最新配置
@@ -581,7 +585,7 @@ class GlobalSchedulerMixin(WebUIMixinBase):
                 # 重新获取管理器并启动新实例
                 mgr = ProcessManager.get_manager(start_config_name)
                 self.alas_name = start_config_name
-                mgr.start(None)
+                mgr.start(None, is_global_scheduler=True)
                 toast(f"🚀 已重新启动全局调度 (实例: {start_config_name})！", color="success")
 
             all_inst = alas_instance()

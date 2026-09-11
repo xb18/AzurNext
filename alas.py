@@ -91,11 +91,15 @@ def _get_task_display_name(task_command):
 class AzurLaneAutoScript:
     stop_event: threading.Event = None
 
-    def __init__(self, config_name=DEFAULT_CONFIG_NAME):
+    def __init__(self, config_name=DEFAULT_CONFIG_NAME, is_global_scheduler: bool | None = None):
         logger.hr('Start', level=0)
         self.config_name = config_name
         self._initial_config_name = config_name
-        self._global_scheduler_active = False
+        self._is_global_scheduler_explicit = is_global_scheduler
+        if is_global_scheduler is not None:
+            self._global_scheduler_active = bool(is_global_scheduler)
+        else:
+            self._global_scheduler_active = None
         # 跳过启动后的第一次 Restart 任务
         self.is_first_task = True
         # 任务失败计数器，key 为任务名，value 为连续失败次数
@@ -1994,21 +1998,31 @@ class AzurLaneAutoScript:
 
     @property
     def is_global_scheduler_enabled(self) -> bool:
-        if getattr(self, '_global_scheduler_active', False):
-            return True
-        enabled = False
-        try:
-            import json
-            if os.path.exists(filepath_global_scheduler_status()):
-                with open(filepath_global_scheduler_status(), "r", encoding="utf-8") as f:
-                    data = json.load(f)
-                    if data.get("active", False):
-                        enabled = True
-        except Exception:
-            pass
-        if enabled:
+        if self._global_scheduler_active is not None:
+            return self._global_scheduler_active
+
+        # 检查显式指定标志（例如 WebUI 单独启动传 False，全局调度中心启动传 True）
+        if self._is_global_scheduler_explicit is not None:
+            self._global_scheduler_active = self._is_global_scheduler_explicit
+            return self._global_scheduler_active
+
+        # 检查环境变量
+        env_val = os.environ.get("ALAS_GLOBAL_SCHEDULER", "").lower()
+        if env_val in ("1", "true", "yes"):
             self._global_scheduler_active = True
-        return enabled
+            return True
+        elif env_val in ("0", "false", "no"):
+            self._global_scheduler_active = False
+            return False
+
+        # 检查配置中的显式开启选项 (GlobalScheduler.Enable)
+        if bool(self._get_global_scheduler_attr('Enable', False)):
+            self._global_scheduler_active = True
+            return True
+
+        # 默认一律为 False；状态推流文件仅作为单向输出，绝不反向作为启用依据
+        self._global_scheduler_active = False
+        return False
 
     def _get_global_scheduler_attr(self, name: str, default=None):
         from module.config.utils import get_default_main_instance
@@ -2041,7 +2055,10 @@ class AzurLaneAutoScript:
     ) -> None:
         """
         更新全局调度运行状态至本地 JSON 文件，供 WebUI 实时渲染进度。
+        仅在启用全局调度时更新，单实例运行绝不更新以防污染全局看板。
         """
+        if not self.is_global_scheduler_enabled:
+            return
         try:
             from deploy.atomic import atomic_write
             if config_list is None:
@@ -2546,7 +2563,8 @@ class AzurLaneAutoScript:
 
                 # 获取任务
                 task = self.get_next_task()
-                self._update_global_scheduler_status("running", task=task)
+                if self.is_global_scheduler_enabled:
+                    self._update_global_scheduler_status("running", task=task)
                 # 初始化设备并更改服务器
                 _ = self.device
                 self.device.config = self.config
@@ -2796,5 +2814,25 @@ class AzurLaneAutoScript:
                 time.sleep(wait_seconds)
 
 if __name__ == '__main__':
-    alas = AzurLaneAutoScript()
+    import argparse
+
+    parser = argparse.ArgumentParser(description="AzurNext 调度器")
+    parser.add_argument(
+        "-c", "--config",
+        type=str,
+        default=DEFAULT_CONFIG_NAME,
+        help="指定运行的配置名称，默认为 alas",
+    )
+    parser.add_argument(
+        "-g", "--global",
+        dest="global_scheduler",
+        action="store_true",
+        default=False,
+        help="以多配置全局调度模式运行",
+    )
+    args, _ = parser.parse_known_args()
+    alas = AzurLaneAutoScript(
+        config_name=args.config,
+        is_global_scheduler=args.global_scheduler,
+    )
     alas.loop()

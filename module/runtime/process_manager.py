@@ -71,6 +71,7 @@ class ProcessManager:
         self.thd_log_queue_handler: threading.Thread | None = None
         self._state_override: int | None = None
         self._state_override_deadline: float | None = None
+        self.is_global_scheduler: bool = False
 
     @classmethod
     def _get_lifecycle_lock(cls, config_name: str) -> threading.RLock:
@@ -114,7 +115,12 @@ class ProcessManager:
             return None
         return self._state_override
 
-    def start(self, func: str | None = None, ev: threading.Event | None = None) -> None:
+    def start(
+        self,
+        func: str | None = None,
+        ev: threading.Event | None = None,
+        is_global_scheduler: bool = False,
+    ) -> None:
         # 更新事务持有 restart_lock；清理过程持有 cleanup_lock。请求线程不能在事务
         # 期间长期阻塞；同线程的 RLock 重入仍允许更新失败后的实例恢复。
         if not State.restart_lock.acquire(blocking=False):
@@ -141,6 +147,7 @@ class ProcessManager:
                             f"[{self.config_name}] Worker 登记不一致，拒绝启动以避免重复"
                         )
                         return
+                    self.is_global_scheduler = is_global_scheduler
                     if func is None:
                         func = get_config_mod(self.config_name)
                     with self._runtime_lock:
@@ -160,6 +167,7 @@ class ProcessManager:
                         ev,
                         self._preview_queue,
                         self.run_id,
+                        is_global_scheduler,
                     )
                     process = Process(
                         target=ProcessManager.run_process,
@@ -261,6 +269,7 @@ class ProcessManager:
             )
         if stopped:
             self._process = None
+            self.is_global_scheduler = False
             stopped = self._unregister_process()
             if stopped and pid is not None:
                 with self._runtime_lock:
@@ -590,6 +599,7 @@ class ProcessManager:
         e: threading.Event | None = None,
         preview_queue=None,
         run_id=None,
+        is_global_scheduler: bool = False,
     ) -> None:
         """统一发布最终结果，包括调度器通过 SystemExit 退出的路径。"""
         from module.runtime.worker_events import initialize
@@ -597,7 +607,9 @@ class ProcessManager:
         initialize(q.put, run_id)
         result = WorkerResult.ERROR
         try:
-            result = ProcessManager._run_process(config_name, func, q, e, preview_queue, run_id)
+            result = ProcessManager._run_process(
+                config_name, func, q, e, preview_queue, run_id, is_global_scheduler=is_global_scheduler
+            )
         except SystemExit as exc:
             if exc.code in (None, 0):
                 result = WorkerResult.UPDATE if e is not None and e.is_set() else WorkerResult.FINISHED
@@ -608,7 +620,9 @@ class ProcessManager:
             q.put(ExitEvent(run_id, result))
 
     @staticmethod
-    def _run_process(config_name, func, q, e, preview_queue, run_id) -> WorkerResult:
+    def _run_process(
+        config_name, func, q, e, preview_queue, run_id, is_global_scheduler: bool = False
+    ) -> WorkerResult:
         import sys
 
         if sys.platform != "win32":
@@ -660,6 +674,7 @@ class ProcessManager:
 
         # 设置环境变量，使预加载模块（如 al_ocr.py）可以提前读取配置
         os.environ["ALAS_CONFIG_NAME"] = config_name
+        os.environ["ALAS_GLOBAL_SCHEDULER"] = "1" if is_global_scheduler else "0"
 
         if e is not None:
             AzurLaneConfig.stop_event = e
@@ -671,12 +686,18 @@ class ProcessManager:
 
                 if e is not None:
                     AzurLaneAutoScript.stop_event = e
-                task_result = AzurLaneAutoScript(config_name=config_name).loop()
+                task_result = AzurLaneAutoScript(
+                    config_name=config_name,
+                    is_global_scheduler=is_global_scheduler,
+                ).loop()
             elif func in get_available_func():
                 from alas import AzurLaneAutoScript
 
                 single_task = True
-                task_result = AzurLaneAutoScript(config_name=config_name).run(
+                task_result = AzurLaneAutoScript(
+                    config_name=config_name,
+                    is_global_scheduler=is_global_scheduler,
+                ).run(
                     inflection.underscore(func), skip_first_screenshot=True
                 )
             elif func in get_available_mod():
