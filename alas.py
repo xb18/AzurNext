@@ -106,16 +106,24 @@ class AzurLaneAutoScript:
     """
     stop_event: threading.Event = None
 
+<<<<<<< HEAD
     def __init__(self, config_name=DEFAULT_CONFIG_NAME):
         """初始化调度器实例。
 
         Args:
             config_name (str, optional): 配置实例名称。默认为 DEFAULT_CONFIG_NAME。
         """
+=======
+    def __init__(self, config_name=DEFAULT_CONFIG_NAME, is_global_scheduler: bool | None = None):
+>>>>>>> cdc1fdf08 (fix(scheduler): 隔离单实例调度与全局调度，修复单独启动误触发全局调度的缺陷)
         logger.hr('Start', level=0)
         self.config_name = config_name
         self._initial_config_name = config_name
-        self._global_scheduler_active = False
+        self._is_global_scheduler_explicit = is_global_scheduler
+        if is_global_scheduler is not None:
+            self._global_scheduler_active = bool(is_global_scheduler)
+        else:
+            self._global_scheduler_active = None
         # 跳过启动后的第一次 Restart 任务
         self.is_first_task = True
         # 任务失败计数器，key 为任务名，value 为连续失败次数
@@ -2219,21 +2227,31 @@ class AzurLaneAutoScript:
 =======
     @property
     def is_global_scheduler_enabled(self) -> bool:
-        if getattr(self, '_global_scheduler_active', False):
-            return True
-        enabled = False
-        try:
-            import json
-            if os.path.exists(filepath_global_scheduler_status()):
-                with open(filepath_global_scheduler_status(), "r", encoding="utf-8") as f:
-                    data = json.load(f)
-                    if data.get("active", False):
-                        enabled = True
-        except Exception:
-            pass
-        if enabled:
+        if self._global_scheduler_active is not None:
+            return self._global_scheduler_active
+
+        # 检查显式指定标志（例如 WebUI 单独启动传 False，全局调度中心启动传 True）
+        if self._is_global_scheduler_explicit is not None:
+            self._global_scheduler_active = self._is_global_scheduler_explicit
+            return self._global_scheduler_active
+
+        # 检查环境变量
+        env_val = os.environ.get("ALAS_GLOBAL_SCHEDULER", "").lower()
+        if env_val in ("1", "true", "yes"):
             self._global_scheduler_active = True
-        return enabled
+            return True
+        elif env_val in ("0", "false", "no"):
+            self._global_scheduler_active = False
+            return False
+
+        # 检查配置中的显式开启选项 (GlobalScheduler.Enable)
+        if bool(self._get_global_scheduler_attr('Enable', False)):
+            self._global_scheduler_active = True
+            return True
+
+        # 默认一律为 False；状态推流文件仅作为单向输出，绝不反向作为启用依据
+        self._global_scheduler_active = False
+        return False
 
     def _get_global_scheduler_attr(self, name: str, default=None):
         from module.config.utils import get_default_main_instance
@@ -2266,7 +2284,10 @@ class AzurLaneAutoScript:
     ) -> None:
         """
         更新全局调度运行状态至本地 JSON 文件，供 WebUI 实时渲染进度。
+        仅在启用全局调度时更新，单实例运行绝不更新以防污染全局看板。
         """
+        if not self.is_global_scheduler_enabled:
+            return
         try:
             from deploy.atomic import atomic_write
             if config_list is None:
@@ -2787,6 +2808,7 @@ class AzurLaneAutoScript:
 
                 # 获取任务
                 task = self.get_next_task()
+<<<<<<< HEAD
                 if task == 'Restart':
                     # 即使存在旧的冷却记录，也必须放行重启；敏感任务检查仍由恢复入口执行。
                     self.task_restart_delays.pop(task, None)
@@ -2802,6 +2824,10 @@ class AzurLaneAutoScript:
                         continue
                     self.task_restart_delays.pop(task, None)
                 self._update_global_scheduler_status("running", task=task)
+=======
+                if self.is_global_scheduler_enabled:
+                    self._update_global_scheduler_status("running", task=task)
+>>>>>>> cdc1fdf08 (fix(scheduler): 隔离单实例调度与全局调度，修复单独启动误触发全局调度的缺陷)
                 # 初始化设备并更改服务器
                 _ = self.device
                 self.device.config = self.config
@@ -3081,16 +3107,39 @@ if __name__ == '__main__':
         tui_main()
         sys.exit(0)
 
-    try:
-        config_name = parse_config_name(sys.argv[1:])
-    except ValueError as error:
-        logger.error(f'[Alas] 无法启动调度器：{error}')
-        logger.info(
-            f'[Alas] 用法：python alas.py [实例名]，省略实例名时使用 {DEFAULT_CONFIG_NAME}'
-        )
-        exit(2)
+    import argparse
 
-    alas = AzurLaneAutoScript(config_name=config_name)
+    parser = argparse.ArgumentParser(description="AzurNext 调度器")
+    parser.add_argument(
+        "-c", "--config",
+        type=str,
+        default=None,
+        help="指定运行的配置名称，默认为 alas",
+    )
+    parser.add_argument(
+        "-g", "--global",
+        dest="global_scheduler",
+        action="store_true",
+        default=False,
+        help="以多配置全局调度模式运行",
+    )
+    args, remaining_argv = parser.parse_known_args()
+    if args.config is not None:
+        config_name = args.config
+    else:
+        try:
+            config_name = parse_config_name(remaining_argv)
+        except ValueError as error:
+            logger.error(f'[Alas] 无法启动调度器：{error}')
+            logger.info(
+                f'[Alas] 用法：python alas.py [实例名]，省略实例名时使用 {DEFAULT_CONFIG_NAME}'
+            )
+            exit(2)
+
+    alas = AzurLaneAutoScript(
+        config_name=config_name,
+        is_global_scheduler=args.global_scheduler,
+    )
     # 先完成统计数据准备（旧加密数据自动解密，有界等待，异常环境不阻塞启动），再启动业务任务。
     try:
         from module.statistics.opsi_secure import initialize
