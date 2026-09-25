@@ -62,14 +62,18 @@ def is_production_environment(root_dir: Optional[str] = None) -> bool:
     except Exception:
         target_path = Path(os.getcwd()).resolve()
 
-    target_str = str(target_path).lower().replace("\\", "/")
-    if "alas-launcher" in target_str or "azurnext" in target_str:
-        return True
-
     search_parents = [target_path, *target_path.parents]
     for p in search_parents:
         if (p / "alas-launcher.exe").is_file() or (p / "AzurNext.exe").is_file():
             return True
+
+    for p in search_parents:
+        if (p / ".git").exists() and (p / "gui.py").is_file():
+            return False
+
+    target_str = str(target_path).lower().replace("\\", "/")
+    if "alas-launcher" in target_str or "azurnext" in target_str:
+        return True
 
     for p in search_parents:
         if (p / ".git").exists():
