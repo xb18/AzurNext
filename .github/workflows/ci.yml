@@ -47,6 +47,8 @@ jobs:
           uv run ruff check module/api module/runtime deploy/frontend.py --select F821,F401
           uv run python -m unittest tests.test_api tests.test_api_lifecycle tests.test_config_transaction tests.test_runtime_task_handler tests.test_frontend_build tests.test_gui_supervisor_exit
           npm run build --prefix frontend
+          uv run python -c "from pathlib import Path; from deploy.frontend import source_fingerprint; d = Path('frontend'); (d / 'dist/.source-fingerprint').write_text(source_fingerprint(d) + '\n', encoding='utf-8')"
+          git diff --exit-code -- frontend/dist
           npm test --prefix frontend
       - name: 浏览器端到端测试
         working-directory: frontend
