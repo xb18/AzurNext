@@ -242,7 +242,7 @@ def ensure_frontend(root=None):
             return
 
     # 生产环境中若已有可用的前端静态页面，优先保障极速启动与可用性，避免因缺少 Node 或 npm 网络卡死
-    if dist_html.is_file() and is_production_environment(str(directory.parent)):
+    if dist_html.is_file() and not marker.is_file() and is_production_environment(str(directory.parent)):
         logger.info('生产环境已存在前端静态资源，跳过前端构建以保障极速启动')
         return
 

@@ -106,16 +106,13 @@ class AzurLaneAutoScript:
     """
     stop_event: threading.Event = None
 
-<<<<<<< HEAD
-    def __init__(self, config_name=DEFAULT_CONFIG_NAME):
+    def __init__(self, config_name=DEFAULT_CONFIG_NAME, is_global_scheduler: bool | None = None):
         """初始化调度器实例。
 
         Args:
             config_name (str, optional): 配置实例名称。默认为 DEFAULT_CONFIG_NAME。
+            is_global_scheduler (bool | None, optional): 是否显式开启多配置全局调度。默认为 None。
         """
-=======
-    def __init__(self, config_name=DEFAULT_CONFIG_NAME, is_global_scheduler: bool | None = None):
->>>>>>> cdc1fdf08 (fix(scheduler): 隔离单实例调度与全局调度，修复单独启动误触发全局调度的缺陷)
         logger.hr('Start', level=0)
         self.config_name = config_name
         self._initial_config_name = config_name
@@ -1138,14 +1135,8 @@ class AzurLaneAutoScript:
                 with_traceback=False,
             )
             self._check_sensitive_exit(command, e)
-<<<<<<< HEAD
             self._notify_recoverable(
-                title=f"AzurPilot <{self.config_name}> 警告",
-=======
-            handle_notify(
-                self.config.Error_OnePushConfig,
                 title=f"AzurNext <{self.config_name}> 警告",
->>>>>>> 3f1bf3ec4 (feat(scheduler): 实现多配置实例全局调度中心与状态看板)
                 content=f"<{self.config_name}> 游戏未运行 - 将自动重启游戏",
                 webui_title=f" <{self.config_name}> 发出了警告喵！",
                 webui_content=f"<{self.config_name}> 游戏未运行喵 将自动重启游戏喵~",
@@ -1176,16 +1167,9 @@ class AzurLaneAutoScript:
                         return 'recoverable'
 
             logger.warning(f'[Alas] 游戏卡住，{self.device.package} 将在10秒后重启')
-<<<<<<< HEAD
-            logger.warning('[Alas] 如果您正在手动操作，请停止 AzurPilot')
-            self._notify_recoverable(
-                title=f"AzurPilot <{self.config_name}> 警告",
-=======
             logger.warning('[Alas] 如果您正在手动操作，请停止 AzurNext')
-            handle_notify(
-                self.config.Error_OnePushConfig,
+            self._notify_recoverable(
                 title=f"AzurNext <{self.config_name}> 警告",
->>>>>>> 3f1bf3ec4 (feat(scheduler): 实现多配置实例全局调度中心与状态看板)
                 content=f"<{self.config_name}> 游戏卡住 - 将自动重启游戏",
                 webui_title=f"<{self.config_name}> 发出了警告喵！",
                 webui_content=f"<{self.config_name}> 游戏卡住 将自动重启游戏喵~",
@@ -1206,14 +1190,8 @@ class AzurLaneAutoScript:
             self._check_sensitive_exit(command, e)
             logger.warning('[Alas] 碧蓝航线游戏客户端发生错误，AzurNext 无法处理')
             logger.warning(f'[Alas] 正在重启 {self.device.package} 以修复问题')
-<<<<<<< HEAD
             self._notify_recoverable(
-                title=f"AzurPilot <{self.config_name}> 警告",
-=======
-            handle_notify(
-                self.config.Error_OnePushConfig,
                 title=f"AzurNext <{self.config_name}> 警告",
->>>>>>> 3f1bf3ec4 (feat(scheduler): 实现多配置实例全局调度中心与状态看板)
                 content=f"<{self.config_name}> 游戏客户端错误 - 将自动重启游戏",
                 webui_title=f"<{self.config_name}> 发出了警告喵！",
                 webui_content=f"<{self.config_name}> 游戏客户端错误 将自动重启游戏喵~",
@@ -1236,14 +1214,8 @@ class AzurLaneAutoScript:
                 self.save_error_log()
                 self._check_sensitive_exit(command, e)
                 logger.warning('[Alas] 无法识别游戏页面，尝试重启游戏恢复')
-<<<<<<< HEAD
                 self._notify_recoverable(
-                    title=f"AzurPilot <{self.config_name}> 警告",
-=======
-                handle_notify(
-                    self.config.Error_OnePushConfig,
                     title=f"AzurNext <{self.config_name}> 警告",
->>>>>>> 3f1bf3ec4 (feat(scheduler): 实现多配置实例全局调度中心与状态看板)
                     content=f"<{self.config_name}> 无法识别页面 - 将自动重启游戏",
                     webui_title=f"<{self.config_name}> 发出了警告喵！",
                     webui_content=f"<{self.config_name}> 无法识别页面 将自动重启游戏喵~",
@@ -1286,14 +1258,8 @@ class AzurLaneAutoScript:
                 exit(1)
 
             logger.warning(f'[Alas] ScriptError 第 {self.script_error_count}/3 次，尝试重启恢复')
-<<<<<<< HEAD
             self._notify_recoverable(
-                title=f"AzurPilot <{self.config_name}> 警告",
-=======
-            handle_notify(
-                self.config.Error_OnePushConfig,
                 title=f"AzurNext <{self.config_name}> 警告",
->>>>>>> 3f1bf3ec4 (feat(scheduler): 实现多配置实例全局调度中心与状态看板)
                 content=f"<{self.config_name}> ScriptError - 将尝试重启恢复 ({self.script_error_count}/3)",
                 webui_title=f"<{self.config_name}> 发出了警告喵！",
                 webui_content=f"<{self.config_name}> ScriptError 将尝试重启恢复喵~",
@@ -1314,14 +1280,8 @@ class AzurLaneAutoScript:
             # 始终尝试重启模拟器，即使失败也不退出
             self._try_restart_emulator()
             self.config.task_call('Restart')
-<<<<<<< HEAD
             self._notify_recoverable(
-                title=f"AzurPilot <{self.config_name}> 警告",
-=======
-            handle_notify(
-                self.config.Error_OnePushConfig,
                 title=f"AzurNext <{self.config_name}> 警告",
->>>>>>> 3f1bf3ec4 (feat(scheduler): 实现多配置实例全局调度中心与状态看板)
                 content=f"<{self.config_name}> 模拟器离线 - 正在尝试重启模拟器",
                 webui_title=f"{self.config_name} 出了点小问题喵~",
                 webui_content=f"模拟器离线喵 正在重启模拟器喵",
@@ -1342,14 +1302,8 @@ class AzurLaneAutoScript:
             logger.warning('[Alas] RequestHumanTakeover: 尝试通过重启模拟器恢复')
             self._try_restart_emulator()
             self.config.task_call('Restart')
-<<<<<<< HEAD
             self._notify_recoverable(
-                title=f"AzurPilot <{self.config_name}> 警告",
-=======
-            handle_notify(
-                self.config.Error_OnePushConfig,
                 title=f"AzurNext <{self.config_name}> 警告",
->>>>>>> 3f1bf3ec4 (feat(scheduler): 实现多配置实例全局调度中心与状态看板)
                 content=f"<{self.config_name}> 需要人工介入 - 正在尝试自动重启恢复",
                 webui_title=f"{self.config_name} 出了点小问题喵~",
                 webui_content=f"遇到需要人工介入的问题喵 正在尝试自动重启恢复喵",
@@ -1368,14 +1322,8 @@ class AzurLaneAutoScript:
             self._check_sensitive_exit(command, e)
             logger.warning('[Alas] 自动搜索设置失败，尝试重启游戏恢复')
             self.config.task_call('Restart')
-<<<<<<< HEAD
             self._notify_recoverable(
-                title=f"AzurPilot <{self.config_name}> 警告",
-=======
-            handle_notify(
-                self.config.Error_OnePushConfig,
                 title=f"AzurNext <{self.config_name}> 警告",
->>>>>>> 3f1bf3ec4 (feat(scheduler): 实现多配置实例全局调度中心与状态看板)
                 content=f"<{self.config_name}> 自动搜索设置失败 - 将自动重启游戏",
                 webui_title=f"<{self.config_name}> 发出了警告喵！",
                 webui_content=f"<{self.config_name}> 自动搜索设置失败 将自动重启游戏喵~",
@@ -1409,14 +1357,8 @@ class AzurLaneAutoScript:
                     f'先尝试重启游戏恢复'
                 )
             self.config.task_call('Restart')
-<<<<<<< HEAD
             self._notify_recoverable(
-                title=f"AzurPilot <{self.config_name}> 警告",
-=======
-            handle_notify(
-                self.config.Error_OnePushConfig,
                 title=f"AzurNext <{self.config_name}> 警告",
->>>>>>> 3f1bf3ec4 (feat(scheduler): 实现多配置实例全局调度中心与状态看板)
                 content=f"<{self.config_name}> 发生异常 - 正在尝试自动重启恢复",
                 webui_title=f"<{self.config_name}> 发出了警告喵！",
                 webui_content=f"<{self.config_name}> 发生异常 正在尝试自动重启恢复喵~",
@@ -2174,7 +2116,6 @@ class AzurLaneAutoScript:
             if self.config.should_reload():
                 return False
 
-<<<<<<< HEAD
     def scheduler_refresh(self):
         """在任务边界只读取卡片要求的资源，异常复用已有恢复入口。"""
         from module.scheduler.resources import refresh_resources
@@ -2217,14 +2158,15 @@ class AzurLaneAutoScript:
         # 达到上限需要人工关注，即使开启低推送量模式也发送通知。
         try:
             handle_notify(self.config.Error_OnePushConfig,
-                          title=f'AzurPilot <{self.config_name}> 任务恢复次数已达上限', content=content)
+                          title=f'AzurNext <{self.config_name}> 任务恢复次数已达上限', content=content)
         except Exception as exc:
             logger.warning(f'[Alas] 任务延后错误推送失败：{exc}')
         try:
             notify_webui(self.config_name, title='任务已延后至次日', content=content)
         except Exception as exc:
             logger.warning(f'[Alas] 任务延后 WebUI 通知失败：{exc}')
-=======
+        return True
+
     @property
     def is_global_scheduler_enabled(self) -> bool:
         if self._global_scheduler_active is not None:
@@ -2509,7 +2451,6 @@ class AzurLaneAutoScript:
             return True
 
         self.switch_to_config(config_list[0])
->>>>>>> 3f1bf3ec4 (feat(scheduler): 实现多配置实例全局调度中心与状态看板)
         return True
 
     def get_next_task(self):
@@ -2808,7 +2749,6 @@ class AzurLaneAutoScript:
 
                 # 获取任务
                 task = self.get_next_task()
-<<<<<<< HEAD
                 if task == 'Restart':
                     # 即使存在旧的冷却记录，也必须放行重启；敏感任务检查仍由恢复入口执行。
                     self.task_restart_delays.pop(task, None)
@@ -2823,11 +2763,8 @@ class AzurLaneAutoScript:
                         self.wait_until(min(deadline, current_time() + timedelta(seconds=4)))
                         continue
                     self.task_restart_delays.pop(task, None)
-                self._update_global_scheduler_status("running", task=task)
-=======
                 if self.is_global_scheduler_enabled:
                     self._update_global_scheduler_status("running", task=task)
->>>>>>> cdc1fdf08 (fix(scheduler): 隔离单实例调度与全局调度，修复单独启动误触发全局调度的缺陷)
                 # 初始化设备并更改服务器
                 _ = self.device
                 self.device.config = self.config
