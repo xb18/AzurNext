@@ -59,10 +59,14 @@ class DeployConfigTransaction:
     """将读取迁移、增量写入和运行时属性同步纳入同一文件事务。"""
 
     def _sync_config(self):
-        for key, value in self.config.items():
-            if hasattr(type(self), key):
-                object.__setattr__(self, key, value)
-        self.config_redirect()
+        self._syncing_config = True
+        try:
+            for key, value in self.config.items():
+                if hasattr(type(self), key):
+                    object.__setattr__(self, key, value)
+            self.config_redirect()
+        finally:
+            self._syncing_config = False
 
     def _load_config(self):
         from deploy.utils import poor_yaml_read

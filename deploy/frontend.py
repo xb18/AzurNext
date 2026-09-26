@@ -5,6 +5,8 @@ import shutil
 import subprocess
 from pathlib import Path
 
+from deploy.utils import is_production_environment
+
 
 def npm_command():
     """Windows 直接使用 Node 执行 npm，避免将批处理当作可执行文件。"""
@@ -42,10 +44,27 @@ def ensure_frontend(root=None):
     from module.logger import logger
     directory = (Path(root) if root else Path(__file__).resolve().parents[1]) / 'frontend'
     marker = directory / 'dist/.source-fingerprint'
-    fingerprint = source_fingerprint(directory)
-    if (directory / 'dist/index.html').is_file() and marker.is_file() and marker.read_text().strip() == fingerprint:
+    dist_html = directory / 'dist/index.html'
+
+    if dist_html.is_file() and marker.is_file():
+        fingerprint = source_fingerprint(directory)
+        if marker.read_text().strip() == fingerprint:
+            return
+
+    # 生产环境中若已有可用的前端静态页面，优先保障极速启动与可用性，避免因缺少 Node 或 npm 网络卡死
+    if dist_html.is_file() and is_production_environment(str(directory.parent)):
+        logger.info('生产环境已存在前端静态资源，跳过前端构建以保障极速启动')
         return
-    command = npm_command()
+
+    try:
+        command = npm_command()
+    except RuntimeError as exc:
+        if dist_html.is_file():
+            logger.warning(f'未找到 Node.js，将回退使用现有的前端静态产物: {exc}')
+            return
+        raise
+
+    fingerprint = source_fingerprint(directory)
     logger.info('正在构建 React 前端资源')
     flags = {'creationflags': subprocess.CREATE_NO_WINDOW} if hasattr(subprocess, 'CREATE_NO_WINDOW') else {}
     subprocess.run([*command, 'ci', '--no-audit', '--no-fund'], cwd=directory, check=True, timeout=600, **flags)

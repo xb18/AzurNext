@@ -153,9 +153,9 @@ class DeployConfig(DeployConfigTransaction, ConfigModel):
         if self.Repository in ['cn']:
             super().__setattr__('Repository', GIT_OVER_CDN_REPOSITORY)
 
-        # 开发环境与生产环境 WebUI 端口统一使用生产端口
+        # 开发环境与生产环境 WebUI 端口统一使用生产端口（绕过 DeployConfig.__setattr__，避免递归死循环）
         if self.WebuiPort in (DEVELOPMENT_WEBUI_PORT, PRODUCTION_WEBUI_PORT):
-            self.WebuiPort = PRODUCTION_WEBUI_PORT
+            super().__setattr__('WebuiPort', PRODUCTION_WEBUI_PORT)
             self.config['WebuiPort'] = PRODUCTION_WEBUI_PORT
 
     def _redirect_github_repository(self):

@@ -41,5 +41,30 @@ class FrontendBuildTests(unittest.TestCase):
             self.assertTrue(command[1].endswith('npm-cli.js'))
 
 
+    def test_production_skips_build_when_dist_exists(self):
+        with tempfile.TemporaryDirectory() as directory:
+            frontend = Path(directory) / 'frontend'
+            (frontend / 'dist').mkdir(parents=True)
+            (frontend / 'dist/index.html').write_text('页面')
+            (frontend / 'package.json').write_text('{}')
+            with patch('deploy.frontend.is_production_environment', return_value=True), patch(
+                'deploy.frontend.npm_command'
+            ) as command:
+                ensure_frontend(directory)
+                command.assert_not_called()
+
+    def test_missing_node_fallbacks_to_existing_dist(self):
+        with tempfile.TemporaryDirectory() as directory:
+            frontend = Path(directory) / 'frontend'
+            (frontend / 'dist').mkdir(parents=True)
+            (frontend / 'dist/index.html').write_text('页面')
+            (frontend / 'package.json').write_text('{}')
+            with patch('deploy.frontend.is_production_environment', return_value=False), patch(
+                'deploy.frontend.npm_command', side_effect=RuntimeError('未安装 Node.js')
+            ):
+                # 不应抛出异常，优雅降级
+                ensure_frontend(directory)
+
+
 if __name__ == '__main__':
     unittest.main()
