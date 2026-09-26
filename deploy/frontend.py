@@ -8,6 +8,8 @@ import tarfile
 import urllib.request
 from pathlib import Path
 
+from deploy.utils import is_production_environment
+
 # 安卓运行包永不本地编译前端：源码变更后由宿主从其 CI 发布渠道拉取按提交发布的
 # 预构建 dist（frontend-<commit>.tar.xz + .sha256）。基址由宿主注入（含镜像前缀）。
 ANDROID_DIST_BASE_ENV = 'AZURPILOT_ANDROID_DIST_BASE'
@@ -232,15 +234,33 @@ def ensure_frontend(root=None):
     from module.logger import logger
     directory = (Path(root) if root else Path(__file__).resolve().parents[1]) / 'frontend'
     marker = directory / 'dist/.source-fingerprint'
-    fingerprint = source_fingerprint(directory)
-    if (directory / 'dist/index.html').is_file() and marker.is_file() and marker.read_text().strip() == fingerprint:
+    dist_html = directory / 'dist/index.html'
+
+    if dist_html.is_file() and marker.is_file():
+        fingerprint = source_fingerprint(directory)
+        if marker.read_text().strip() == fingerprint:
+            return
+
+    # 生产环境中若已有可用的前端静态页面，优先保障极速启动与可用性，避免因缺少 Node 或 npm 网络卡死
+    if dist_html.is_file() and is_production_environment(str(directory.parent)):
+        logger.info('生产环境已存在前端静态资源，跳过前端构建以保障极速启动')
         return
+
     if os.environ.get('AZURPILOT_ANDROID') == '1':
         # 安卓永不本地编译：宿主按提交发布预构建 dist，缺失即报错，
         # 更新服务在应用前会先探测 dist 可用性，正常流程不会走到这里。
         _android_fetch_dist(directory, Path(root) if root else Path(__file__).resolve().parents[1])
         return
-    command = npm_command()
+
+    try:
+        command = npm_command()
+    except RuntimeError as exc:
+        if dist_html.is_file() and not marker.is_file():
+            logger.warning(f'未找到 Node.js，将回退使用现有的前端静态产物: {exc}')
+            return
+        raise
+
+    fingerprint = source_fingerprint(directory)
     logger.info('正在构建 React 前端资源')
     flags = {'creationflags': subprocess.CREATE_NO_WINDOW} if hasattr(subprocess, 'CREATE_NO_WINDOW') else {}
     _install_dependencies(command, directory, flags)
