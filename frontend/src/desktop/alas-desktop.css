@@ -33,30 +33,35 @@ body.is-tauri-client .alas-desktop-controls * {
 }
 
 /* 桌面窗口控制栏容器 */
-.alas-desktop-controls {
+.alas-desktop-controls,
+body.is-tauri-client .topbar > .alas-desktop-controls {
     display: none;
-    position: absolute;
-    top: 0;
-    right: 0;
-    height: 100%;
+    position: absolute !important;
+    top: 0 !important;
+    right: 0 !important;
+    left: auto !important;
+    height: 100% !important;
     align-items: center;
     gap: 8px;
     padding: 0 16px;
-    z-index: 1005;
+    z-index: 1005 !important;
     pointer-events: auto;
     box-sizing: border-box;
 }
 
 /* 当页面处于登录页或独占终端无 .topbar 时，固定在窗口右上角 */
-.alas-desktop-controls.is-floating {
-    position: fixed;
-    top: 0;
-    right: 0;
-    height: 52px;
+.alas-desktop-controls.is-floating,
+body.is-tauri-client .alas-desktop-controls.is-floating {
+    position: fixed !important;
+    top: 0 !important;
+    right: 0 !important;
+    left: auto !important;
+    height: 52px !important;
 }
 
-body.is-tauri-client .alas-desktop-controls {
-    display: flex;
+body.is-tauri-client .alas-desktop-controls,
+body.is-tauri-client .topbar > .alas-desktop-controls {
+    display: flex !important;
 }
 
 /* 控制按钮公共样式（macOS 风格圆点） */

@@ -2702,7 +2702,7 @@ body {background: var(--bg); background-attachment: fixed}
 .topbar {position: sticky; z-index: 80; margin: 0 0 0 24px; top: 0; height: var(--topbar-actual-height, 56px); padding: 0 18px; border: 1px solid var(--theme-topbar-edge, var(--glass-edge)); border-bottom: none; border-radius: var(--theme-topbar-radius, 26px) 0 0 var(--theme-topbar-radius, 26px); background: transparent; box-shadow: var(--theme-topbar-shadow, var(--glass-shadow)); isolation: isolate}
 /* 顶栏横跨容器两列，一直铺到屏幕右缘（右栏的 top 就在它下方）。 */
 .shell-frame > .topbar {grid-area: 1 / 1 / 2 / 3; width: auto; border-bottom: none !important}
-.topbar > :not(.glass-material), .title-actions > :not(.glass-material) {position: relative; z-index: 1}
+.topbar > :not(.glass-material):not(.alas-desktop-controls), .title-actions > :not(.glass-material) {position: relative; z-index: 1}
 .topbar > .glass-material {background: none; -webkit-backdrop-filter: none; backdrop-filter: none}
 /* 页标题动作区同样站在第 0 层，它里面的玻璃取一级面。 */
 .title-actions > .glass-material {background: var(--theme-surface-bg); -webkit-backdrop-filter: var(--theme-surface-filter); backdrop-filter: var(--theme-surface-filter)}

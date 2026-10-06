@@ -728,15 +728,17 @@ export function initAlasDesktop(): void {
     }
   }
 
-  const initHeaderControls = (header: HTMLElement) => {
-    if (!header || header.querySelector('.alas-desktop-controls')) {
+  const initHeaderControls = (header: HTMLElement, isFloating = false) => {
+    if (!header || header.querySelector(':scope > .alas-desktop-controls')) {
       return
     }
 
-    header.setAttribute('data-tauri-drag-region', 'true')
+    if (!isFloating) {
+      header.setAttribute('data-tauri-drag-region', 'true')
+    }
 
     const controls = document.createElement('div')
-    controls.className = 'alas-desktop-controls'
+    controls.className = isFloating ? 'alas-desktop-controls is-floating' : 'alas-desktop-controls'
     controls.setAttribute('data-tauri-drag-region', 'false')
 
     ;['pointerdown', 'mousedown', 'touchstart', 'dblclick'].forEach(evt => {
@@ -1058,18 +1060,20 @@ export function initAlasDesktop(): void {
       }
     })
 
-    header.addEventListener('dblclick', async event => {
-      const target = event.target as HTMLElement | null
-      if (target?.closest('button') || target?.closest('a') || target?.closest('input')) {
-        return
-      }
-      try {
-        await invoke('window_toggle_maximize')
-        await syncMaximizeState(maxBtn)
-      } catch (e) {
-        console.error('Failed to toggle maximize', e)
-      }
-    })
+    if (!isFloating) {
+      header.addEventListener('dblclick', async event => {
+        const target = event.target as HTMLElement | null
+        if (target?.closest('button') || target?.closest('a') || target?.closest('input')) {
+          return
+        }
+        try {
+          await invoke('window_toggle_maximize')
+          await syncMaximizeState(maxBtn)
+        } catch (e) {
+          console.error('Failed to toggle maximize', e)
+        }
+      })
+    }
 
     controls.querySelectorAll('button[data-action]').forEach(btn => {
       btn.addEventListener('click', async event => {
@@ -1193,7 +1197,10 @@ export function initAlasDesktop(): void {
     // 适配新版 React 顶栏 (.topbar) 及旧版兼容选择器
     const header = (document.querySelector('header.topbar') || document.getElementById('pywebio-scope-header')) as HTMLElement | null
     if (header) {
-      initHeaderControls(header)
+      document.querySelectorAll('body > .alas-desktop-controls.is-floating').forEach(el => el.remove())
+      initHeaderControls(header, false)
+    } else if (document.body) {
+      initHeaderControls(document.body, true)
     }
     const sidebarBrand = document.querySelector('.sidebar > .sidebar-brand') as HTMLElement | null
     if (sidebarBrand && !sidebarBrand.hasAttribute('data-tauri-drag-region')) {
