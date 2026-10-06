@@ -2357,7 +2357,7 @@ main {padding: 32px 32px 16px; flex: 1}
 :root[data-material='glass'][data-theme='legacy-light'] .home-deck-link,
 :root[data-material='glass'][data-theme='legacy-dark'] .home-deck-link {border-color: rgb(255 255 255 / .42); background: rgb(255 255 255 / .14); color: #fff; -webkit-backdrop-filter: var(--theme-control-filter); backdrop-filter: var(--theme-control-filter)}
 [data-theme='light'] .home-deck-link:hover, [data-theme='dark'] .home-deck-link:hover {border-color: rgb(255 255 255 / .78); background: rgb(255 255 255 / .24); color: #fff}
-@media (prefers-reduced-transparency: reduce), (forced-colors: active) {
+@media (forced-colors: active) {
   .home-deck {color: var(--text); background: var(--surface-muted); text-shadow: none}
   .home-deck-link {border-color: var(--border); background: var(--surface); color: var(--text)}
 }
@@ -3038,7 +3038,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible {outline-color: var
 .rail-queue-group.waiting {background: var(--theme-inset-bg); border-color: color-mix(in srgb, var(--theme-border) 42%, transparent)}
 .rail-task-item:hover {background: color-mix(in srgb, var(--theme-surface) 86%, transparent)}
 
-@media (prefers-reduced-transparency: reduce), (prefers-contrast: more), (forced-colors: active) {
+@media (prefers-contrast: more), (forced-colors: active) {
   .glass-material, .sidebar, .right-rail, .instance-menu, .task-submenu-flyout, .group-nav, .panel, .resource-card {background: var(--theme-surface); -webkit-backdrop-filter: none; backdrop-filter: none}
 }
 
