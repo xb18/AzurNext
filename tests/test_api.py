@@ -722,6 +722,31 @@ class ProducerCadenceTests(unittest.IsolatedAsyncioTestCase):
             await asyncio.gather(task, return_exceptions=True)
             self.assertEqual(set(), hub.listeners)
 
+    def test_frontend_files_revalidates_strictly_by_etag(self):
+        from starlette.datastructures import Headers
+        from module.api.static import FrontendFiles
+
+        static_files = FrontendFiles(directory=ROOT / 'frontend/dist', check_dir=False)
+        response_headers = Headers({
+            'etag': '"new-etag-123"',
+            'last-modified': 'Sat, 26 Sep 2026 15:09:44 GMT',
+        })
+        stale_request_headers = Headers({
+            'if-none-match': '"old-etag-456"',
+            'if-modified-since': 'Sat, 26 Sep 2026 15:33:15 GMT',
+        })
+        self.assertFalse(
+            static_files.is_not_modified(response_headers, stale_request_headers),
+            'ETag 不匹配时即使 If-Modified-Since 晚于 Last-Modified 也严禁返回 304',
+        )
+
+        matching_request_headers = Headers({
+            'if-none-match': 'W/"new-etag-123"',
+            'if-modified-since': 'Sat, 26 Sep 2026 15:09:44 GMT',
+        })
+        self.assertTrue(static_files.is_not_modified(response_headers, matching_request_headers))
+
 
 if __name__ == '__main__':
     unittest.main()
+
