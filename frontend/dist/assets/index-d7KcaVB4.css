@@ -109,14 +109,15 @@ body.is-tauri-client .topbar {
     padding-right: 180px !important;
 }
 
-/* 顶部导航内的常规交互元素禁止拖拽，保证正常点击 */
+/* 顶部导航内的常规交互元素禁止拖拽，保证正常点击；保留 .instance-tabs 轨道空白处可拖拽 */
 body.is-tauri-client .topbar button,
 body.is-tauri-client .topbar a,
 body.is-tauri-client .topbar input,
 body.is-tauri-client .topbar select,
 body.is-tauri-client .topbar [role="button"],
 body.is-tauri-client .topbar [role="tab"],
-body.is-tauri-client .topbar .instance-tabs,
+body.is-tauri-client .topbar .instance-tab,
+body.is-tauri-client .topbar .instance-tab-create,
 body.is-tauri-client .topbar .instance-switcher,
 body.is-tauri-client .topbar .topbar-actions,
 body.is-tauri-client .sidebar > .sidebar-brand a,

@@ -1,4 +1,4 @@
-var e=`/* 仅复用布局和控件，简约主题不导入玻璃样式、壁纸或外部 theme.css。 */
+var e=`/* 浅色与深色玻璃主题（经典皮肤）：共享骨架 + 玻璃材质，深色取值在文件末尾覆盖。 */
 
 @font-face {
   font-family: 'JetBrains Mono';
@@ -1994,7 +1994,7 @@ main {padding: 32px 32px 16px; flex: 1}
 :root[data-tab-size='xl'] {--row-scale: 1.55}
 :root[data-tab-size='sm'] {--row-scale: .78}
 :root[data-tab-size='xs'] {--row-scale: .62}
-:root {--instance-tab-height: calc(26px * var(--row-scale, 1)); --instance-tab-font: calc(12px * var(--row-scale, 1)); --row-pad: var(--instance-tab-gap-y); --instance-tab-pad: calc(9px * var(--row-scale, 1)); --instance-tab-max: calc(210px * var(--row-scale, 1)); --instance-tab-icon: calc(14px * var(--row-scale, 1)); --instance-tab-gap: 1px}
+:root {--instance-tab-height: calc(32px * var(--row-scale, 1)); --instance-tab-font: calc(13px * var(--row-scale, 1)); --row-pad: max(8px, var(--instance-tab-gap-y)); --instance-tab-pad: calc(12px * var(--row-scale, 1)); --instance-tab-max: calc(220px * var(--row-scale, 1)); --instance-tab-icon: calc(15px * var(--row-scale, 1)); --instance-tab-gap: 2px}
 
 .update-notice.sidebar-update-notice {padding: 4px 8px; border-radius: 999px; background: var(--red); color: #fff; font-size: 10px; font-weight: 750; line-height: 1; flex-shrink: 0}
 .sidebar-brand {padding-top: 0; margin-bottom: 20px}
@@ -2520,6 +2520,695 @@ main {padding: 32px 32px 16px; flex: 1}
   -webkit-backdrop-filter: var(--theme-surface-filter);
   backdrop-filter: var(--theme-surface-filter);
 }
+.login-art::before {content: ''; position: absolute; inset: -50%; background: repeating-radial-gradient(circle at center, transparent 0, transparent 70px, #77d8c0 71px, transparent 72px)}
+
+/* 统一材质和层级：导航悬浮于内容之上，数据与表单使用稳定的实色表面。
+   一级面 token 由 theme-system.css 给出，这里只补玻璃描边与投影。 */
+:root {
+  --glass-edge: #ffffffd9;
+  --sidebar-width: 232px;
+  --glass-shadow: 0 8px 32px #1d1d1f08, inset 0 1px 0 #ffffffb3;
+  --topbar-height: 76px;
+  --green: #248a3d;
+  --green-soft: #eaf6ed;
+}
+:root[data-theme='dark'] {
+  --glass-edge: #ffffff1f;
+  --glass-shadow: 0 8px 32px #0002, inset 0 1px 0 #ffffff0d;
+  --green: #6cda86;
+  --green-soft: #223d2a;
+  --red: #ff8078;
+}
+body {background: var(--bg); background-attachment: fixed}
+.wallpaper-fade-in {animation: wallpaper-fade-in var(--dur-5, .36s) cubic-bezier(.16, 1, .3, 1) both}
+@keyframes wallpaper-fade-in {
+  from {opacity: 0}
+  to {opacity: 1}
+}
+:root[data-theme='dark'] .wallpaper::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgb(0 0 0 / .52);
+  pointer-events: none;
+  animation: wallpaper-fade-in var(--dur-5, .36s) cubic-bezier(.16, 1, .3, 1) both;
+}
+:root[data-theme='dark'].home-active .wallpaper::after {
+  background: linear-gradient(168deg, rgb(0 0 0 / .46), rgb(0 0 0 / .56) 55%, rgb(0 0 0 / .68));
+}
+.lucide {stroke-width: 1.75}
+
+/* 兼容前缀必须先于标准属性，避免生产压缩后只保留 WebKit 的模糊声明。 */
+.app-shell {padding: 0; gap: 14px; align-items: start}
+/* 外壳只有两列：右栏不占外壳列，它在内容区的容器里。 */
+.app-shell.with-rail {grid-template-columns: var(--sidebar-width) minmax(0, 1fr)}
+.sidebar {
+  background: var(--theme-surface-bg);
+  -webkit-backdrop-filter: var(--theme-surface-filter);
+  backdrop-filter: var(--theme-surface-filter);
+  top: 0;
+  height: var(--viewport-height);
+  border: 1px solid var(--glass-edge);
+  border-left: 0;
+  border-radius: 0 26px 26px 0;
+  box-shadow: var(--glass-shadow);
+  padding: 0 14px 14px;
+  overflow: visible;
+}
+.right-rail {
+  background: var(--theme-surface-bg);
+  -webkit-backdrop-filter: var(--theme-surface-filter);
+  backdrop-filter: var(--theme-surface-filter);
+  position: sticky;
+  top: 56px;
+  height: calc(var(--viewport-height) - 56px);
+  border: 1px solid var(--glass-edge);
+  border-top: 0 !important;
+  border-right: 0;
+  border-radius: 0 0 0 26px;
+  box-shadow: 0 18px 56px #0003;
+  overflow: hidden;
+  z-index: 70;
+}
+.right-rail-header {border-bottom: 0}
+/* 这条与 components.css 里「看图模式」那条同前缀同权重，靠源码顺序取胜；
+   写成别的会让外壳留一列空轨道加一道间隙。 */
+@media (min-width: 951px) {
+  :root body .app-shell.with-rail {grid-template-columns: auto minmax(0, 1fr)}
+  /* 看图模式要连容器里的顶栏与右栏一起淡出（它们已不是外壳的直接子元素）。 */
+  :root body .app-shell.nav-collapsed > .main-shell > .shell-frame > * {opacity: 0; pointer-events: none}
+}
+
+/* 顶栏与右栏装进同一个容器，容器自己就是那一级层：材质与形状都长在它身上，两块只留内容。
+   容器内部按网格排：顶栏在第一行横跨两列（L 的横臂），右栏在第二行右侧（L 的竖列）。
+   容器只在真的装着右栏时成立，没有右栏的页面不参与布局。 */
+.shell-frame:has(> .right-rail) {
+  grid-area: 1 / 1 / 3 / 3;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--right-rail-width);
+  grid-template-rows: var(--topbar-actual-height, 56px) minmax(0, 1fr);
+  --frame-margin: 24px;
+  --frame-strip: var(--topbar-actual-height, 56px);
+  --frame-rail: var(--right-rail-width);
+  --frame-corner: 26px;
+  --frame-sc: min(var(--frame-corner), calc(var(--frame-strip) / 2));
+  /* 面的左缘一直铺到内容区最左（246），把主页按钮左侧那块隐藏/悬停区圈在面内；
+     它若落在裁剪区之外，鼠标事件会被一起裁掉，三枚开关就展不开了。 */
+  background: var(--theme-surface-bg);
+  -webkit-backdrop-filter: var(--theme-surface-filter);
+  backdrop-filter: var(--theme-surface-filter);
+  /* 一条形状画完整个 L：上缘 → 右缘 → 下缘 → 竖列左缘 → 台阶凹角 → 横条下缘 → 左端两角。
+     绕向按「这个角凸还是凹」定：横条左端两角与竖列左下角是凸角（cw），接缝处的台阶是凹角（ccw）；
+     绕向只决定弧心落在哪一侧，写反不会报错、只会静默画错。
+     竖列左下角的底边提前一个 --frame-corner 停，弧的弦才是对角线、两端才与两条边相切。 */
+  clip-path: shape(
+    from calc(var(--frame-margin) + var(--frame-sc)) 0,
+    line to 100% 0,
+    line to 100% 100%,
+    line to calc(100% - var(--frame-rail) + var(--frame-corner)) 100%,
+    arc to calc(100% - var(--frame-rail)) calc(100% - var(--frame-corner)) of var(--frame-corner) cw,
+    line to calc(100% - var(--frame-rail)) calc(var(--frame-strip) + var(--frame-corner)),
+    arc to calc(100% - var(--frame-rail) - var(--frame-corner)) var(--frame-strip) of var(--frame-corner) ccw,
+    line to calc(var(--frame-margin) + var(--frame-sc)) var(--frame-strip),
+    arc to var(--frame-margin) var(--frame-sc) of var(--frame-sc) cw,
+    arc to calc(var(--frame-margin) + var(--frame-sc)) 0 of var(--frame-sc) cw,
+    close
+  );
+}
+/* 材质归容器：两块自己不画底、不带边框与圆角。 */
+.shell-frame:has(> .right-rail) > .topbar {
+  /* 横条横跨容器两列（一直铺到屏幕右缘）：L 的横臂因此是整条顶栏宽度。 */
+  grid-area: 1 / 1 / 2 / 3;
+  width: auto;
+  margin: 0 0 0 24px;
+  border: none !important;
+  border-radius: 0;
+  background: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: none !important;
+}
+/* 右栏就是 L 的竖列：材质归容器，自己不画底、不带边框与圆角。 */
+.shell-frame:has(> .right-rail) > .right-rail {
+  grid-area: 2 / 2 / 3 / 3;
+  z-index: 1;
+  /* 右栏不 sticky：在容器网格里 sticky 的 top 会把整块往下推。 */
+  position: relative !important;
+  top: auto !important;
+  height: auto;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  background: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+/* 两块调度器板与顶栏同属容器内的一级层：面归容器，板子只留内容与二级/三级贴片。 */
+.shell-frame:has(> .right-rail) > .right-rail > .scheduler-widget,
+.shell-frame:has(> .right-rail) > .right-rail > .rail-schedule {background: none; -webkit-backdrop-filter: none; backdrop-filter: none; border-color: transparent}
+.shell-frame:has(> .right-rail) > .topbar {z-index: 1}
+.scheduler-widget {border-radius: 18px; background: color-mix(in srgb, var(--surface) 72%, transparent); border-color: color-mix(in srgb, var(--border) 70%, transparent); box-shadow: inset 0 1px 0 color-mix(in srgb, white 46%, transparent)}
+.scheduler-stats > div {border-radius: 14px}
+.rail-schedule {margin: 0 10px 10px; padding: 14px 12px 10px; border-top: 1px solid color-mix(in srgb, var(--border) 68%, transparent)}
+.rail-task-item {margin: 3px 0; padding: 9px 8px; border-bottom: 0; border-radius: 13px}
+.rail-task-item:hover {background: color-mix(in srgb, var(--surface) 72%, transparent)}
+/* 内容区自己也是网格：第一行留给顶栏、第二行左边放页面内容；容器横跨两行两列。 */
+.main-shell {min-width: 0; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: var(--topbar-actual-height, 56px) minmax(0, 1fr); align-self: stretch}
+/* 新版材质主题的页面滚动归内容列：外壳定在视口高度上，顶栏与调度器栏（同一个容器）不随页面滚动，
+   需要翻滚的页面自己在 main 里滚，侧栏与容器留在原位。 */
+.app-shell:has(> .main-shell > .shell-frame > .topbar) {height: var(--viewport-height); overflow: hidden}
+.app-shell:has(> .main-shell > .shell-frame > .topbar) > .main-shell {min-height: 0}
+.app-shell:has(> .main-shell > .shell-frame > .topbar) .main-shell > main {min-height: 0; overflow-y: auto}
+/* 内容列要真的让出右栏那一列：跨列的容器不会把宽度贡献给第二列，auto 会塌成 0。 */
+.main-shell:has(> .shell-frame > .right-rail) {grid-template-columns: minmax(0, 1fr) var(--right-rail-width)}
+.main-shell > main {grid-area: 2 / 1 / 3 / 2; min-width: 0}
+.sidebar-brand {height: 56px; margin-bottom: 10px; padding: 0 10px}
+.brand-title {font-size: 23px; letter-spacing: -.7px; gap: 10px}
+.brand-logo {width: 32px; height: 32px; border-radius: 9px}
+.primary-nav {gap: 5px; margin-bottom: 28px}
+.primary-nav a {min-height: 44px; border-radius: 12px; font-size: 14px; color: var(--text); gap: 12px}
+.primary-nav a svg {color: var(--accent); width: 20px; height: 20px}
+.primary-nav a.active {background: #0071e3; color: #fff; box-shadow: none}
+.primary-nav a.active svg {color: inherit}
+.sidebar-label {font-size: 12px; letter-spacing: 0; color: var(--muted); font-weight: 600}
+.task-group-button {min-height: 43px; font-size: 13px; border-radius: 11px; color: var(--text)}
+.task-group-icon {color: var(--accent)}
+.task-group-button.expanded, [data-theme='dark'] .task-group-button.expanded {border-color: transparent; background: var(--accent-soft)}
+.task-submenu-flyout, .instance-menu {border-color: var(--theme-menu-edge); border-radius: 16px; padding: 7px}
+.task-submenu-item {font-size: 13px; min-height: 38px; border-radius: 9px; color: var(--text)}
+.task-submenu-item.active .task-submenu-dot {box-shadow: none}
+.nav-search {border-radius: 10px; background: var(--surface-muted); color: var(--muted)}
+.nav-search input {font-size: 13px; min-height: 38px}
+.topbar {position: sticky; z-index: 80; margin: 0 0 0 24px; top: 0; height: var(--topbar-actual-height, 56px); padding: 0 18px; border: 1px solid var(--theme-topbar-edge, var(--glass-edge)); border-bottom: none; border-radius: var(--theme-topbar-radius, 26px) 0 0 var(--theme-topbar-radius, 26px); background: transparent; box-shadow: var(--theme-topbar-shadow, var(--glass-shadow)); isolation: isolate}
+/* 顶栏横跨容器两列，一直铺到屏幕右缘（右栏的 top 就在它下方）。 */
+.shell-frame > .topbar {grid-area: 1 / 1 / 2 / 3; width: auto; border-bottom: none !important}
+.topbar > :not(.glass-material):not(.alas-desktop-controls), .title-actions > :not(.glass-material) {position: relative; z-index: 1}
+.topbar > .glass-material {background: none; -webkit-backdrop-filter: none; backdrop-filter: none}
+/* 页标题动作区同样站在第 0 层，它里面的玻璃取一级面。 */
+.title-actions > .glass-material {background: var(--theme-surface-bg); -webkit-backdrop-filter: var(--theme-surface-filter); backdrop-filter: var(--theme-surface-filter)}
+.breadcrumb {font-size: 13px; gap: 10px}
+.breadcrumb .instance-caption strong {font-size: 13px}
+.breadcrumb span {color: var(--muted)}
+.breadcrumb .instance-switcher {min-height: 38px}
+.connection-label {color: var(--green); font-size: 12px}
+/* 不留上内边距：控件行与下面那个大容器之间的距离要紧凑。 */
+main {padding: 0 32px 32px}
+main:focus {outline: none}
+.page-title {margin-bottom: 14px; align-items: center}
+.page-title h1 {
+  position: relative;
+  isolation: isolate;
+  display: inline-block;
+  max-width: 100%;
+  color: rgb(255 255 255 / .36);
+  background: linear-gradient(180deg, rgb(255 255 255 / .48) 0%, rgb(255 255 255 / .14) 42%, rgb(184 215 238 / .04) 55%, rgb(255 255 255 / .24) 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  paint-order: stroke fill;
+  -webkit-text-stroke: .5px rgb(7 16 24 / .48);
+  text-shadow: 0 -1px 0 rgb(255 255 255 / .94), 0 1px .5px rgb(0 0 0 / .42), 0 3px 4px rgb(0 0 0 / .22), 0 7px 14px rgb(0 0 0 / .13);
+  filter: drop-shadow(0 .35px .25px rgb(0 0 0 / .32));
+  transition: filter .2s, text-shadow .2s, color .2s;
+}
+.page-title h1 {font-size: clamp(27px, 2.5vw, 36px); font-weight: 700; letter-spacing: -1px; overflow-wrap: anywhere; min-width: 0}
+.page-title h1::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: rgb(235 247 255 / .2);
+  -webkit-backdrop-filter: blur(9px) saturate(140%) brightness(1.12);
+  backdrop-filter: blur(9px) saturate(140%) brightness(1.12);
+  mask-image: var(--page-title-mask);
+  -webkit-mask-image: var(--page-title-mask);
+  mask-position: center;
+  -webkit-mask-position: center;
+  mask-repeat: no-repeat;
+  -webkit-mask-repeat: no-repeat;
+  mask-size: 100% 100%;
+  -webkit-mask-size: 100% 100%;
+  pointer-events: none;
+}
+.page-title h1::after {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  -webkit-text-stroke: .65px rgb(255 255 255 / .42);
+  clip-path: inset(0 0 52% 0);
+  filter: blur(.25px);
+  pointer-events: none;
+}
+/* 这一行是控件行与下方容器之间最大的一段间隔，字号压到 32px 收紧它。 */
+.instance-page-title h1 {font-size: 32px; line-height: 1.1; letter-spacing: -1px}
+.title-actions {position: relative; isolation: isolate; border-radius: 22px; padding: 5px; gap: 6px; box-shadow: var(--glass-shadow); max-width: 100%}
+
+/* 库默认使用居中定位和 Tailwind 工具类；在此限定为不参与布局的背景。 */
+.glass-material {position: absolute; inset: 0; border-radius: inherit; pointer-events: none; overflow: hidden; z-index: 0; background: var(--glass-tint); -webkit-backdrop-filter: blur(18px) saturate(125%); backdrop-filter: blur(18px) saturate(125%)}
+.glass-material > :not(.glass-material-lens) {display: none}
+.glass-material-lens {transform: none !important; pointer-events: none; border-radius: inherit; opacity: .28}
+.glass-material-lens > .glass {width: 100%; height: 100%; border-radius: inherit !important; box-shadow: inset 0 1px 0 var(--glass-edge) !important}
+.glass-material-lens .glass__warp {border-radius: inherit}
+.glass-material-lens > svg {inset: 0; max-width: 100%; max-height: 100%}
+.button {height: var(--form-height-button, 36px); padding: 0 17px; border-radius: 20px; font-size: 13px; font-weight: 600; transition: background .18s, color .18s, border-color .18s; box-shadow: var(--theme-control-shadow)}
+.button.primary, [data-theme='dark'] .button.primary {background: #0071e3; color: white}
+.button.primary:hover:not(:disabled) {background: #0062c4; transform: none}
+.button.secondary {background: var(--theme-control-bg); color: var(--text); border-color: var(--theme-control-edge)}
+.button.secondary:hover:not(:disabled) {background: var(--surface); border-color: color-mix(in srgb, var(--accent) 40%, var(--border))}
+.button.danger {background: #c9342c}
+.button.danger.subtle {background: color-mix(in srgb, var(--red) 10%, transparent); color: var(--red)}
+.button:active:not(:disabled) {filter: brightness(.94)}
+.icon-button {width: 36px; height: 36px; border-radius: 50%; color: var(--muted)}
+.text-button {font-size: 12px; min-height: 36px; padding: 6px 8px}
+.panel, .resource-card {
+  background: var(--theme-surface-bg);
+  -webkit-backdrop-filter: var(--theme-surface-filter);
+  backdrop-filter: var(--theme-surface-filter);
+  border: 1px solid var(--glass-edge);
+  border-radius: 26px;
+  box-shadow: var(--glass-shadow);
+}
+/* 资源卡不带边框：它自己是一级面，卡内另有内嵌的二级面，多一圈描边只会多出一条假边界。 */
+.resource-card {border: 0}
+
+.summary-metrics-panel .summary-metric-card,
+.summary-metrics-panel .summary-metrics section {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: none;
+}
+.summary-metrics-panel .summary-metric-card:hover,
+.summary-metrics-panel .summary-metrics section:hover {
+  background: var(--theme-plate-bg);
+  border-color: var(--theme-plate-edge);
+  transform: none;
+}
+
+.panel-heading {min-height: 62px; padding: 18px 22px}
+.panel-heading h2 {font-size: 15px; font-weight: 650}
+.panel-heading > div > svg {color: var(--accent)}
+.status {font-size: 11px; font-weight: 550; border-radius: 20px; padding: 6px 10px; gap: 6px}
+.status.running, .task-state.running {color: var(--green); background: var(--green-soft)}
+.status.stopped {background: var(--surface-muted); color: var(--muted)}
+.status.updating {color: #997000; background: #fff3cd}
+.count-badge {font-size: 11px; border: 0; border-radius: 10px; padding: 3px 7px; color: var(--muted)}
+.resource-heading, .resource-foot, .resource-value small {color: var(--muted)}
+.resource-heading {font-size: 10px}
+.resource-foot {font-size: 8px}
+.resource-value {font-weight: 650; letter-spacing: -1px}
+.resource-heading > div {border-radius: 10px}
+.schedule-panel {height: 700px}
+@media (min-width: 951px) {
+  /* 外壳给确定高度，内层 height:100% 才解析得到；只设 min-height 时整条链按内容长。 */
+  .app-shell:has(.overview-page) {height: var(--viewport-height)}
+  /* 网格项的最小尺寸默认取内容高，归零后才受外壳高度约束。 */
+  .app-shell:has(.overview-page) .main-shell {min-height: 0}
+  /* 与 .overview-main 同高：内容超出时压缩日志栏而不是顶高面板。 */
+  .monitor-panel {height: auto; min-height: 0}
+}
+.task-state {font-size: 10px; border-radius: 6px}
+.task-row {min-height: 58px}
+.task-row time {font-size: 11px; color: var(--muted)}
+.task-row-name strong {font-size: 13px; font-weight: 550}
+.schedule-summary {font-size: 12px}
+.monitor-tabs {height: 64px; padding: 10px 16px; gap: 10px; display: flex; align-items: center; border-bottom: 1px solid color-mix(in srgb, var(--glass-edge) 54%, var(--border))}
+.monitor-panel {position: relative}
+.monitor-panel .log-toolbar {position: absolute; top: 10px; right: 16px; z-index: 3; height: 44px; display: flex; align-items: center; gap: 4px}
+.monitor-panel .log-toolbar .icon-button {width: 36px; height: 36px}
+.monitor-panel .log-toolbar .text-button {min-height: 36px; white-space: nowrap}
+.monitor-segmented {position: relative; display: inline-flex; align-items: center; gap: 2px; padding: 3px; border-radius: 999px; background: var(--theme-control-bg); border: 1px solid var(--theme-segment-border); box-shadow: inset 0 .5px .5px rgb(0 0 0 / .04); max-width: 100%; overflow-x: auto; vertical-align: middle; -webkit-backdrop-filter: var(--theme-control-filter); backdrop-filter: var(--theme-control-filter, blur(16px) saturate(120%)); scrollbar-width: none}
+.monitor-segmented .segmented-indicator {position: absolute; top: 0; left: 0; border-radius: 999px; box-shadow: 0 1px 3px #00000012, 0 0 0 .5px #00000008; transition: transform .18s cubic-bezier(.2,.65,.3,1); pointer-events: none}
+.monitor-segmented button {position: relative; flex: 0 0 auto; white-space: nowrap; z-index: 1; min-width: 92px; height: 34px; padding: 0 15px; display: inline-flex; align-items: center; justify-content: center; gap: 7px; border: 0; border-radius: 999px; background: transparent; color: var(--muted); font-size: 13px; font-weight: 600; box-sizing: border-box; cursor: pointer; transition: color .15s, background-color .15s}
+.monitor-segmented::-webkit-scrollbar {display: none}
+.monitor-segmented button:hover {color: var(--text)}
+.monitor-segmented button:not([aria-selected='true']):hover {background: rgb(127 127 127 / .08)}
+.monitor-segmented button:focus-visible {outline-offset: -2px}
+.monitor-segmented button[aria-selected='true'] {background: transparent; color: var(--text); box-shadow: none}
+.monitor-segmented button:active {filter: brightness(.94)}
+.statistics-category-control {margin-bottom: 20px}
+.monitor-segmented svg {stroke-width: 1.7}
+.monitor-tabs > a.text-button {margin-left: auto}
+.monitor-panel .log-content {font-size: 12px; line-height: 1.8}
+.monitor-panel .log-filters {
+  background: color-mix(in srgb, var(--surface) 18%, transparent);
+  border-color: color-mix(in srgb, var(--glass-edge) 54%, var(--border));
+}
+/* 日志贴片挂在面板本身：与内部日志列表矩形重合，但层级上属于面板内那一层的贴片。 */
+.monitor-panel .log-panel {
+  box-shadow: none;
+  border: 0;
+  border-radius: inherit;
+}
+.monitor-panel .log-content {
+  background: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+/* 经典玻璃主题卡片式日志适配 (LogCardView Apple Glass) */
+.log-card {
+  /* 日志栏内的子容器：接二级贴片的线，只取它的不透明度叠加，自己不叠磨砂。 */
+  background: var(--theme-plate-bg);
+  border-color: color-mix(in srgb, var(--glass-edge) 54%, var(--border));
+  border-radius: 10px;
+}
+/* 卡片内的表头与标题条同属子容器：同样只取二级贴片的不透明度。 */
+.log-card .native-log-table th {background: var(--theme-plate-bg)}
+.card-header {
+  background: var(--theme-plate-bg);
+  border-bottom-color: color-mix(in srgb, var(--glass-edge) 54%, var(--border));
+}
+.card-btn-action {
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--surface) 70%, transparent);
+  border-color: color-mix(in srgb, var(--glass-edge) 45%, var(--border));
+}
+.card-btn-icon {
+  border-radius: 6px;
+}
+.trapezoid-visual {
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--surface) 40%, transparent);
+  border-color: color-mix(in srgb, var(--glass-edge) 54%, var(--border));
+}
+.traceback-viewer {
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--surface) 40%, transparent);
+  border-color: color-mix(in srgb, var(--glass-edge) 54%, var(--border));
+}
+.traceback-toolbar {
+  background: color-mix(in srgb, var(--surface) 70%, transparent);
+  border-bottom-color: color-mix(in srgb, var(--glass-edge) 54%, var(--border));
+}
+.traceback-frame-card {
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--surface) 60%, transparent);
+  border-color: color-mix(in srgb, var(--glass-edge) 45%, var(--border));
+}
+.traceback-frame-header {
+  background: color-mix(in srgb, var(--surface) 45%, transparent);
+  border-bottom-color: color-mix(in srgb, var(--glass-edge) 45%, var(--border));
+}
+.statistics-note {border-left-color: var(--accent); border-radius: 12px}
+.group-nav {border: 0; padding: 6px; gap: 3px; border-radius: 16px; background: var(--surface-muted)}
+.group-nav a {border-radius: 10px}
+.group-indicator {background: var(--accent); width: 3px}
+.field-row {padding: 20px 24px}
+.field-label label {font-weight: 550}
+input, select, textarea {border-radius: 10px; min-height: 40px}
+.input-icon {border-radius: 12px}
+.input-icon > input {font-size: 13px}
+.toggle {width: 46px; height: 28px; padding: 3px; border-radius: 20px; background: #bcbcc2; position: relative}
+.toggle::before {content: ''; position: absolute; inset: -8px 0}
+.toggle > span {width: 22px; height: 22px; box-shadow: 0 2px 4px #0003}
+.toggle.on {background: #34c759}
+.toggle.on > span {transform: translateX(18px)}
+.modal::backdrop {background: #11111b2b}
+.modal h2 {font-size: 20px; letter-spacing: -.4px}
+.toast {border-radius: 22px; background: var(--text); color: var(--surface); box-shadow: 0 8px 32px #0002; font-size: 13px}
+.toast.error {background: #c9342c; color: #fff}
+.home-intro {padding: 12px 0 28px}
+.eyebrow {display: block; color: var(--accent); font-size: 12px; font-weight: 650; margin-bottom: 12px}
+.home-intro .page-title {margin-bottom: 14px}
+.home-intro .page-title h1 {font-size: clamp(28px, 3vw, 40px); letter-spacing: -1.3px}
+.home-intro p {color: var(--muted); line-height: 1.8; font-size: 14px}
+.home-summary {display: flex; flex-wrap: wrap; gap: 24px; padding: 22px 0 28px; margin-bottom: 26px; border-bottom: 1px solid var(--border)}
+.home-summary > div {display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 13px}
+.home-summary svg {color: var(--accent)}
+.home-summary strong {font-size: 20px; font-variant-numeric: tabular-nums; color: var(--text)}
+html.home-active .topbar,
+.main-shell:has(> main > .home-editorial) .topbar {
+  border-bottom: none !important;
+  box-shadow: none !important;
+}
+.home-main {
+  position: relative;
+  background: var(--theme-surface-bg);
+  -webkit-backdrop-filter: var(--theme-surface-filter);
+  backdrop-filter: var(--theme-surface-filter);
+  border: none;
+  border-bottom-left-radius: 26px;
+  box-shadow: none;
+}
+/* 首页的合并容器：与运行总览同一个形状——横臂在上、竖列在右，只是竖列左缘由卡座宽决定。
+   容器里两列：顶栏横跨两列占第一行（L 的横臂），卡座在第二行左列，实例卡在第二行右列（L 的竖列）。
+   材质与形状都长在容器上，顶栏与实例卡只留内容。
+   面一直铺到内容区最左，把主页按钮左侧那块隐藏/悬停区圈在面内。 */
+/* 内容区整体停在「视口 − 外壳那道缝」上：容器与编辑区同占这块高度，两者下缘因此齐平。 */
+.main-shell:has(> .shell-frame > .home-frame-topbar) {
+  height: calc(var(--viewport-height) - 14px);
+}
+.main-shell:has(> .shell-frame > .home-frame-topbar) .shell-frame {
+  grid-area: 1 / 1 / 3 / 2;
+  display: grid;
+  /* 容器里只有顶栏一个网格项，它横跨两列（L 的横臂）；台阶位置由形状自己按 --home-frame-card 画。 */
+  grid-template-rows: var(--topbar-actual-height, 56px) minmax(0, 1fr);
+  --home-frame-margin: 24px;
+  --home-frame-strip: var(--topbar-actual-height, 56px);
+  --home-frame-card: 34%;
+  --home-frame-corner: 26px;
+  /* 左端两角的半径：取顶栏实际高度的一半，顶栏矮时按比例缩小。 */
+  --home-frame-sc: min(var(--home-frame-corner), calc(var(--home-frame-strip) / 2));
+  background: var(--theme-surface-bg);
+  -webkit-backdrop-filter: var(--theme-surface-filter);
+  backdrop-filter: var(--theme-surface-filter);
+  /* 与运行总览同一个形状、四个弧同向，只把竖列左缘换成 --home-frame-card；
+     横条左端两角共用半径 min(corner, strip/2)，顶栏矮时按比例缩小，与 border-radius 同行为。 */
+  clip-path: shape(
+    from calc(var(--home-frame-margin) + var(--home-frame-sc)) 0,
+    line to 100% 0,
+    line to 100% 100%,
+    line to calc(var(--home-frame-card) + var(--home-frame-corner)) 100%,
+    arc to var(--home-frame-card) calc(100% - var(--home-frame-corner)) of var(--home-frame-corner) cw,
+    line to var(--home-frame-card) calc(var(--home-frame-strip) + var(--home-frame-corner)),
+    arc to calc(var(--home-frame-card) - var(--home-frame-corner)) var(--home-frame-strip) of var(--home-frame-corner) ccw,
+    line to calc(var(--home-frame-margin) + var(--home-frame-sc)) var(--home-frame-strip),
+    arc to var(--home-frame-margin) var(--home-frame-sc) of var(--home-frame-sc) cw,
+    arc to calc(var(--home-frame-margin) + var(--home-frame-sc)) 0 of var(--home-frame-sc) cw,
+    close
+  );
+}
+/* 材质归容器：顶栏自己不再画，只留内容；它也不参与滚动。 */
+.main-shell:has(> .shell-frame > .home-frame-topbar) .shell-frame > .topbar {
+  /* 与运行总览同一写法：左端留一个页边距（容器左缘在内容区最左）。 */
+  margin: 0 0 0 24px;
+  padding: 0 18px;
+  border: none !important;
+  border-radius: 0;
+  background: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: none !important;
+}
+/* 编辑区是容器的兄弟节点、不是后代：容器那条 clip-path 会裁掉所有后代，
+   而卡座落在 L 的凹口里，留在容器内会被整列裁掉。
+   它占内容区第二行，自己的两列仍按 --home-frame-card 分，与形状的台阶同源。 */
+.main-shell:has(> .shell-frame > .home-frame-topbar) > .home-editorial {
+  grid-area: 2 / 1 / 3 / 2;
+  min-height: 0;
+}
+/* 卡座内容长过它那一列时自己滚，不撑高编辑区。 */
+.main-shell:has(> .shell-frame > .home-frame-topbar) .home-deck {grid-area: 1 / 1 / 2 / 2; min-height: 0; overflow-y: auto}
+/* 材质归容器：卡片自己不画。 */
+.main-shell:has(> .shell-frame > .home-frame-topbar) .home-main {
+  grid-area: 1 / 2 / 2 / 3;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  border-radius: 0;
+  /* 卡片自己不滚：溢出的实例卡交给里面那个透明容器。 */
+  overflow: visible;
+}
+/* 一级面上挖出来的透明容器：不渲染材质、不画边框，只负责让实例卡滚动。 */
+.main-shell:has(> .shell-frame > .home-frame-topbar) .home-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+.home-main-heading {border-bottom: 1px solid color-mix(in srgb, var(--border) 45%, transparent)}
+.instance-grid {gap: 20px}
+.instance-card {padding: 26px; border-radius: 24px; transition: box-shadow .2s, border-color .2s}
+.home-instance-grid .instance-card {
+  border-radius: 24px;
+  border-bottom-left-radius: 24px;
+  border: 1px solid color-mix(in srgb, var(--border) 45%, transparent);
+}
+.instance-card:hover {border-color: color-mix(in srgb, var(--accent) 35%, var(--border)); box-shadow: 0 12px 36px #0071e310}
+.home-instance-grid .instance-card:hover {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--glass-edge));
+  box-shadow: 0 12px 36px #0071e318;
+}
+.home-instance-icon {width: 48px; height: 48px; border-radius: 15px; background: linear-gradient(145deg, #51a9ff, #0071e3); color: white; box-shadow: inset 0 1px 0 #ffffff66, 0 4px 12px #0071e322}
+.instance-card h3 {font-size: 23px; letter-spacing: -.5px; margin-top: 26px}
+.instance-card-footer {font-size: 13px; margin-top: 28px}
+.instance-card-footer > svg {background: var(--accent-soft); border-radius: 50%; box-sizing: content-box; padding: 7px}
+.login-page {background: var(--bg)}
+.login-art {background: radial-gradient(ellipse at 25% 25%, #459bff, #3156b8 55%, #29285d); color: #ffffffb3}
+.login-art::before {opacity: .2; background: repeating-radial-gradient(circle at center, transparent 0, transparent 90px, #ffffff60 91px, transparent 92px)}
+.login-art > span {color: #fff; letter-spacing: 1px}
+.login-card {background: var(--surface); padding: 32px; width: 420px; border-radius: 28px; box-shadow: var(--shadow)}
+.login-card .brand-mark {background: transparent; margin-bottom: 4px}
+.skip-link {position: fixed; top: -100px; left: 16px; z-index: 200; background: var(--theme-control-bg); color: var(--accent); padding: 14px; border-radius: 12px}
+.skip-link:focus {top: 12px}
+
+/* 右侧任务计划：用中性材质深度表达队列层级，不使用状态色。 */
+.rail-section-heading {font-size: 12px}
+.rail-section-heading > div {font-size: 13px}
+.rail-section-heading > span {font-size: 10px}
+.rail-task-list {display: flex; flex-direction: column; gap: 12px; padding: 2px 2px 8px}
+.rail-queue-group {flex: 0 0 auto; overflow: hidden; border-radius: 18px; -webkit-backdrop-filter: var(--theme-inset-filter); backdrop-filter: var(--theme-inset-filter); transition: background .18s, border-color .18s, box-shadow .18s}
+.rail-queue-group.running {background: var(--theme-inset-bg); border: 1px solid color-mix(in srgb, var(--glass-edge) 90%, var(--border)); box-shadow: 0 8px 24px #1d1d1f0a, inset 0 1px 0 color-mix(in srgb, #fff 72%, transparent)}
+.rail-queue-group.pending {background: var(--theme-inset-bg); border: 1px solid color-mix(in srgb, var(--border) 64%, transparent); box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 44%, transparent)}
+.rail-queue-group.waiting {background: var(--theme-inset-bg); border: 1px solid color-mix(in srgb, var(--border) 42%, transparent); box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 24%, transparent)}
+.rail-queue-heading {min-height: 42px; padding: 9px 12px; display: flex; align-items: center; justify-content: space-between; gap: 10px;}
+.rail-queue-heading > div {display: flex; align-items: center; gap: 8px; min-width: 0}
+.rail-queue-heading strong {font-size: 12px; font-weight: 650}
+.rail-queue-group.pending .rail-queue-heading strong {font-weight: 600}
+.rail-queue-group.waiting .rail-queue-heading strong {font-weight: 550; color: color-mix(in srgb, var(--text) 72%, var(--muted))}
+.rail-queue-heading > span {min-width: 25px; height: 22px; display: grid; place-items: center; padding: 0 7px; border-radius: 999px; background: var(--theme-inset-bg); -webkit-backdrop-filter: var(--theme-inset-filter); backdrop-filter: var(--theme-inset-filter); color: var(--muted); font-size: 10px; font-variant-numeric: tabular-nums; border: 1px solid color-mix(in srgb, var(--border) 46%, transparent)}
+.rail-queue-heading svg {color: color-mix(in srgb, var(--text) 72%, var(--muted)); stroke-width: 1.7}
+.rail-queue-group.pending .rail-queue-heading svg {color: color-mix(in srgb, var(--text) 58%, var(--muted))}
+.rail-queue-group.waiting .rail-queue-heading svg {color: var(--muted)}
+.rail-queue-body {padding: 5px}
+.rail-task-item {grid-template-columns: minmax(0, 1fr) auto 13px; min-height: 58px; margin: 2px 0; padding: 10px 10px 10px 12px; border-radius: 13px}
+.rail-task-item:hover {background: color-mix(in srgb, var(--surface) 86%, transparent)}
+.rail-task-item strong {font-size: 13px; line-height: 1.35}
+.rail-task-item small {margin-top: 3px; font-size: 11px; line-height: 1.35}
+.rail-task-item .task-state {display: inline-flex; align-items: center; gap: 5px; font-size: 10px; padding: 4px 7px; border-radius: 999px; border: 1px solid color-mix(in srgb, var(--border) 46%, transparent); background: color-mix(in srgb, var(--surface) 72%, transparent); color: var(--muted); font-weight: 550}
+.rail-task-item .task-state svg {stroke-width: 1.7}
+.rail-queue-group.running .task-state.running {background: color-mix(in srgb, var(--surface) 98%, transparent); color: var(--text); border-color: color-mix(in srgb, var(--border) 72%, transparent)}
+.rail-queue-group.pending .task-state.pending {background: color-mix(in srgb, var(--surface) 66%, transparent); color: color-mix(in srgb, var(--text) 72%, var(--muted))}
+.rail-queue-group.waiting .task-state.waiting {background: color-mix(in srgb, var(--surface) 38%, transparent); color: var(--muted)}
+.rail-queue-empty {padding: 16px 12px; color: var(--muted); font-size: 11px; text-align: center}
+[data-theme='dark'] .rail-queue-group.running {box-shadow: 0 8px 24px #0003, inset 0 1px 0 #ffffff12}
+[data-theme='dark'] .rail-queue-group.pending {box-shadow: inset 0 1px 0 #ffffff0b}
+[data-theme='dark'] .rail-queue-group.waiting {box-shadow: inset 0 1px 0 #ffffff06}
+@media (max-width: 950px) {
+  :root {--topbar-height: 76px}
+  .app-shell {padding: 0}
+  .app-shell.mobile-open::after {content: ''; position: fixed; inset: 0; z-index: 90; background: rgb(17 17 27 / .38)}
+  .sidebar {width: 232px; left: -250px; top: 0; height: var(--viewport-height); z-index: 100; border-radius: 0 26px 26px 0; background: var(--surface); background: color-mix(in srgb, var(--surface) 96%, var(--bg)); -webkit-backdrop-filter: none; backdrop-filter: none}
+  .sidebar-brand {height: 56px; min-height: 56px}
+  .topbar, .app-shell.with-rail .topbar {width: auto; margin: 0 0 0 12px; top: 0; padding: 0 10px; height: 56px; min-height: 56px; gap: 6px; border-radius: 26px 0 0 26px}
+  .app-shell.with-rail .topbar {justify-content: flex-start}
+  /* 右栏在这个断点收成抽屉，与顶栏本就不相接：容器退回普通包裹，两块各自画材质。 */
+  .main-shell {display: flex; flex-direction: column}
+  .shell-frame:has(> .right-rail) {display: contents}
+  .shell-frame:has(> .right-rail) > .topbar,
+  .shell-frame:has(> .right-rail) > .right-rail {
+    background: var(--theme-surface-bg);
+    -webkit-backdrop-filter: var(--theme-surface-filter);
+    backdrop-filter: var(--theme-surface-filter);
+  }
+  .shell-frame:has(> .right-rail) > .right-rail {border-radius: 0 0 0 26px}
+  .right-rail {position: fixed; top: 56px; right: 0; width: min(360px, calc(100vw - 12px)); height: calc(var(--viewport-height) - 56px); z-index: 110; opacity: 0; visibility: hidden; pointer-events: none; transform: translateY(-12px) scale(.985); transform-origin: top right; transition: opacity .18s ease, transform .22s cubic-bezier(.22,.61,.36,1), visibility .18s}
+  .rail-open .right-rail {opacity: 1; visibility: visible; pointer-events: auto; transform: translateY(0) scale(1)}
+  .right-rail::before, .right-rail::after {display: none}
+  main {padding: 28px 18px}
+  .breadcrumb {font-size: 12px; gap: 6px}
+  .page-title {gap: 18px}
+  .instance-page-title h1 {font-size: 40px; line-height: 1.08; letter-spacing: -1.1px}
+  .title-actions {flex-wrap: wrap; gap: 4px}
+  .button {min-height: 44px; height: auto; padding: 10px 16px}
+  .icon-button {width: 44px; height: 44px}
+  .task-group-button, .task-submenu-item {min-height: 44px}
+  .sidebar-label .icon-button {width: 36px; height: 36px}
+  .mobile-close {position: static; margin-left: auto}
+  .monitor-tabs {height: 66px; padding: 8px 12px}
+  .monitor-segmented button {min-width: 92px; height: 40px; min-height: 40px; padding: 0 12px}
+  .monitor-tabs .text-button {font-size: 11px}
+  .monitor-tabs > span {font-size: 10px}
+  .monitor-panel .log-toolbar {top: 13px; right: 12px; height: 40px; gap: 2px}
+  .monitor-panel .log-toolbar .icon-button {width: 36px; height: 36px}
+  .monitor-panel .log-toolbar .text-button {min-height: 36px; padding: 6px 8px}
+  .schedule-panel, .monitor-panel {height: 520px}
+  .home-summary {gap: 16px 22px}
+  .home-summary > div {gap: 7px; font-size: 12px}
+  .instance-card {padding: 24px}
+  input, select, textarea {font-size: 16px; min-height: 44px}
+  .field-control > input, .field-control > select, .field-control > textarea {font-size: 16px}
+}
+@media (max-width: 300px) {.app-shell.with-rail .breadcrumb {display: none}}
+@media (max-width: 480px) {
+  .monitor-tabs {height: 60px; padding: 8px 10px}
+  .monitor-segmented button {min-width: 70px; height: 36px; min-height: 36px; padding: 0 8px; gap: 5px}
+  .monitor-panel .log-toolbar {top: 12px; right: 10px; height: 36px; gap: 1px}
+  .monitor-panel .log-toolbar .icon-button {width: 32px; height: 32px}
+  .monitor-panel .log-toolbar .text-button {width: 32px; min-height: 32px; padding: 0; gap: 0; justify-content: center; font-size: 0}
+}
+@media (prefers-contrast: more), (forced-colors: active) {
+  .wallpaper {display: none}
+  .glass-material, .sidebar, .home-main, .instance-menu, .task-submenu-flyout {background: var(--surface); -webkit-backdrop-filter: none; backdrop-filter: none}
+  .glass-material-lens {display: none}
+  .page-title h1 {color:var(--text); background:none; -webkit-text-fill-color:var(--text); -webkit-text-stroke:0; text-shadow:none; filter:none}
+  .page-title h1::before, .page-title h1::after {content:none}
+  .panel, .button, .topbar, .resource-card {border: 1px solid currentColor}
+}
+@media (prefers-reduced-motion: reduce) {
+  .glass-material-lens {display: none}
+}
+
+.update-notice.sidebar-update-notice {position: relative; overflow: hidden; flex-shrink: 0; padding: 4px 8px; gap: 0; border: 1px solid #ff0000; border-radius: 999px; color: #fff; background: linear-gradient(135deg, rgb(255 0 0 / .88), rgb(255 0 0 / .68)); box-shadow: inset 0 1px 0 rgb(255 255 255 / .20), inset 0 -1px 0 rgb(120 0 0 / .22), 0 2px 6px rgb(255 0 0 / .14), 0 0 3px rgb(255 0 0 / .06); backdrop-filter: blur(10px) saturate(185%); -webkit-backdrop-filter: blur(10px) saturate(185%); font-size: 10px; font-weight: 750; line-height: 1; letter-spacing: .2px; text-decoration: none}
+.sidebar-update-notice::before {content: ''; position: absolute; inset: 1px 2px auto; height: 38%; border-radius: inherit; background: linear-gradient(180deg, rgb(255 255 255 / .20), transparent); pointer-events: none}
+
+/* 按下「立刻运行」时底色与字色互换，替代位移或缩放反馈。 */
+.field-control > .field-actions .icon-only:hover:active:not(:disabled) {background: var(--theme-accent); color: var(--theme-on-accent)}
+
+/* 深色主题的强调色偏亮，白字压上去只有 2.4:1；沿用本仓库深色按钮的正文色。 */
+[data-theme='dark'] .field-control > .field-actions .icon-only:hover:active:not(:disabled) {color: #102d29}
+
+/* 窄屏（两列并成一列）下顶栏与卡片本就不相接，容器退回纯包裹，两块各自还原。 */
+@media (max-width: 950px) {
+  .main-shell:has(> .shell-frame > .home-frame-topbar) .shell-frame {display: contents}
+  .main-shell:has(> .shell-frame > .home-frame-topbar) .shell-frame > .topbar {
+    width: auto;
+    margin: 0 0 0 12px;
+    padding: 0 10px;
+    border: 1px solid var(--glass-edge);
+    border-bottom: none !important;
+    border-radius: 26px 0 0 26px;
+    background: var(--theme-surface-bg);
+    -webkit-backdrop-filter: var(--theme-surface-filter);
+    backdrop-filter: var(--theme-surface-filter);
+    box-shadow: var(--glass-shadow);
+  }
+  .main-shell:has(> .shell-frame > .home-frame-topbar) .home-main {
+    /* 单列布局里卡片自己画一级面：容器不参与布局，没有可透出的底。 */
+    background: var(--theme-surface-bg);
+    -webkit-backdrop-filter: var(--theme-surface-filter);
+    backdrop-filter: var(--theme-surface-filter);
+    border-bottom-left-radius: var(--theme-radius-panel, 26px);
+  }
+  .home-scroll {flex: none; margin-bottom: 0; overflow: visible; clip-path: none}
+}
+.dev-effect-lab {display:grid;grid-template-columns:minmax(0,1.35fr) minmax(260px,.65fr);gap:24px;padding:24px;border-bottom:1px solid var(--border)}
+.dev-effect-stage {position:relative;min-height:320px;border-radius:22px;overflow:hidden;border:1px solid var(--border);background:var(--surface-muted)}
+.dev-effect-wallpaper {position:absolute;inset:0;overflow:hidden;background:linear-gradient(135deg,#2b6cb0 0%,#5b4bb7 45%,#cf6b8d 100%)}
+.dev-effect-wallpaper i {position:absolute;border-radius:50%;filter:blur(1px);opacity:.86}
+.dev-effect-wallpaper i:nth-child(1) {width:180px;height:180px;background:#7ee8fa;left:8%;top:12%}
+.dev-effect-wallpaper i:nth-child(2) {width:230px;height:230px;background:#ffb86b;right:-20px;bottom:-35px}
+.dev-effect-wallpaper i:nth-child(3) {width:110px;height:110px;background:#7bffb7;right:24%;top:14%}
+.dev-effect-wallpaper > span {position:absolute;left:30px;bottom:24px;color:#fff;font-size:42px;font-weight:800;letter-spacing:-2px;text-shadow:0 2px 18px #0005}
+.dev-effect-glass {position:absolute;inset:42px;display:flex;flex-direction:column;justify-content:center;gap:10px;padding:26px;border:1px solid color-mix(in srgb,var(--glass-edge) 88%,transparent);color:var(--text);transition:backdrop-filter .12s,background .12s,border-radius .12s,box-shadow .12s}
+.dev-effect-glass strong {font-size:22px;letter-spacing:-.4px}
+.dev-effect-glass p {max-width:520px;color:var(--muted);font-size:12px;line-height:1.8}
+.dev-effect-controls {display:grid;gap:15px;align-content:center}
+.dev-effect-controls label {display:grid;grid-template-columns:1fr auto;gap:7px 12px;font-size:12px;color:var(--muted)}
+.dev-effect-controls label strong {color:var(--text);font-variant-numeric:tabular-nums}
+.dev-effect-controls input[type='range'] {grid-column:1/-1;width:100%;min-height:20px;padding:0;background:transparent;box-shadow:none}
+.dev-blur-presets {display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px;padding:20px 24px}
+.dev-blur-preset-wrap {display:grid;gap:7px;text-align:center;font-size:11px;color:var(--muted)}
+.dev-blur-preset-bg {height:92px;border-radius:16px;overflow:hidden;background:linear-gradient(135deg,#2775ff,#b54ae4 52%,#ff8c64);position:relative}
+.dev-blur-preset-bg::before {content:'DETAIL';position:absolute;inset:0;display:grid;place-items:center;color:#fff;font-size:26px;font-weight:800;letter-spacing:1px}
+.dev-blur-preset-bg > div {position:absolute;inset:14px;display:grid;place-items:center;border:1px solid #ffffff70;border-radius:12px;background:#ffffff42;color:#fff;font-size:11px;font-weight:700}
 .dev-intro {display:flex;align-items:center;justify-content:space-between;gap:18px;padding:18px 22px;margin-bottom:20px}
 .dev-intro > div {display:flex;align-items:flex-start;gap:12px;min-width:0}
 .dev-intro strong {display:block;font-size:14px;margin-bottom:4px}
@@ -2627,140 +3316,6 @@ main {padding: 32px 32px 16px; flex: 1}
 
 /* 动效控制台与快捷工具：按钮组选中态需要可见反馈（aria-pressed 是语义源，也是样式源） */
 .dev-button-row .button.secondary[aria-pressed='true'] {border-color: var(--accent); color: var(--accent); background: var(--accent-soft)}
-/* 主色用于主要操作与选中态，副色用于辅助信息；所有配色均为不透明实色。 */
-:root {
-  color-scheme: light;
-  --bg: #f3f6fa; --surface: #ffffff; --surface-muted: #edf2f7;
-  --text: #243447; --muted: #5b6d80; --border: #d5dee8;
-  --accent: #245dbe; --accent-hover: #194994; --accent-soft: #e7effd;
-  --secondary: #147d83; --secondary-soft: #e2f2f1;
-  --sidebar: var(--surface); --radius: 14px; --shadow: none;
-  --red: #b83336; --green: #247442; --green-soft: #e6f3e9;
-  --sidebar-width: 232px; --topbar-height: 56px;
-  --glass-tint: var(--surface); --glass-edge: var(--border); --glass-shadow: none;
-  --syntax-key: var(--accent); --syntax-string: var(--secondary); --syntax-value: #854fa0;
-  --syntax-comment: var(--muted); --syntax-punctuation: var(--text);
-  --theme-font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
-  --theme-font-mono: "JetBrains Mono", "JetBrains Mono NL", "Cascadia Code", "Consolas", "Microsoft YaHei", monospace;
-  --theme-bg: var(--bg); --theme-surface: var(--surface); --theme-surface-muted: var(--surface-muted);
-  --theme-text: var(--text); --theme-muted: var(--muted); --theme-border: var(--border);
-  --theme-accent: var(--accent); --theme-accent-hover: var(--accent-hover); --theme-accent-soft: var(--accent-soft);
-  --theme-on-accent: #ffffff;
-  --theme-on-danger: #ffffff;
-  --theme-danger: var(--red); --theme-danger-soft: #fcebec;
-  --theme-success: var(--green); --theme-success-soft: var(--green-soft);
-  --theme-warning: #805a14; --theme-warning-soft: #faf0d6; --theme-info: var(--secondary);
-  --theme-glass: var(--theme-surface-bg); --theme-glass-edge: var(--border);
-  --theme-glass-shadow: none; --theme-material-filter: none;
-
-  --theme-popover-filter: var(--theme-menu-filter); --theme-overlay-filter: none; --theme-overlay: color-mix(in srgb, var(--bg) 30%, transparent); --theme-chrome-filter: var(--theme-sidebar-filter);
-  /* 该族没有玻璃层：参数存在但不起作用，契约键必须齐。 */
-  --theme-glass-blur: 0px; --theme-glass-saturation: 100%;
-  /* 区域化材质：参数键由旋钮写入、合成键由皮肤消费；默认值关系是一级面为基准，
-     二级菜单里每个区域都能独立调（动过的区写自己的参数键，没动过的区跟着一级面）。 */
-  --theme-surface-alpha: 100%;
-  --theme-surface-blur: 0px;
-  --theme-surface-saturation: 100%;
-  --theme-surface-radius: var(--theme-radius-panel);
-  --theme-surface-bg: color-mix(in srgb, var(--surface) var(--theme-surface-alpha), transparent);
-  --theme-surface-filter: blur(var(--theme-surface-blur)) saturate(var(--theme-surface-saturation));
-  --theme-surface-edge: var(--theme-glass-edge);
-  --theme-surface-shadow: var(--theme-glass-shadow);
-  --theme-plate-alpha: 100%; --theme-plate-blur: 0px; --theme-plate-saturation: 100%;
-  /* 这一族不走分层质感：两层完整对齐，不带微弱边距。 */
-  --theme-plate-margin: 0px;
-  --theme-plate-radius: var(--theme-radius-card);
-  --theme-plate-bg: color-mix(in srgb, var(--surface) var(--theme-plate-alpha), transparent);
-  --theme-plate-filter: blur(var(--theme-plate-blur)) saturate(var(--theme-plate-saturation));
-  --theme-plate-edge: var(--theme-glass-edge); --theme-plate-shadow: var(--theme-glass-shadow);
-  --theme-inset-alpha: 100%; --theme-inset-blur: 0px; --theme-inset-saturation: 100%;
-  --theme-inset-radius: var(--theme-radius-control);
-  --theme-inset-bg: color-mix(in srgb, var(--surface) var(--theme-inset-alpha), transparent);
-  --theme-inset-filter: blur(var(--theme-inset-blur)) saturate(var(--theme-inset-saturation));
-  --theme-inset-edge: var(--theme-glass-edge); --theme-inset-shadow: var(--theme-glass-shadow);
-
-  --theme-control-alpha: 100%; --theme-control-blur: 0px; --theme-control-saturation: 100%;
-  --theme-control-radius: var(--theme-radius-control);
-  --theme-control-bg: color-mix(in srgb, var(--surface) var(--theme-control-alpha), transparent);
-  --theme-control-marker-bg: color-mix(in srgb, var(--surface) min(100%, calc(var(--theme-control-alpha) + 8%)), transparent);
-  /* 简约族本来就用强调色画曲线，这里显式接过去。 */
-  --theme-chart-primary: var(--accent); --theme-chart-secondary: var(--secondary);
-  --theme-chart-rise: #dc2626; --theme-chart-fall: #16a34a;
-  --theme-control-filter: blur(var(--theme-control-blur)) saturate(var(--theme-control-saturation));
-  --theme-control-edge: var(--theme-glass-edge); --theme-control-shadow: var(--theme-glass-shadow);
-  /* 区域面：本族全平（无磨砂、无阴影），四个区域与一级面同底同圆角。 */
-  --theme-sidebar-alpha: 100%; --theme-sidebar-blur: 0px; --theme-sidebar-saturation: 100%;
-  --theme-sidebar-radius: var(--theme-surface-radius);
-  --theme-sidebar-bg: color-mix(in srgb, var(--surface) var(--theme-sidebar-alpha), transparent);
-  --theme-sidebar-filter: none;
-  --theme-sidebar-edge: var(--theme-glass-edge); --theme-sidebar-shadow: none;
-  --theme-topbar-alpha: 100%; --theme-topbar-blur: 0px; --theme-topbar-saturation: 100%;
-  --theme-topbar-radius: var(--theme-surface-radius);
-  --theme-topbar-bg: color-mix(in srgb, var(--surface) var(--theme-topbar-alpha), transparent);
-  --theme-topbar-filter: none;
-  --theme-topbar-edge: var(--theme-glass-edge); --theme-topbar-shadow: none;
-  --theme-modal-alpha: 100%; --theme-modal-blur: var(--theme-surface-blur); --theme-modal-saturation: var(--theme-surface-saturation);
-  --theme-modal-radius: var(--theme-surface-radius);
-  --theme-modal-bg: color-mix(in srgb, var(--surface) var(--theme-modal-alpha), transparent);
-  --theme-modal-filter: blur(var(--theme-modal-blur)) saturate(var(--theme-modal-saturation));
-  --theme-modal-edge: var(--theme-glass-edge); --theme-modal-shadow: none;
-  --theme-menu-alpha: 100%; --theme-menu-blur: 0px; --theme-menu-saturation: 100%;
-  --theme-menu-radius: var(--theme-radius-popover);
-  --theme-menu-bg: color-mix(in srgb, var(--surface) var(--theme-menu-alpha), transparent);
-  --theme-menu-filter: none;
-  --theme-menu-edge: var(--theme-glass-edge); --theme-menu-shadow: none;
-
-  /* 这一族没有半透明叠加：一级面是不透明实色，标签页选中态只能另给一个手工填充色。 */
-  --theme-tab-current-bg: var(--surface-muted);
-  /* 简约族不画标签下侧的「脚」。 */
-  --instance-tab-foot: 0;
-
-  --theme-overlay-blur: 0px;
-  --theme-radius-control: 8px; --theme-radius-button: 8px; --theme-radius-panel: 14px;
-  --theme-radius-card: 14px; --theme-radius-popover: 10px; --theme-radius-pill: 999px; --theme-radius-modal: 12px;
-  --theme-shadow-panel: none; --theme-shadow-popover: none; --theme-shadow-modal: none;
-  --theme-shadow-floating: none; --theme-shadow-hover: none;
-  --theme-nav-text: var(--text); --theme-nav-icon: var(--secondary);
-  --theme-nav-active-bg: var(--accent-soft); --theme-nav-active-text: var(--accent);
-  --theme-nav-expanded-bg: var(--accent-soft); --theme-nav-hover-bg: var(--surface-muted);
-  --theme-nav-popover-edge: var(--border); --theme-nav-popover-shadow: none;
-  --theme-primary-bg: var(--accent); --theme-primary-hover: var(--accent-hover);
-  --theme-input-bg: var(--theme-control-bg); --theme-input-text: var(--text); --theme-input-border: var(--border);
-  --theme-focus: var(--accent); --theme-focus-ring: var(--accent-soft);
-  --theme-toggle-off: #8290a0; --theme-toggle-on: var(--accent); --theme-toggle-knob: #ffffff; --theme-toggle-shadow: none;
-   --theme-segment-border: var(--border); --theme-segment-indicator: var(--accent-soft);
-  --theme-toast-bg: var(--text); --theme-toast-text: var(--surface); --theme-toast-error-bg: var(--red);
-  --theme-error-bg: var(--theme-danger-soft); --theme-error-border: var(--red);
-  --theme-selection: var(--accent-soft); --theme-scrollbar-thumb: #9caab8;
-  --theme-status-stopped-bg: var(--surface-muted); --theme-status-stopped-text: var(--muted);
-  --theme-log-debug: var(--muted); --theme-log-info: var(--accent); --theme-log-warning: var(--theme-warning);
-  --theme-log-error: var(--red); --theme-log-critical: var(--red); --theme-log-time: var(--secondary);
-  --theme-log-true: var(--green); --theme-log-false: var(--red); --theme-log-null: #854fa0;
-  --theme-log-path: var(--accent); --theme-log-attr: var(--secondary); --theme-log-search: #f9e7a9;
-  --theme-resource-0-bg: var(--accent-soft); --theme-resource-0-text: var(--accent);
-  --theme-resource-1-bg: var(--secondary-soft); --theme-resource-1-text: var(--secondary);
-  --theme-resource-2-bg: var(--accent-soft); --theme-resource-2-text: var(--accent);
-  --theme-resource-3-bg: var(--secondary-soft); --theme-resource-3-text: var(--secondary);
-  --theme-preview-bg: var(--surface-muted); --theme-preview-text: var(--text); --theme-preview-muted: var(--muted);
-  --theme-login-art-bg: var(--accent-soft); --theme-login-art-text: var(--accent);
-  --theme-instance-icon-bg: var(--accent); --theme-instance-icon-shadow: none;
-  --theme-title-fill: none; --theme-title-color: var(--text); --theme-title-stroke: var(--text);
-  --theme-title-highlight-stroke: var(--text); --theme-title-glass: var(--surface); --theme-title-shadow: none;
-}
-:root[data-color-mode='dark'] {
-  color-scheme: dark;
-  --red: #ff969a; --green: #8bd3a1; --green-soft: #253d30;
-  --theme-danger-soft: #482d34; --theme-on-danger: #17202b;
-  --theme-warning: #e7c078; --theme-warning-soft: #403723;
-  --theme-toggle-off: #667487; --theme-scrollbar-thumb: #64758a;
-  --syntax-value: #d9b3f5; --theme-log-null: #d9b3f5;
-  --theme-log-search: #72551a;
-}
-
-/* 同旧版族：按钮取本族的控件圆角（8px），不跟共享骨架里 .button 的 7px；
-   带 data-theme 前缀以压过 components.css 的同名规则（同为单类，靠文件顺序会输给它）。 */
-:root[data-theme='minimal'] .button, :root[data-theme='minimal'] .icon-button,
-:root[data-theme='extreme'] .button, :root[data-theme='extreme'] .icon-button {border-radius: var(--theme-radius-control)}
 /* 共用语义变量映射；材质由当前主题提供。 */
 html, body {font-family: var(--theme-font-sans); color: var(--theme-text); background: var(--theme-bg)}
 body {background-attachment: fixed}
@@ -2977,8 +3532,8 @@ button:focus-visible, a:focus-visible, summary:focus-visible {outline-color: var
   --instance-tab-foot: calc(2 * var(--instance-tab-radius-shape));
   /* 加号的圆圈与它左侧那条竖线之间的间距。 */
   --instance-tab-plus-gap: calc(var(--instance-tab-height) * .16);
-  /* 标签上边框与栏上边框之间的细缝；五档同比例，栏与标签一起收窄。 */
-  --instance-tab-gap-y: calc(var(--instance-tab-height) * .15);
+  /* 标签上边框与栏上边框之间的安全留白；五档同比例，避开窗口顶边缩放热区并便于拖拽。 */
+  --instance-tab-gap-y: calc(var(--instance-tab-height) * .28);
   --instance-tab-divider-height: calc(var(--instance-tab-height) * .47);
   --instance-tab-create-size: calc(var(--instance-tab-height) * .85);
   --instance-tab-divider-color: color-mix(in srgb, var(--theme-text, currentColor) 26%, transparent);
@@ -3141,6 +3696,265 @@ button:focus-visible, a:focus-visible, summary:focus-visible {outline-color: var
 @media (prefers-reduced-motion: reduce) {
   .instance-tab, .instance-tab-create, .instance-tab-create > .lucide {transition: none}
   .instance-tab.running .instance-tab-icon, .instance-tab.updating .instance-tab-icon {animation: none}
+}
+/*
+ * AzurPilot theme contract.
+ *
+ * All visual primitives used by the application are normalized here to CSS
+ * custom properties.  The file is deliberately imported after the legacy
+ * component styles so a user theme only needs to override variables in the
+ * external /theme.css file; component code and individual CSS files do not
+ * need to be edited.
+ */
+:root {
+  /* Typography */
+  --theme-font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --theme-font-mono: "JetBrains Mono", "JetBrains Mono NL", "Cascadia Code", "Consolas", "Microsoft YaHei", monospace;
+
+  /* Core palette */
+  --theme-bg: var(--bg);
+  --theme-surface: var(--surface);
+  --theme-surface-muted: var(--surface-muted);
+  --theme-text: var(--text);
+  --theme-muted: var(--muted);
+  --theme-border: var(--border);
+  --theme-accent: var(--accent);
+  --theme-accent-hover: var(--accent-hover);
+  --theme-accent-soft: var(--accent-soft);
+  --theme-on-accent: #fff;
+  --theme-danger: var(--red);
+  --theme-danger-soft: color-mix(in srgb, var(--red) 10%, transparent);
+  --theme-on-danger: #fff;
+  --theme-success: var(--green, #248a3d);
+  --theme-success-soft: var(--green-soft, #eaf6ed);
+  --theme-warning: #997000;
+  --theme-warning-soft: #fff3cd;
+  --theme-info: #0ea5e9;
+
+  /* Chrome / glass */
+  --theme-glass: var(--theme-surface-bg);
+  --theme-glass-edge: var(--glass-edge, var(--border));
+  --theme-glass-shadow: var(--glass-shadow, var(--shadow));
+  --theme-glass-blur: var(--theme-surface-blur);
+  --theme-glass-saturation: var(--theme-surface-saturation);
+  /* 区域化材质：参数键由旋钮写入、合成键由皮肤消费；默认值关系是一级面为基准，
+     二级菜单里每个区域都能独立调（动过的区写自己的参数键，没动过的区跟着一级面）。 */
+  --theme-surface-alpha: 72.16%;
+  --theme-surface-blur: 24px;
+  --theme-surface-saturation: 130%;
+  --theme-surface-radius: var(--theme-radius-panel);
+  --theme-surface-bg: color-mix(in srgb, var(--surface) var(--theme-surface-alpha), transparent);
+  --theme-surface-filter: blur(var(--theme-surface-blur)) saturate(var(--theme-surface-saturation));
+  --theme-surface-edge: var(--theme-glass-edge);
+  --theme-surface-shadow: var(--theme-glass-shadow);
+  --theme-plate-alpha: var(--theme-surface-alpha); --theme-plate-blur: 12px; --theme-plate-saturation: 120%;
+  /* 二级贴片与一级层之间的微弱边距；无玻璃材质的族由自己的调色板取 0，两层完整对齐。 */
+  --theme-plate-margin: 8px;
+  --theme-plate-radius: var(--theme-radius-card);
+  --theme-plate-bg: color-mix(in srgb, var(--surface) var(--theme-plate-alpha), transparent);
+  --theme-plate-filter: blur(var(--theme-plate-blur)) saturate(var(--theme-plate-saturation));
+  --theme-plate-edge: var(--theme-glass-edge); --theme-plate-shadow: var(--theme-glass-shadow);
+  /* 三级嵌面：贴在二级贴片内部的面（右栏的队列分组等）。 */
+  --theme-inset-alpha: var(--theme-plate-alpha); --theme-inset-blur: 8px; --theme-inset-saturation: 115%;
+  --theme-inset-radius: var(--theme-radius-control);
+  --theme-inset-bg: color-mix(in srgb, var(--surface) var(--theme-inset-alpha), transparent);
+  --theme-inset-filter: blur(var(--theme-inset-blur)) saturate(var(--theme-inset-saturation));
+  --theme-inset-edge: var(--theme-glass-edge); --theme-inset-shadow: var(--theme-glass-shadow);
+
+  --theme-control-alpha: 92%; --theme-control-blur: 8px; --theme-control-saturation: 110%;
+  --theme-control-radius: var(--theme-radius-control);
+  --theme-control-bg: color-mix(in srgb, var(--surface) var(--theme-control-alpha), transparent);
+  --theme-control-marker-bg: color-mix(in srgb, var(--surface) min(100%, calc(var(--theme-control-alpha) + 8%)), transparent);
+  /* 图表画布内的颜色。数值与曲线都是画在 canvas 上的，只能用组件 token 交给脚本读。 */
+  --theme-chart-primary: #159b88; --theme-chart-secondary: #de7861;
+  --theme-chart-rise: #dc2626; --theme-chart-fall: #16a34a;
+  --theme-control-filter: blur(var(--theme-control-blur)) saturate(var(--theme-control-saturation));
+  --theme-control-edge: var(--theme-glass-edge); --theme-control-shadow: var(--theme-glass-shadow);
+  /* 区域面：侧栏、顶栏、弹窗、菜单各一套参数键与合成键，默认从一级面派生；
+     旋钮动过哪个区，哪个区就写自己的参数键，没动过的跟着一级面走。 */
+  --theme-sidebar-alpha: var(--theme-surface-alpha); --theme-sidebar-blur: var(--theme-surface-blur); --theme-sidebar-saturation: var(--theme-surface-saturation);
+  --theme-sidebar-radius: var(--theme-surface-radius);
+  --theme-sidebar-bg: color-mix(in srgb, var(--surface) var(--theme-sidebar-alpha), transparent);
+  --theme-sidebar-filter: blur(var(--theme-sidebar-blur)) saturate(var(--theme-sidebar-saturation));
+  --theme-sidebar-edge: var(--theme-glass-edge); --theme-sidebar-shadow: var(--theme-glass-shadow);
+  --theme-topbar-alpha: var(--theme-surface-alpha); --theme-topbar-blur: var(--theme-surface-blur); --theme-topbar-saturation: var(--theme-surface-saturation);
+  --theme-topbar-radius: var(--theme-surface-radius);
+  --theme-topbar-bg: color-mix(in srgb, var(--surface) var(--theme-topbar-alpha), transparent);
+  --theme-topbar-filter: blur(var(--theme-topbar-blur)) saturate(var(--theme-topbar-saturation));
+  --theme-topbar-edge: var(--theme-glass-edge); --theme-topbar-shadow: var(--theme-glass-shadow);
+  --theme-modal-alpha: var(--theme-surface-alpha); --theme-modal-blur: var(--theme-surface-blur); --theme-modal-saturation: var(--theme-surface-saturation);
+  --theme-modal-radius: var(--theme-surface-radius);
+  --theme-modal-bg: color-mix(in srgb, var(--surface) var(--theme-modal-alpha), transparent);
+  --theme-modal-filter: blur(var(--theme-modal-blur)) saturate(var(--theme-modal-saturation));
+  --theme-modal-edge: var(--theme-glass-edge); --theme-modal-shadow: var(--theme-glass-shadow);
+  --theme-menu-alpha: var(--theme-surface-alpha); --theme-menu-blur: 28px; --theme-menu-saturation: 145%;
+  --theme-menu-radius: var(--theme-radius-popover);
+  --theme-menu-bg: color-mix(in srgb, var(--surface) var(--theme-menu-alpha), transparent);
+  /* 弹出层比一级面亮一档：提亮写进合成键，不开放成旋钮。 */
+  --theme-menu-filter: blur(var(--theme-menu-blur)) saturate(var(--theme-menu-saturation)) brightness(1.04);
+  --theme-menu-edge: var(--theme-glass-edge); --theme-menu-shadow: var(--theme-glass-shadow);
+  /* 标签页是材质层：圆角、阴影与磨砂程度都不接受调节，只有不透明度跟随一级面，
+     并按 --theme-tab-fill-boost 加浓；自己不叠磨砂，于是下方标签栏的材质直接透出来。 */
+  --theme-tab-current-bg: var(--theme-tab-surface-bg);
+
+  --theme-overlay: #11111b40;
+  --theme-overlay-blur: 8px;
+
+  /* Shape */
+  --theme-radius-control: 10px;
+  --theme-radius-button: 20px;
+  --theme-radius-panel: 26px;
+  --theme-radius-card: 24px;
+  --theme-radius-popover: 16px;
+  --theme-radius-pill: 999px;
+  --theme-radius-modal: 16px;
+
+  /* Shadows */
+  --theme-shadow-panel: var(--glass-shadow, var(--shadow));
+  --theme-shadow-popover: 0 12px 40px #0002;
+  --theme-shadow-modal: 0 24px 100px #0003;
+  --theme-shadow-floating: 0 18px 56px #0003;
+  --theme-shadow-hover: 0 12px 36px color-mix(in srgb, var(--accent) 7%, transparent);
+
+  /* Navigation */
+  --theme-nav-text: var(--text);
+  --theme-nav-icon: var(--accent);
+  --theme-nav-active-bg: color-mix(in srgb, var(--accent) 14%, transparent);
+  --theme-nav-active-text: var(--accent);
+  --theme-nav-expanded-bg: color-mix(in srgb, var(--accent) 20%, transparent);
+  --theme-nav-hover-bg: color-mix(in srgb, var(--accent) 8%, transparent);
+  --theme-nav-popover-edge: color-mix(in srgb, #fff 62%, var(--border));
+  --theme-nav-popover-shadow: 0 18px 48px #1d1d1f24, 0 2px 10px #1d1d1f0d, inset 0 1px 0 color-mix(in srgb, #fff 78%, transparent);
+
+  /* Buttons */
+  --theme-primary-bg: var(--accent);
+  --theme-primary-hover: var(--accent-hover);
+
+  /* Form controls */
+  --theme-input-bg: var(--theme-control-bg);
+  --theme-input-text: var(--text);
+  --theme-input-border: var(--border);
+  --theme-focus: var(--accent);
+  /* 无自定义主题时焦点环的兜底：焦点表现靠 --theme-focus 的边框色；
+     新版与旧版四个主题由 public/theme.css 覆写成强调色的淡环，简约与紧凑走各自调色板。 */
+  --theme-focus-ring: transparent;
+  --theme-toggle-off: #bcbcc2;
+  --theme-toggle-on: #34c759;
+  --theme-toggle-knob: #fff;
+  --theme-toggle-shadow: 0 2px 4px #0003;
+
+  /* Segmented controls */
+
+  --theme-segment-border: #18181b0a;
+  --theme-segment-indicator: var(--theme-control-marker-bg);
+
+  /* Feedback */
+  --theme-toast-bg: var(--text);
+  --theme-toast-text: var(--surface);
+  --theme-toast-error-bg: var(--red);
+  --theme-error-bg: color-mix(in srgb, var(--red) 7%, transparent);
+  --theme-error-border: color-mix(in srgb, var(--red) 13%, transparent);
+  --theme-selection: color-mix(in srgb, var(--accent) 25%, transparent);
+  --theme-scrollbar-thumb: color-mix(in srgb, var(--muted) 28%, transparent);
+
+  /* Status and logs */
+  --theme-status-stopped-bg: var(--surface-muted);
+  --theme-status-stopped-text: var(--muted);
+  --theme-log-debug: #85929e;
+  --theme-log-info: #0ea5e9;
+  --theme-log-warning: #eab308;
+  --theme-log-error: #ef4444;
+  --theme-log-critical: #f43f5e;
+  --theme-log-time: #06b6d4;
+  --theme-log-true: #22c55e;
+  --theme-log-false: #ef4444;
+  --theme-log-null: #d946ef;
+  --theme-log-path: #a855f7;
+  --theme-log-attr: #14b8a6;
+  --theme-log-search: #fbbf2445;
+
+  /* Resource cards */
+  --theme-resource-0-bg: #eaf5fa;
+  --theme-resource-0-text: #6d9cbb;
+  --theme-resource-1-bg: #faf4e8;
+  --theme-resource-1-text: #c6a45b;
+  --theme-resource-2-bg: #eef0fb;
+  --theme-resource-2-text: #8b91bc;
+  --theme-resource-3-bg: #e9f6f3;
+  --theme-resource-3-text: #63a58f;
+
+  /* Preview / login artwork */
+  --theme-preview-bg: radial-gradient(ellipse at 50% 45%, #243e4c, #162b39 65%);
+  --theme-preview-text: #adc3cc;
+  --theme-preview-muted: #718c99;
+  --theme-login-art-bg: radial-gradient(ellipse at 25% 25%, #459bff, #3156b8 55%, #29285d);
+  --theme-login-art-text: #fff;
+  --theme-instance-icon-bg: linear-gradient(145deg, color-mix(in srgb, var(--accent) 62%, #ffffff), var(--accent));
+  --theme-instance-icon-shadow: inset 0 1px 0 #ffffff66, 0 4px 12px color-mix(in srgb, var(--accent) 13%, transparent);
+
+  /* Page-title glass lettering */
+  --theme-title-fill: linear-gradient(180deg, rgb(255 255 255 / .48) 0%, rgb(255 255 255 / .14) 42%, rgb(184 215 238 / .04) 55%, rgb(255 255 255 / .24) 100%);
+  --theme-title-color: rgb(255 255 255 / .36);
+  --theme-title-stroke: rgb(7 16 24 / .48);
+  --theme-title-highlight-stroke: rgb(255 255 255 / .42);
+  --theme-title-glass: rgb(235 247 255 / .2);
+  --theme-title-shadow: 0 -1px 0 rgb(255 255 255 / .94), 0 1px .5px rgb(0 0 0 / .42), 0 3px 4px rgb(0 0 0 / .22), 0 7px 14px rgb(0 0 0 / .13);
+}
+
+:root[data-theme='dark'] {
+  /* 暗色下材质皮肤的玻璃透明度与浅色不同（#242426d9）。 */
+  --theme-surface-alpha: 85.1%;
+  --theme-on-accent: #fff;
+  --theme-toggle-off: #515154;
+
+  --theme-segment-border: #ffffff0d;
+  --theme-segment-indicator: var(--theme-control-marker-bg);
+  --theme-resource-0-bg: #ffffff08;
+  --theme-resource-1-bg: #ffffff08;
+  --theme-resource-2-bg: #ffffff08;
+  --theme-resource-3-bg: #ffffff08;
+  --theme-nav-expanded-bg: color-mix(in srgb, var(--accent) 20%, transparent);
+  --theme-nav-popover-edge: color-mix(in srgb, #fff 14%, var(--border));
+  --theme-nav-popover-shadow: 0 20px 56px #0006, 0 2px 10px #0004, inset 0 1px 0 #ffffff12;
+}
+
+:root {
+  --theme-material-filter: var(--theme-surface-filter);
+
+  --theme-chrome-filter: var(--theme-sidebar-filter);
+  --theme-popover-filter: var(--theme-menu-filter);
+  --theme-overlay-filter: blur(var(--theme-overlay-blur));
+}
+
+/* 材质轴：玻璃与普通共用一份皮肤，只在面板底色与磨砂滤镜上分叉。
+   玻璃取值由家族调色板给出（新版是 Apple 玻璃，旧版是旧版色板上的磨砂）；
+   这里声明「普通」分支，把四个 token 压回不透明、无滤镜。 */
+:root[data-material='plain'] {
+  --theme-glass: var(--surface);
+  --theme-glass-edge: var(--border);
+  --theme-glass-shadow: none;
+  --theme-material-filter: none;
+  /* 材质皮肤里还有直接读原始玻璃变量的规则，一并压平，否则部分卡片仍是半透明。 */
+  --glass-tint: var(--surface);
+  --glass-edge: var(--border);
+  --glass-shadow: none;
+  /* 普通材质没有材质层：四个层级与四个区域一并压成不透明、无滤镜。 */
+  --theme-surface-alpha: 100%; --theme-plate-alpha: 100%; --theme-inset-alpha: 100%; --theme-control-alpha: 100%;
+  --theme-sidebar-alpha: 100%; --theme-topbar-alpha: 100%; --theme-modal-alpha: 100%; --theme-menu-alpha: 100%;
+  --theme-surface-bg: var(--surface);
+  --theme-plate-bg: var(--surface-muted); --theme-inset-bg: var(--surface); --theme-control-bg: var(--surface-muted); --theme-control-marker-bg: var(--surface);
+  /* 四个区域与一级面同底：普通材质下它们只是位置不同，不再是独立材质层。 */
+  --theme-sidebar-bg: var(--surface); --theme-topbar-bg: var(--surface); --theme-modal-bg: var(--surface); --theme-menu-bg: var(--surface);
+  --theme-surface-filter: none; --theme-plate-filter: none; --theme-inset-filter: none; --theme-control-filter: none;
+  --theme-sidebar-filter: none; --theme-topbar-filter: none; --theme-modal-filter: none; --theme-menu-filter: none;
+  /* 普通材质下标签页与标签栏同为一个不透明底色，选中态显不出来，只能另给一个手工填充色。 */
+  --theme-tab-current-bg: var(--surface-muted);
+}
+
+/* 普通材质没有磨砂层：与紧凑皮肤同一种做法，整棵子树关掉背景滤镜。 */
+:root[data-material='plain'] *, :root[data-material='plain'] *::before, :root[data-material='plain'] *::after {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
 }
 /* 全站表单共用现有主题契约，外部 theme.css 仍可覆盖颜色与圆角。 */
 :root {
@@ -3431,377 +4245,6 @@ input[type='range']:focus-visible {outline: 2px solid var(--theme-focus); outlin
 .material-detail-modal .field-label label {color: var(--theme-text); font-size: 13px}
 .material-detail-modal .knob-value {color: var(--theme-text); font-size: 13px}
 .material-detail-modal .knob-region-title {font-size: 14px}
-/*
- * 「紧凑」主题（html[data-theme='extreme']）样式层。
- *
- * 分两层：第一层不设媒体查询，管圆角、留白与高度一致性，任何宽度都生效；第二层只作用
- * 于桌面宽度（≥951px），收窄骨架与控件，窄屏保留 44px 触摸目标。选择器统一用
- * :root[data-theme='extreme'] 提升特异性，以压过各主题硬编码的圆角与断点里的 !important
- * 声明。刻意不动正文与表单标签字号、html 缩放、对比度与材质。
- */
-
-/* ── 第一层：任意宽度生效 ── */
-
-/* 圆角归零。经典主题里不少圆角是硬编码值，不读变量，需显式覆盖。 */
-:root[data-theme='extreme'] {
-  --radius: 0px;
-  --theme-radius-panel: 0px;
-  --theme-radius-card: 0px;
-  --theme-radius-control: 0px;
-  --theme-radius-button: 0px;
-  --theme-radius-popover: 0px;
-  /* 紧凑主题整族直角：圆角半径归零，标签下侧的「脚」也随之为零。 */
-  --instance-tab-radius-ratio: 0;
-}
-:root[data-theme='extreme'] .sidebar,
-:root[data-theme='extreme'] .right-rail,
-:root[data-theme='extreme'] .topbar,
-:root[data-theme='extreme'] .panel,
-:root[data-theme='extreme'] .resource-card,
-:root[data-theme='extreme'] .instance-card {border-radius: 0}
-:root[data-theme='extreme'] .scheduler-widget,
-:root[data-theme='extreme'] .scheduler-stats > div,
-:root[data-theme='extreme'] .rail-queue-group,
-:root[data-theme='extreme'] .task-submenu-flyout,
-:root[data-theme='extreme'] .instance-menu,
-:root[data-theme='extreme'] .modal {border-radius: 0}
-:root[data-theme='extreme'] .rail-task-item,
-:root[data-theme='extreme'] .task-submenu-item,
-:root[data-theme='extreme'] .primary-nav a,
-:root[data-theme='extreme'] .task-group-button,
-:root[data-theme='extreme'] .nav-search,
-:root[data-theme='extreme'] .group-nav,
-:root[data-theme='extreme'] .group-nav a,
-:root[data-theme='extreme'] .icon-button,
-:root[data-theme='extreme'] .status,
-:root[data-theme='extreme'] .task-state,
-:root[data-theme='extreme'] .count-badge,
-:root[data-theme='extreme'] .palette-option,
-:root[data-theme='extreme'] .layout-option,
-:root[data-theme='extreme'] .palette-add,
-:root[data-theme='extreme'] .yaml-editor,
-:root[data-theme='extreme'] .storage-field pre,
-:root[data-theme='extreme'] .remote-address code {border-radius: 0}
-/* liquid-glass 用内联 cornerRadius，只有 !important 压得过 */
-:root[data-theme='extreme'] .glass-material,
-:root[data-theme='extreme'] .glass-material > *,
-:root[data-theme='extreme'] .glass-material-lens,
-:root[data-theme='extreme'] .glass-material-lens > * {border-radius: 0 !important}
-
-/* 分段控件（日志/截图）：经典主题是 999px 药丸形，简约是 9px，含滑动指示器 */
-:root[data-theme='extreme'] .monitor-segmented,
-:root[data-theme='extreme'] .monitor-segmented .segmented-indicator,
-:root[data-theme='extreme'] .monitor-segmented button {border-radius: 0}
-/* 标签页的新建按钮与启停/关闭悬浮钮：其它主题是 999px 与 50%，且不读变量。 */
-:root[data-theme='extreme'] .instance-tab-create::after,
-:root[data-theme='extreme'] .instance-tab-power,
-:root[data-theme='extreme'] .instance-tab-remove:hover {border-radius: 0}
-:root[data-theme='extreme'] .resource-heading > div,
-:root[data-theme='extreme'] .resource-image-wrap,
-:root[data-theme='extreme'] .instance-caption,
-:root[data-theme='extreme'] .instance-toggle,
-:root[data-theme='extreme'] .title-actions {border-radius: 0}
-:root[data-theme='extreme'] .resource-editor-card,
-:root[data-theme='extreme'] .resource-editor-icon,
-:root[data-theme='extreme'] .resource-editor-add,
-:root[data-theme='extreme'] .resource-editor-add-icon,
-:root[data-theme='extreme'] .resource-editor-remove,
-:root[data-theme='extreme'] .resource-picker,
-:root[data-theme='extreme'] .resource-picker-card,
-:root[data-theme='extreme'] .resource-picker-empty,
-:root[data-theme='extreme'] .resource-picker-option {border-radius: 0}
-
-/* 开关（.toggle）保持其它主题的圆形药丸与圆形滑块：直角化只针对容器与按钮。 */
-
-/* 浮层与控件补充：下拉浮层、指标芯片、复选框、标签、logo 等不在上面清单里的控件。 */
-:root[data-theme='extreme'] .select-menu,
-:root[data-theme='extreme'] .select-option,
-:root[data-theme='extreme'] .stat-chip,
-:root[data-theme='extreme'] .checkbox-control,
-:root[data-theme='extreme'] .checkbox-mark input[type='checkbox'],
-:root[data-theme='extreme'] .error-box,
-:root[data-theme='extreme'] .commit-ref,
-:root[data-theme='extreme'] .home-instance-icon,
-:root[data-theme='extreme'] .palette-swatch i,
-:root[data-theme='extreme'] .skip-link,
-:root[data-theme='extreme'] .instance-menu button,
-:root[data-theme='extreme'] .instance-create,
-:root[data-theme='extreme'] .brand-logo,
-:root[data-theme='extreme'] .dev-surface-sample,
-:root[data-theme='extreme'] .dev-shadow-sample,
-:root[data-theme='extreme'] .dev-state-box,
-:root[data-theme='extreme'] .dev-nav-preview,
-:root[data-theme='extreme'] .dev-submenu-list,
-:root[data-theme='extreme'] .live-label,
-:root[data-theme='extreme'] .nav-pill {border-radius: 0}
-
-/* 常驻滚动条：全局规则是 5px 宽、8px 圆角，既占内容宽度又难拖，也不符合直角风格。
-   Chromium 的原生滚动条只有「占位」和「彻底消失」两种状态，所以这里把 CompactScrollbars
-   运行时扫出来的滚动容器压成 0 宽（不占位也不显示），改由它挂一条浮层轨道：hover 才显形、
-   直角、命中区 12px。标记是扫描得到的，新增滚动容器不必回来改这里。 */
-:root[data-theme='extreme'] {scrollbar-width: none}
-:root[data-theme='extreme']::-webkit-scrollbar {width: 0; height: 0}
-:root[data-theme='extreme'] [data-overlay-scroll='on'] {scrollbar-width: none}
-:root[data-theme='extreme'] [data-overlay-scroll='on']::-webkit-scrollbar {width: 0; height: 0}
-
-.overlay-scrollbar {position: fixed; width: 12px; z-index: 120; opacity: 0; pointer-events: none; transition: opacity .12s ease}
-.overlay-scrollbar[data-visible='on'] {opacity: 1; pointer-events: auto}
-.overlay-scrollbar-thumb {position: absolute; top: 0; left: 1px; right: 1px; border-radius: 0; background: var(--theme-scrollbar-thumb)}
-.overlay-scrollbar-thumb:hover {background: var(--muted)}
-
-/* 经典主题给 h1 铺了玻璃字效渐变，深色下 text-fill-color 未随之透明会显成灰底 */
-:root[data-theme='extreme'] .page-title h1 {
-  font-size: 24px;
-  letter-spacing: -.5px;
-  line-height: 1.05;
-  background: none;
-  -webkit-text-fill-color: currentColor;
-  -webkit-text-stroke: 0;
-  color: var(--text);
-  text-shadow: none;
-}
-/* 总览页标题行整行省略，设置按钮改挂日志面板工具栏右侧。
-   按钮必须在面板内部：资源卡片一旦可交互，Electron 的 no-drag 规则会把它排除出窗口
-   拖动区，而卡片正好落在原标题的位置，窗口就会完全拖不动。 */
-:root[data-theme='extreme'] .monitor-tabs > .button {margin-left: auto}
-
-/* 高度一致性：主内容区与视口对齐，消除底部留白 */
-:root[data-theme='extreme'] .app-shell {min-height: var(--viewport-height); align-items: stretch}
-/* 窄屏断点同时写了 height 与 min-height: 56px，只改 height 会被顶住。
-   左侧比正文的 4px 留宽一些，避免面包屑贴着侧栏边界。 */
-:root[data-theme='extreme'] .topbar {height: 48px; min-height: 0; padding-left: 12px; padding-right: 4px}
-:root[data-theme='extreme'] .main-shell {min-height: calc(var(--viewport-height) - 48px)}
-/* 标题行用 flex-start：标题字形 28px 而行盒被按钮撑到 32px 以上，居中会多出半行空白 */
-:root[data-theme='extreme'] .page-title {min-height: 0; margin-top: 0; margin-bottom: 8px; align-items: flex-start}
-/* 把 overview-page 的 ::after 预留的底部占位让给日志面板 */
-:root[data-theme='extreme'] .overview-page {height: calc(var(--viewport-height) - 48px - 8px); min-height: 0}
-:root[data-theme='extreme'] .overview-page::after {display: none}
-:root[data-theme='extreme'] .overview-main {flex: 1; margin-bottom: 0}
-:root[data-theme='extreme'] .overview-main > .panel,
-:root[data-theme='extreme'] .log-panel {flex: 1; min-height: 0}
-:root[data-theme='extreme'] .log-content {height: auto; flex: 1; min-height: 150px; padding: 7px 11px; line-height: 1.45}
-
-/* 桌面可省略重复标题，窄屏需保留抽屉内的关闭入口。 */
-@media (min-width: 951px) {
-  :root[data-theme='extreme'] .right-rail-header {display: none}
-}
-@media (max-width: 950px) {
-  /* 窄屏由文档滚动承载总览，监控面板使用共享层的高度，避免零基准伸缩压扁截图。 */
-  :root[data-theme='extreme'] .overview-page {height: auto}
-  :root[data-theme='extreme'] .overview-main > .panel {flex: none}
-}
-
-/* 内容留白：窄屏断点用 !important 写死的面板内边距一并压掉 */
-:root[data-theme='extreme'] main {min-height: 0; padding: 4px}
-:root[data-theme='extreme'] .panel-heading {min-height: 0; padding: 8px 12px !important}
-:root[data-theme='extreme'] .statistics-chart-plot .stat-card-fold.is-corner {left: 12px}
-/* 编辑模式的排序控件占住卡片左上角，标题行要让位；紧凑主题的标题内边距带 !important。 */
-:root[data-theme='extreme'] .statistics-sections.is-editing .stat-card .panel-heading {padding-left: 34px !important}
-/* 图表放大视图铺满窗口（inset: 0），右上角正是 Electron 的窗口控制按钮，
-   会把「收起图表」压住、只能按 Esc 退出。这里让标题行右侧留出按钮宽度。 */
-:root[data-theme='extreme'] .panel.chart-expanded .panel-heading {padding-right: 160px !important}
-:root[data-theme='extreme'] .panel-heading h2 {font-size: 13px}
-:root[data-theme='extreme'] .log-panel .panel-heading {padding-top: 6px !important; padding-bottom: 6px !important}
-:root[data-theme='extreme'] .app-shell {--config-card-gap: 9px}
-:root[data-theme='extreme'] .group-nav a {padding: 4px 6px}
-:root[data-theme='extreme'] .field-row {padding: 7px 12px; gap: 12px !important}
-:root[data-theme='extreme'] .field-row-multiline {gap: 6px}
-:root[data-theme='extreme'] .field-label p {margin-top: 2px; line-height: 1.5}
-:root[data-theme='extreme'] .resource-grid {gap: 5px; margin-bottom: 6px}
-:root[data-theme='extreme'] .resource-card {padding: 5px 11px 4px}
-:root[data-theme='extreme'] .resource-heading > div {width: 26px; height: 26px}
-:root[data-theme='extreme'] .schedule-summary {padding: 7px 12px}
-:root[data-theme='extreme'] .log-filters {padding: 6px 11px}
-:root[data-theme='extreme'] .log-entry-line {padding: 0}
-:root[data-theme='extreme'] .log-rule {margin: 4px 0}
-/* 卡片式日志紧凑适配 (LogCardView Extreme) */
-:root[data-theme='extreme'] .log-cards-container {gap: 4px; padding: 2px 0}
-:root[data-theme='extreme'] .log-card {border-radius: 0; box-shadow: none}
-:root[data-theme='extreme'] .card-header {padding: 4px 8px; font-size: 10px}
-:root[data-theme='extreme'] .card-title {gap: 6px; font-size: 10px}
-:root[data-theme='extreme'] .card-time {font-size: 9px}
-:root[data-theme='extreme'] .card-actions {gap: 4px}
-:root[data-theme='extreme'] .card-btn-action {border-radius: 0; padding: 1px 5px; font-size: 9px}
-:root[data-theme='extreme'] .card-btn-icon {border-radius: 0; padding: 2px}
-:root[data-theme='extreme'] .card-body {padding: 6px 8px}
-:root[data-theme='extreme'] .badge-shape {font-size: 8px; padding: 0 4px; border-radius: 0}
-:root[data-theme='extreme'] .badge-pill {font-size: 8px; padding: 0 5px; border-radius: 0}
-:root[data-theme='extreme'] .trapezoid-visual {width: 140px; height: 90px; padding: 2px; border-radius: 0}
-:root[data-theme='extreme'] .perspective-body {gap: 12px}
-:root[data-theme='extreme'] .perspective-metrics {font-size: 10px; gap: 4px}
-:root[data-theme='extreme'] .property-row {padding: 0 2px; font-size: 10px}
-:root[data-theme='extreme'] .prop-pill,
-:root[data-theme='extreme'] .prop-badge {border-radius: 0; font-size: 9px; padding: 0 4px}
-:root[data-theme='extreme'] .table-card-header {padding: 3px 6px}
-:root[data-theme='extreme'] .native-log-table th {padding: 3px 8px; font-size: 10px}
-:root[data-theme='extreme'] .native-log-table td {padding: 2px 8px; font-size: 10px}
-:root[data-theme='extreme'] .error-body {gap: 4px; padding: 6px 8px}
-:root[data-theme='extreme'] .error-section {gap: 6px; font-size: 10px}
-:root[data-theme='extreme'] .error-tag {border-radius: 0; font-size: 9px; min-width: 44px; padding: 0 3px}
-:root[data-theme='extreme'] .section-action {border-radius: 0; padding: 4px 6px}
-:root[data-theme='extreme'] .traceback-viewer {border-radius: 0}
-:root[data-theme='extreme'] .traceback-toolbar {padding: 3px 6px; font-size: 10px}
-:root[data-theme='extreme'] .traceback-frames-list {gap: 4px; padding: 4px}
-:root[data-theme='extreme'] .traceback-frame-card {border-radius: 0}
-:root[data-theme='extreme'] .traceback-frame-header {padding: 3px 6px; font-size: 10px}
-:root[data-theme='extreme'] .traceback-code-block {font-size: 10px; line-height: 1.4}
-:root[data-theme='extreme'] .traceback-locals-block {padding: 3px 6px; font-size: 9px}
-:root[data-theme='extreme'] .traceback-exc-banner {border-radius: 0; margin: 0 4px 4px; padding: 4px 6px; font-size: 10px}
-:root[data-theme='extreme'] .traceback-raw-pre {padding: 4px 6px; font-size: 9px}
-:root[data-theme='extreme'] .llm-markdown-view {font-size: 11px; line-height: 1.5}
-:root[data-theme='extreme'] .cost-table .map-th-col {width: 26px; min-width: 26px; max-width: 26px; font-size: 10px; padding: 2px 0}
-:root[data-theme='extreme'] .cost-cell {width: 26px; height: 22px; font-size: 10px}
-:root[data-theme='extreme'] .system-banner-card {padding: 4px 0; margin: 2px 0}
-:root[data-theme='extreme'] .stage-header-card {margin: 3px 0}
-:root[data-theme='extreme'] .log-card-line {padding: 1px 4px; border-radius: 0}
-:root[data-theme='extreme'] .statistics-toolbar-row {padding: 6px 0; margin-bottom: 8px}
-:root[data-theme='extreme'] .panel-note {padding: 7px 12px}
-:root[data-theme='extreme'] .settings-notice {margin: 10px 0 8px}
-:root[data-theme='extreme'] .data-table {padding: 9px 12px}
-:root[data-theme='extreme'] .data-table th, :root[data-theme='extreme'] .data-table td {padding: 5px 7px}
-:root[data-theme='extreme'] .tool-log-panel {margin-top: 10px}
-:root[data-theme='extreme'] .welcome {padding: 48px 16px}
-:root[data-theme='extreme'] .empty {padding: 20px 14px; min-height: 120px}
-:root[data-theme='extreme'] .chart-metrics {padding: 14px 16px 8px; gap: 34px}
-:root[data-theme='extreme'] .summary-metrics-panel {padding: 0}
-:root[data-theme='extreme'] .summary-metrics-panel .summary-metrics {padding: 18px 26px; gap: 8px 12px; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr))}
-:root[data-theme='extreme'] .summary-metrics-panel .summary-metric-card {padding: 6px 8px; border-radius: 0; min-height: auto; background: transparent; border: none}
-:root[data-theme='extreme'] .summary-metrics-panel .summary-metric-card strong {font-size: 16px}
-:root[data-theme='extreme'] .home-intro {padding: 2px 0 12px}
-:root[data-theme='extreme'] .home-intro .page-title {margin-bottom: 8px}
-:root[data-theme='extreme'] .home-summary {gap: 12px; padding: 8px 0 12px; margin-bottom: 12px}
-
-/* 标题层级字号：只缩标题，正文与表单标签保持契约值 */
-:root[data-theme='extreme'] .resource-value {font-size: 19px}
-:root[data-theme='extreme'] .home-summary strong {font-size: 17px}
-:root[data-theme='extreme'] .task-row-name strong {font-size: 13px}
-:root[data-theme='extreme'] .instance-caption strong {font-size: 12px}
-
-/* 标题右侧玻璃装饰层实测 42px 高（按钮仅 32px），会把标题行撑高后多出空白 */
-:root[data-theme='extreme'] .title-actions .glass-material {display: none}
-
-/* 顶栏去掉经典主题的 24px 左边距，并与 main 统一 4px 内边距，使内容左边界对齐。
-   各主题的宽度公式都带 .app-shell.with-rail 限定，无右栏的全局页面（界面设置 /
-   系统设置 / 更新器 / 远程访问）没有宽度声明，背景只铺到内容宽度，这里补上。 */
-:root[data-theme='extreme'] .topbar {margin-left: 0}
-/* 跨栏宽度只在桌面布局下生效：≤950px 时 .app-shell 变 display: block，100% 变成 body
-   宽度，再加右栏宽会远超视口，把页面撑出横向滚动条 */
-@media (min-width: 951px) {
-  :root[data-theme='extreme'] .app-shell.with-rail .topbar {width: calc(100% + var(--right-rail-width))}
-}
-:root[data-theme='extreme'] .app-shell:not(.with-rail) .topbar {width: 100%}
-
-/* 面包屑里的实例切换按钮：收成与面包屑文字对齐的单行小按钮 */
-:root[data-theme='extreme'] .breadcrumb {gap: 8px}
-:root[data-theme='extreme'] .breadcrumb .instance-picker {margin: 0}
-:root[data-theme='extreme'] .breadcrumb .instance-switcher {width: auto; min-height: 0; height: 26px; padding: 0 8px; gap: 6px; border-radius: 0}
-:root[data-theme='extreme'] .breadcrumb .instance-caption small {display: none}
-:root[data-theme='extreme'] .breadcrumb .instance-icon {width: 20px; height: 20px; border-radius: 0}
-
-/* 左列：分组跳转 + 搜索框。整体吸顶，滚动时两者一起跟随，搜索框始终可用。
-   top 取顶栏高加上 main 的内边距，未滚动时不会被推下来、与右侧内容区同顶。
-   搜索框占满左列宽度，不再受工具栏默认的 440px 限宽。 */
-:root[data-theme='extreme'] .config-side {position: sticky; top: calc(var(--topbar-height, 69px) + 4px); display: flex; flex-direction: column; gap: 10px; align-self: start}
-:root[data-theme='extreme'] .config-side .group-nav {position: static; max-height: none}
-:root[data-theme='extreme'] .config-side .config-toolbar {margin-bottom: 0}
-:root[data-theme='extreme'] .config-side .config-toolbar .input-icon {max-width: none}
-
-/* ── 第二层：仅桌面宽度（≥951px） ── */
-@media (min-width: 951px) {
-  /* 骨架与控件高度：窄屏不改这些，以保留 44px 触摸目标 */
-  :root[data-theme='extreme'] {
-    --sidebar-width: 178px;
-    --right-rail-width: 244px;
-    --topbar-height: 44px;
-    --form-height: 32px;
-  }
-  :root[data-theme='extreme'] .topbar {height: var(--topbar-height)}
-  :root[data-theme='extreme'] .main-shell {min-height: calc(var(--viewport-height) - var(--topbar-height))}
-  :root[data-theme='extreme'] .overview-page {height: calc(var(--viewport-height) - var(--topbar-height) - 8px)}
-  /* 经典主题的 .app-shell 带 14px 列间距，是日志两侧留白的主要来源 */
-  :root[data-theme='extreme'] .app-shell {gap: 0}
-
-  /* 侧栏 */
-  :root[data-theme='extreme'] .sidebar {padding: 0 8px 8px}
-  :root[data-theme='extreme'] .sidebar-brand {height: var(--topbar-height); margin-bottom: 6px; padding: 0 6px}
-  :root[data-theme='extreme'] .brand-mark {margin-bottom: 12px}
-  :root[data-theme='extreme'] .brand-title {font-size: 18px; gap: 7px}
-  :root[data-theme='extreme'] .instance-picker {margin: 2px 0 10px}
-  :root[data-theme='extreme'] .instance-switcher {padding: 6px 7px; gap: 8px}
-  :root[data-theme='extreme'] .instance-icon {width: 26px; height: 28px}
-  :root[data-theme='extreme'] .sidebar-label {margin-bottom: 6px}
-  :root[data-theme='extreme'] .primary-nav {gap: 1px; margin-bottom: 10px}
-  :root[data-theme='extreme'] .primary-nav a {min-height: 30px; padding: 4px 8px}
-  :root[data-theme='extreme'] .nav-search {margin: 0 2px 6px; padding: 0 8px}
-  :root[data-theme='extreme'] .nav-search input {min-height: 26px; padding: 3px 0}
-  :root[data-theme='extreme'] .task-nav {gap: 0; padding: 0 2px 8px}
-  :root[data-theme='extreme'] .task-group-button {min-height: 30px; padding: 4px 7px}
-  :root[data-theme='extreme'] .task-submenu-item {min-height: 26px; padding: 3px 8px}
-  :root[data-theme='extreme'] .sidebar-footer {padding: 8px 6px}
-
-  /* 右栏 */
-  :root[data-theme='extreme'] .right-rail {top: var(--topbar-height); height: calc(var(--viewport-height) - var(--topbar-height))}
-  :root[data-theme='extreme'] .scheduler-widget {margin: 8px 8px 6px; padding: 8px}
-  :root[data-theme='extreme'] .scheduler-widget-heading {margin-bottom: 6px}
-  :root[data-theme='extreme'] .scheduler-stats {gap: 4px; margin-bottom: 6px}
-  :root[data-theme='extreme'] .scheduler-stats > div {padding: 5px 6px}
-  :root[data-theme='extreme'] .scheduler-stats strong {font-size: 13px}
-  :root[data-theme='extreme'] .rail-schedule {margin: 0 6px 6px; padding: 7px 2px 2px}
-  :root[data-theme='extreme'] .rail-section-heading {margin-bottom: 4px}
-  :root[data-theme='extreme'] .rail-task-list {gap: 4px}
-  :root[data-theme='extreme'] .rail-task-item {min-height: 32px; margin: 0; padding: 4px}
-  :root[data-theme='extreme'] .rail-queue-heading {padding: 6px 8px}
-  :root[data-theme='extreme'] .rail-queue-body {padding: 2px}
-  :root[data-theme='extreme'] .rail-queue-empty {padding: 8px}
-
-  /* 列序互换：调度与任务计划栏换到内容区左侧。仅桌面参与 —— 窄屏下右栏是 fixed 抽屉，
-     不占网格列。DOM 顺序由 App 按同一偏好调换，这里只改列宽与跨栏方向：
-     顶栏挂在 main-shell 里，原本向右跨过右栏，换位后内容区到了最右，改成向左跨，
-     否则 100% + 右栏宽会顶出横向滚动条。分隔线跟着换边，朝向内容区。 */
-  :root[data-theme='extreme'][data-compact-rail='left'] .app-shell.with-rail {
-    grid-template-columns: var(--sidebar-width) var(--right-rail-width) minmax(0, 1fr);
-  }
-  :root[data-theme='extreme'][data-compact-rail='left'] .app-shell.with-rail .right-rail {
-    border-left: 0;
-    border-right: 1px solid var(--border);
-  }
-  :root[data-theme='extreme'][data-compact-rail='left'] .app-shell.with-rail .topbar {
-    width: calc(100% + var(--right-rail-width));
-    margin-left: calc(-1 * var(--right-rail-width));
-  }
-
-  /* 内容区 */
-  :root[data-theme='extreme'] .page-title {margin-bottom: 8px; gap: 12px}
-  :root[data-theme='extreme'] .overview-grid {gap: 10px; margin-bottom: 10px}
-  :root[data-theme='extreme'] .config-layout {gap: 12px}
-  :root[data-theme='extreme'] .task-table {padding: 0 11px}
-  :root[data-theme='extreme'] .task-row {padding: 6px 0; gap: 7px}
-  :root[data-theme='extreme'] .monitor-tabs {min-height: 36px; padding: 4px 10px}
-  :root[data-theme='extreme'] .monitor-segmented {padding: 2px}
-  :root[data-theme='extreme'] .monitor-segmented button {min-height: 24px; padding: 2px 9px}
-
-  /* 控件：只收边距与图标，表单标签字号不变 */
-  :root[data-theme='extreme'] .button {padding: 5px 12px}
-  :root[data-theme='extreme'] .icon-button {width: 28px; height: 28px}
-  :root[data-theme='extreme'] .text-button {min-height: 26px; padding: 2px}
-  :root[data-theme='extreme'] {--table-heading-control: 26px}
-  :root[data-theme='extreme'] .select-trigger {padding: 5px 10px}
-  :root[data-theme='extreme'] .multi-options {gap: 5px}
-  :root[data-theme='extreme'] .multi-options .checkbox-control {min-height: 28px; padding: 4px 8px}
-  :root[data-theme='extreme'] .form-stack {gap: 10px}
-  :root[data-theme='extreme'] .form-stack label {gap: 6px}
-  :root[data-theme='extreme'] .modal {padding: 14px}
-  :root[data-theme='extreme'] .modal .panel-heading {padding: 0 0 9px !important; margin-bottom: 10px}
-  :root[data-theme='extreme'] .error-box {padding: 7px 11px; margin-bottom: 9px}
-  :root[data-theme='extreme'] .yaml-editor .cm-content {padding: 8px 0}
-  :root[data-theme='extreme'] .yaml-editor .cm-scroller {line-height: 1.55}
-  :root[data-theme='extreme'] .editor-heading {padding: 5px 11px}
-  :root[data-theme='extreme'] .storage-field pre {padding: 9px 11px; line-height: 1.6}
-  :root[data-theme='extreme'] .remote-address {padding: 12px 14px}
-  :root[data-theme='extreme'] .fleet-column {padding: 12px 14px}
-  :root[data-theme='extreme'] .shop-strategy-help summary {min-height: 36px; padding: 0 14px}
-  :root[data-theme='extreme'] .shop-strategy-help-body {padding: 2px 14px 14px}
-}
 /* ============================================================================
    motion.css —— AzurPilot 全站动效系统
    由各皮肤（classic / minimal / legacy）在自身条目之后引入，确保覆盖同级规则。
@@ -3968,200 +4411,11 @@ dialog.modal[open]::backdrop { animation: motion-backdrop-in var(--dur-3) var(--
 
 /* 任务列表 / 队列继续沿用各自已有的 keyframes，此处不重复定义。 */
 
-:root {--form-shadow: none}
-/* 关闭共享组件里的装饰效果，不创建额外的滤镜或动画合成层。 */
-*, *::before, *::after, *::backdrop {
-  -webkit-backdrop-filter: none !important;
-  backdrop-filter: none !important;
-  filter: none !important;
-  background-image: none !important;
-  box-shadow: none !important;
-  text-shadow: none !important;
-  animation: none !important;
-  transition: none !important;
-  scroll-behavior: auto !important;
+/* 深色档覆盖：本皮肤只有这一档明暗；玻璃取值由材质层 theme-material.css 给出。 */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #161618; --surface: #242426; --surface-muted: #1c1c1e;
+  --text: #f5f5f7; --muted: #aaaab0; --border: #38383a; --accent: #64aaff;
+  --accent-hover: #8bbfff; --accent-soft: #25364d;
 }
-body {background-attachment: scroll}
-.app-shell {gap: 0}
-
-.sidebar, .right-rail, .topbar {border-radius: 0; background: var(--surface)}
-.sidebar {padding: 0 14px 14px}
-.sidebar-brand {height: var(--topbar-height); padding: 0 8px; margin-bottom: 14px}
-.brand-title {font-size: 22px}
-.brand-mark {color: var(--secondary)}
-.sidebar-label, .sidebar-label button {color: var(--muted)}
-.primary-nav a, .task-group-button {font-size: 13px; min-height: 42px; border-radius: 8px}
-.task-submenu-item {font-size: 13px; min-height: 38px}
-.task-group-button.expanded {border-color: var(--accent)}
-.topbar {position: sticky; top: 0; z-index: 80; height: var(--topbar-height); margin: 0; padding: 0 24px}
-/* 同 apple：用视口单位而不是百分比，精确贴到屏幕右缘。
-   两个模式都要贴到右缘：右栏从顶栏下方开始（top: --topbar-height），顶栏横向压不到它，
-   文档也不会多出横向滚动。只在分页模式生效时，原模式的顶栏只剩中间那列宽，右上角留白。 */
-.app-shell.with-rail .topbar {width: calc(100vw - var(--sidebar-width))}
-.right-rail {top: var(--topbar-height); height: calc(var(--viewport-height) - var(--topbar-height)); z-index: 70}
-.breadcrumb, .breadcrumb .instance-caption strong {font-size: 13px}
-.connection-dot {background: var(--theme-warning)}
-.connection-dot.online {background: var(--green)}
-/* 不留上内边距：控件行与下面那个大容器之间的距离要紧凑。 */
-main {padding: 0 28px 24px}
-main:focus {outline: none}
-.page-title h1 {font-size: clamp(26px, 2.5vw, 34px); letter-spacing: -.6px; overflow-wrap: anywhere}
-.home-intro {padding: 8px 0 24px}
-.eyebrow {display: block; margin-bottom: 10px; font-size: 12px; font-weight: 600}
-.home-intro .page-title {margin-bottom: 12px}
-.home-intro p {color: var(--muted); line-height: 1.8}
-.home-summary {display: flex; flex-wrap: wrap; gap: 20px; padding: 18px 0 24px; margin-bottom: 24px; border-bottom: 1px solid var(--border)}
-.home-summary > div {display: flex; align-items: center; gap: 9px; color: var(--muted); font-size: 13px}
-.home-summary strong {color: var(--text); font-size: 20px; font-variant-numeric: tabular-nums}
-.title-actions {gap: 8px}
-.panel-heading h2 {font-size: 15px}
-.panel-heading > div > svg, .eyebrow, .home-summary svg {color: var(--secondary)}
-.panel, .resource-card, .instance-card {border-radius: var(--radius)}
-.button {font-size: 13px; font-weight: 600}
-.button.primary:hover:not(:disabled) {transform: none}
-/* 本主题全局关掉了动画与过渡，所以按下反馈不能用位移或缩放，改成底色与字色互换。 */
-.field-control > .field-actions .icon-only:active:not(:disabled) {background: var(--theme-accent); color: var(--theme-on-accent)}
-.button.danger.subtle {border-color: var(--red)}
-.button.danger:not(.subtle), .toast.error {color: var(--theme-on-danger)}
-.icon-button {width: 36px; height: 36px; border-radius: 8px}
-.text-button {font-size: 12px; min-height: 36px}
-input:focus, textarea:focus, .select-trigger:focus-visible, .select-trigger[aria-expanded='true'], .yaml-editor:focus-within, .input-icon:focus-within, .nav-search:focus-within {
-  outline: 2px solid var(--accent); outline-offset: 2px;
-}
-.input-icon > input:focus, .nav-search input:focus {outline: none}
-/* 禁用状态使用实色而非整层透明，保留标签和图标的可读性。 */
-button:disabled, input:disabled, textarea:disabled, select:disabled, .select-trigger:disabled,
-.checkbox-control:has(:disabled), .select-option[aria-disabled='true'] {opacity: 1; color: var(--muted)}
-.button:disabled {background: var(--surface-muted); border-color: var(--border)}
-.toggle:disabled::before {background: var(--theme-toggle-off)}
-.toggle:disabled > span {background: var(--surface-muted)}
-.input-icon, .scheduler-widget, .schedule-summary, .count-badge, .nav-search {background: var(--surface-muted)}
-/* 右栏里的调度器组件与新版本同层：二级贴片。 */
-.right-rail .scheduler-widget, .instance-page-rail .scheduler-widget {background: var(--theme-plate-bg)}
-.status, .task-state {border-radius: 6px}
-.resource-foot > svg, .resource-editor-grip {color: var(--muted)}
-.resource-editor-card, .resource-picker {background: var(--surface); border-color: var(--border)}
-.resource-editor-card.dragging {opacity: 1; border-color: var(--accent); transform: none; background: var(--accent-soft)}
-.resource-editor-remove:hover {background: var(--theme-danger-soft)}
-.resource-editor-add-icon {background: var(--accent-soft)}
-.resource-editor-add, .resource-editor-add:hover, .resource-editor-add.open {background: var(--accent-soft)}
-.statistics-note {border-left-color: var(--secondary)}
-.panel.chart-expanded {inset: 0; border-radius: 0; z-index: 150}
-@media (min-width: 951px) {
-  /* 外壳给确定高度，内层 height:100% 才解析得到；只设 min-height 时整条链按内容长。 */
-  .app-shell:has(.overview-page) {height: var(--viewport-height)}
-  /* 网格项的最小尺寸默认取内容高，归零后才受外壳高度约束。 */
-  .app-shell:has(.overview-page) .main-shell {min-height: 0}
-  /* 同浅色 / 深色：高度取父级。 */
-  .overview-page {flex: 0 0 auto; height: 100%; min-height: 0}
-  .overview-main {flex: 19; margin-bottom: 0}
-  /* 与 .overview-main 同高：内容超出时压缩日志栏而不是顶高面板。 */
-  .monitor-panel {min-height: 0}
-}
-.monitor-tabs {height: auto; min-height: 60px; padding: 10px 16px; flex-wrap: wrap; gap: 8px}
-.monitor-panel .log-toolbar {display: flex; align-items: center; margin-left: auto; gap: 4px}
-.monitor-panel .log-panel {border: 0; border-radius: 0}
-.monitor-panel .log-content {font-size: 12px; line-height: 1.8; background: var(--theme-plate-bg); -webkit-backdrop-filter: var(--theme-plate-filter); backdrop-filter: var(--theme-plate-filter)}
-/* 简约主题卡片式日志体系适配 (LogCardView Minimal) */
-.log-content.log-cards-mode,
-.monitor-panel .log-content.log-cards-mode {
-  background: var(--surface-muted);
-}
-.log-card {
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--surface);
-  box-shadow: none !important;
-}
-.card-header {
-  background: var(--surface-muted);
-  border-bottom: 1px solid var(--border);
-}
-.card-btn-action {
-  border-radius: 6px;
-  box-shadow: none;
-}
-.card-btn-icon {
-  border-radius: 6px;
-}
-.trapezoid-visual {
-  border-radius: 8px;
-  box-shadow: none;
-}
-.traceback-viewer {
-  border-radius: 8px;
-  box-shadow: none;
-}
-.traceback-frame-card {
-  border-radius: 6px;
-  box-shadow: none;
-}
-.section-action {
-  border-radius: 6px;
-}
-.badge-shape,
-.badge-pill,
-.prop-pill,
-.prop-badge,
-.error-tag,
-.traceback-exc-banner {
-  border-radius: 4px;
-}
-.log-filters {background: var(--surface-muted)}
-.monitor-segmented {display: inline-flex; align-items: center; gap: 3px; padding: 3px; border: 1px solid var(--border); border-radius: 9px; background: var(--surface-muted); max-width: 100%; overflow-x: auto}
-.monitor-segmented button {display: inline-flex; align-items: center; justify-content: center; gap: 7px; flex-shrink: 0; min-height: 34px; padding: 6px 12px; border: 0; border-radius: 6px; color: var(--muted); font-size: 13px; white-space: nowrap}
-.monitor-segmented button[aria-selected='true'] {background: var(--accent-soft); color: var(--accent)}
-.monitor-segmented button:focus-visible {outline-offset: -2px}
-.statistics-category-control {margin-bottom: 20px}
-.log-rule .rule-bar {opacity: 1; background: var(--border)}
-.log-rule.rule-double .rule-bar {opacity: 1; border-color: var(--border)}
-.preview-screen .radar > div, .radar::before, .radar::after {display: none}
-.live-label {border-color: var(--green)}
-.group-nav {padding: 6px; border-radius: 10px}
-.group-nav a {border-radius: 6px}
-.rail-task-list {display: flex; flex-direction: column; gap: 12px}
-.rail-queue-group {flex-shrink: 0; border: 1px solid var(--border); border-radius: 10px; overflow: hidden}
-.rail-queue-group.running, .rail-queue-group.pending, .rail-queue-group.waiting {background: var(--theme-inset-bg); border-color: var(--border)}
-.rail-queue-heading {display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 12px}
-.rail-queue-heading > div {display: flex; align-items: center; gap: 8px; font-size: 12px}
-.rail-queue-heading > span {color: var(--muted); font-size: 11px}
-.rail-queue-heading svg {color: var(--secondary)}
-.rail-queue-body {padding: 4px}
-.rail-queue-empty {padding: 14px 12px; color: var(--muted); font-size: 12px; line-height: 1.6}
-.rail-task-item {padding: 10px 8px; border-radius: 6px}
-.rail-task-item:hover {background: var(--surface-muted)}
-.rail-task-item strong {font-size: 12px}
-.rail-task-item small {font-size: 11px}
-.rail-task-item .task-state {font-size: 10px}
-.modal::backdrop {background: color-mix(in srgb, var(--bg) 22%, transparent)}
-.modal {border: 2px solid var(--border)}
-.toast {border: 1px solid var(--border)}
-.skip-link {position: fixed; top: -100px; left: 16px; z-index: 200; background: var(--theme-control-bg); color: var(--accent); padding: 14px; border-radius: 8px}
-.skip-link:focus {top: 12px}
-.layout-options {display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; min-width: 0; max-width: 280px; border: 0; margin: 0; padding: 0; width: 100%}
-.layout-options legend {position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%)}
-.layout-option {position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 8px 6px; min-height: 44px; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 12px}
-.layout-option:has(:checked) {border-color: var(--accent); background: var(--accent-soft)}
-.layout-option:focus-within {outline: 2px solid var(--accent); outline-offset: 2px}
-/* 单选框藏起来只留示意图：卡片本身就是选项，焦点态由 :focus-within 承担。 */
-.layout-option input {position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip-path: inset(50%)}
-.layout-preview {width: 100%; max-width: 92px; height: auto}
-.layout-bar {fill: var(--surface-muted); stroke: var(--border)}
-.layout-content {fill: var(--surface); stroke: var(--border)}
-.layout-rail {fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.5}
-@media (max-width: 950px) {
-  .topbar, .app-shell.with-rail .topbar {width: 100%; padding: 0 14px}
-  .sidebar, .right-rail {top: 0; height: var(--viewport-height); z-index: 100}
-  .sidebar-brand {padding: 0}
-  .sidebar-brand .mobile-close {position: static; margin-left: auto}
-  main {padding: 28px 16px}
-  .monitor-segmented button {min-height: 44px}
-}
-@media (forced-colors: active) {
-  .palette-option:has(:checked), .monitor-segmented button[aria-selected='true'] {border: 2px solid Highlight}
-  .button:disabled {color: GrayText}
-}
-
-.dev-state-box, .dev-demo-card, .dev-shadow-grid {background: var(--surface-muted)}
-.dev-nav-preview {background: var(--surface)}
 `;export{e as default};

@@ -1060,10 +1060,24 @@ export function initAlasDesktop(): void {
       }
     })
 
+    const nonDragSelector =
+      'button, a, input, select, textarea, [role="button"], [role="tab"], .instance-tab, .instance-tab-create, .instance-switcher, .topbar-actions, .alas-desktop-controls'
+
     if (!isFloating) {
+      header.addEventListener('mousedown', event => {
+        if (event.button !== 0 || event.detail > 1) {
+          return
+        }
+        const target = event.target as HTMLElement | null
+        if (target?.closest(nonDragSelector)) {
+          return
+        }
+        void invoke('window_start_dragging')
+      })
+
       header.addEventListener('dblclick', async event => {
         const target = event.target as HTMLElement | null
-        if (target?.closest('button') || target?.closest('a') || target?.closest('input')) {
+        if (target?.closest(nonDragSelector)) {
           return
         }
         try {
@@ -1205,6 +1219,16 @@ export function initAlasDesktop(): void {
     const sidebarBrand = document.querySelector('.sidebar > .sidebar-brand') as HTMLElement | null
     if (sidebarBrand && !sidebarBrand.hasAttribute('data-tauri-drag-region')) {
       sidebarBrand.setAttribute('data-tauri-drag-region', 'true')
+      sidebarBrand.addEventListener('mousedown', event => {
+        if (event.button !== 0 || event.detail > 1) {
+          return
+        }
+        const target = event.target as HTMLElement | null
+        if (target?.closest('button, a, input, select, textarea, [role="button"]')) {
+          return
+        }
+        void invoke('window_start_dragging')
+      })
     }
   }
 

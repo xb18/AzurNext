@@ -1,4 +1,6 @@
-var e=`/* 浅色与深色玻璃主题（经典皮肤）：共享骨架 + 玻璃材质，深色取值在文件末尾覆盖。 */
+var e=`/* 旧版主题：MD3 靛紫配色，还原旧 WebUI 的平面观感。
+   与简约主题一样复用共享骨架，但不导入玻璃、壁纸与外部 theme.css。
+   结构性规则（布局、尺寸、层级）必须自带 —— 共享层不提供，平时由 apple.css 承担。 */
 
 @font-face {
   font-family: 'JetBrains Mono';
@@ -1994,7 +1996,7 @@ main {padding: 32px 32px 16px; flex: 1}
 :root[data-tab-size='xl'] {--row-scale: 1.55}
 :root[data-tab-size='sm'] {--row-scale: .78}
 :root[data-tab-size='xs'] {--row-scale: .62}
-:root {--instance-tab-height: calc(26px * var(--row-scale, 1)); --instance-tab-font: calc(12px * var(--row-scale, 1)); --row-pad: var(--instance-tab-gap-y); --instance-tab-pad: calc(9px * var(--row-scale, 1)); --instance-tab-max: calc(210px * var(--row-scale, 1)); --instance-tab-icon: calc(14px * var(--row-scale, 1)); --instance-tab-gap: 1px}
+:root {--instance-tab-height: calc(32px * var(--row-scale, 1)); --instance-tab-font: calc(13px * var(--row-scale, 1)); --row-pad: max(8px, var(--instance-tab-gap-y)); --instance-tab-pad: calc(12px * var(--row-scale, 1)); --instance-tab-max: calc(220px * var(--row-scale, 1)); --instance-tab-icon: calc(15px * var(--row-scale, 1)); --instance-tab-gap: 2px}
 
 .update-notice.sidebar-update-notice {padding: 4px 8px; border-radius: 999px; background: var(--red); color: #fff; font-size: 10px; font-weight: 750; line-height: 1; flex-shrink: 0}
 .sidebar-brand {padding-top: 0; margin-bottom: 20px}
@@ -2520,695 +2522,6 @@ main {padding: 32px 32px 16px; flex: 1}
   -webkit-backdrop-filter: var(--theme-surface-filter);
   backdrop-filter: var(--theme-surface-filter);
 }
-.login-art::before {content: ''; position: absolute; inset: -50%; background: repeating-radial-gradient(circle at center, transparent 0, transparent 70px, #77d8c0 71px, transparent 72px)}
-
-/* 统一材质和层级：导航悬浮于内容之上，数据与表单使用稳定的实色表面。
-   一级面 token 由 theme-system.css 给出，这里只补玻璃描边与投影。 */
-:root {
-  --glass-edge: #ffffffd9;
-  --sidebar-width: 232px;
-  --glass-shadow: 0 8px 32px #1d1d1f08, inset 0 1px 0 #ffffffb3;
-  --topbar-height: 76px;
-  --green: #248a3d;
-  --green-soft: #eaf6ed;
-}
-:root[data-theme='dark'] {
-  --glass-edge: #ffffff1f;
-  --glass-shadow: 0 8px 32px #0002, inset 0 1px 0 #ffffff0d;
-  --green: #6cda86;
-  --green-soft: #223d2a;
-  --red: #ff8078;
-}
-body {background: var(--bg); background-attachment: fixed}
-.wallpaper-fade-in {animation: wallpaper-fade-in var(--dur-5, .36s) cubic-bezier(.16, 1, .3, 1) both}
-@keyframes wallpaper-fade-in {
-  from {opacity: 0}
-  to {opacity: 1}
-}
-:root[data-theme='dark'] .wallpaper::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: rgb(0 0 0 / .52);
-  pointer-events: none;
-  animation: wallpaper-fade-in var(--dur-5, .36s) cubic-bezier(.16, 1, .3, 1) both;
-}
-:root[data-theme='dark'].home-active .wallpaper::after {
-  background: linear-gradient(168deg, rgb(0 0 0 / .46), rgb(0 0 0 / .56) 55%, rgb(0 0 0 / .68));
-}
-.lucide {stroke-width: 1.75}
-
-/* 兼容前缀必须先于标准属性，避免生产压缩后只保留 WebKit 的模糊声明。 */
-.app-shell {padding: 0; gap: 14px; align-items: start}
-/* 外壳只有两列：右栏不占外壳列，它在内容区的容器里。 */
-.app-shell.with-rail {grid-template-columns: var(--sidebar-width) minmax(0, 1fr)}
-.sidebar {
-  background: var(--theme-surface-bg);
-  -webkit-backdrop-filter: var(--theme-surface-filter);
-  backdrop-filter: var(--theme-surface-filter);
-  top: 0;
-  height: var(--viewport-height);
-  border: 1px solid var(--glass-edge);
-  border-left: 0;
-  border-radius: 0 26px 26px 0;
-  box-shadow: var(--glass-shadow);
-  padding: 0 14px 14px;
-  overflow: visible;
-}
-.right-rail {
-  background: var(--theme-surface-bg);
-  -webkit-backdrop-filter: var(--theme-surface-filter);
-  backdrop-filter: var(--theme-surface-filter);
-  position: sticky;
-  top: 56px;
-  height: calc(var(--viewport-height) - 56px);
-  border: 1px solid var(--glass-edge);
-  border-top: 0 !important;
-  border-right: 0;
-  border-radius: 0 0 0 26px;
-  box-shadow: 0 18px 56px #0003;
-  overflow: hidden;
-  z-index: 70;
-}
-.right-rail-header {border-bottom: 0}
-/* 这条与 components.css 里「看图模式」那条同前缀同权重，靠源码顺序取胜；
-   写成别的会让外壳留一列空轨道加一道间隙。 */
-@media (min-width: 951px) {
-  :root body .app-shell.with-rail {grid-template-columns: auto minmax(0, 1fr)}
-  /* 看图模式要连容器里的顶栏与右栏一起淡出（它们已不是外壳的直接子元素）。 */
-  :root body .app-shell.nav-collapsed > .main-shell > .shell-frame > * {opacity: 0; pointer-events: none}
-}
-
-/* 顶栏与右栏装进同一个容器，容器自己就是那一级层：材质与形状都长在它身上，两块只留内容。
-   容器内部按网格排：顶栏在第一行横跨两列（L 的横臂），右栏在第二行右侧（L 的竖列）。
-   容器只在真的装着右栏时成立，没有右栏的页面不参与布局。 */
-.shell-frame:has(> .right-rail) {
-  grid-area: 1 / 1 / 3 / 3;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) var(--right-rail-width);
-  grid-template-rows: var(--topbar-actual-height, 56px) minmax(0, 1fr);
-  --frame-margin: 24px;
-  --frame-strip: var(--topbar-actual-height, 56px);
-  --frame-rail: var(--right-rail-width);
-  --frame-corner: 26px;
-  --frame-sc: min(var(--frame-corner), calc(var(--frame-strip) / 2));
-  /* 面的左缘一直铺到内容区最左（246），把主页按钮左侧那块隐藏/悬停区圈在面内；
-     它若落在裁剪区之外，鼠标事件会被一起裁掉，三枚开关就展不开了。 */
-  background: var(--theme-surface-bg);
-  -webkit-backdrop-filter: var(--theme-surface-filter);
-  backdrop-filter: var(--theme-surface-filter);
-  /* 一条形状画完整个 L：上缘 → 右缘 → 下缘 → 竖列左缘 → 台阶凹角 → 横条下缘 → 左端两角。
-     绕向按「这个角凸还是凹」定：横条左端两角与竖列左下角是凸角（cw），接缝处的台阶是凹角（ccw）；
-     绕向只决定弧心落在哪一侧，写反不会报错、只会静默画错。
-     竖列左下角的底边提前一个 --frame-corner 停，弧的弦才是对角线、两端才与两条边相切。 */
-  clip-path: shape(
-    from calc(var(--frame-margin) + var(--frame-sc)) 0,
-    line to 100% 0,
-    line to 100% 100%,
-    line to calc(100% - var(--frame-rail) + var(--frame-corner)) 100%,
-    arc to calc(100% - var(--frame-rail)) calc(100% - var(--frame-corner)) of var(--frame-corner) cw,
-    line to calc(100% - var(--frame-rail)) calc(var(--frame-strip) + var(--frame-corner)),
-    arc to calc(100% - var(--frame-rail) - var(--frame-corner)) var(--frame-strip) of var(--frame-corner) ccw,
-    line to calc(var(--frame-margin) + var(--frame-sc)) var(--frame-strip),
-    arc to var(--frame-margin) var(--frame-sc) of var(--frame-sc) cw,
-    arc to calc(var(--frame-margin) + var(--frame-sc)) 0 of var(--frame-sc) cw,
-    close
-  );
-}
-/* 材质归容器：两块自己不画底、不带边框与圆角。 */
-.shell-frame:has(> .right-rail) > .topbar {
-  /* 横条横跨容器两列（一直铺到屏幕右缘）：L 的横臂因此是整条顶栏宽度。 */
-  grid-area: 1 / 1 / 2 / 3;
-  width: auto;
-  margin: 0 0 0 24px;
-  border: none !important;
-  border-radius: 0;
-  background: none;
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-  box-shadow: none !important;
-}
-/* 右栏就是 L 的竖列：材质归容器，自己不画底、不带边框与圆角。 */
-.shell-frame:has(> .right-rail) > .right-rail {
-  grid-area: 2 / 2 / 3 / 3;
-  z-index: 1;
-  /* 右栏不 sticky：在容器网格里 sticky 的 top 会把整块往下推。 */
-  position: relative !important;
-  top: auto !important;
-  height: auto;
-  border: none;
-  border-radius: 0;
-  box-shadow: none;
-  background: none;
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-}
-/* 两块调度器板与顶栏同属容器内的一级层：面归容器，板子只留内容与二级/三级贴片。 */
-.shell-frame:has(> .right-rail) > .right-rail > .scheduler-widget,
-.shell-frame:has(> .right-rail) > .right-rail > .rail-schedule {background: none; -webkit-backdrop-filter: none; backdrop-filter: none; border-color: transparent}
-.shell-frame:has(> .right-rail) > .topbar {z-index: 1}
-.scheduler-widget {border-radius: 18px; background: color-mix(in srgb, var(--surface) 72%, transparent); border-color: color-mix(in srgb, var(--border) 70%, transparent); box-shadow: inset 0 1px 0 color-mix(in srgb, white 46%, transparent)}
-.scheduler-stats > div {border-radius: 14px}
-.rail-schedule {margin: 0 10px 10px; padding: 14px 12px 10px; border-top: 1px solid color-mix(in srgb, var(--border) 68%, transparent)}
-.rail-task-item {margin: 3px 0; padding: 9px 8px; border-bottom: 0; border-radius: 13px}
-.rail-task-item:hover {background: color-mix(in srgb, var(--surface) 72%, transparent)}
-/* 内容区自己也是网格：第一行留给顶栏、第二行左边放页面内容；容器横跨两行两列。 */
-.main-shell {min-width: 0; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: var(--topbar-actual-height, 56px) minmax(0, 1fr); align-self: stretch}
-/* 新版材质主题的页面滚动归内容列：外壳定在视口高度上，顶栏与调度器栏（同一个容器）不随页面滚动，
-   需要翻滚的页面自己在 main 里滚，侧栏与容器留在原位。 */
-.app-shell:has(> .main-shell > .shell-frame > .topbar) {height: var(--viewport-height); overflow: hidden}
-.app-shell:has(> .main-shell > .shell-frame > .topbar) > .main-shell {min-height: 0}
-.app-shell:has(> .main-shell > .shell-frame > .topbar) .main-shell > main {min-height: 0; overflow-y: auto}
-/* 内容列要真的让出右栏那一列：跨列的容器不会把宽度贡献给第二列，auto 会塌成 0。 */
-.main-shell:has(> .shell-frame > .right-rail) {grid-template-columns: minmax(0, 1fr) var(--right-rail-width)}
-.main-shell > main {grid-area: 2 / 1 / 3 / 2; min-width: 0}
-.sidebar-brand {height: 56px; margin-bottom: 10px; padding: 0 10px}
-.brand-title {font-size: 23px; letter-spacing: -.7px; gap: 10px}
-.brand-logo {width: 32px; height: 32px; border-radius: 9px}
-.primary-nav {gap: 5px; margin-bottom: 28px}
-.primary-nav a {min-height: 44px; border-radius: 12px; font-size: 14px; color: var(--text); gap: 12px}
-.primary-nav a svg {color: var(--accent); width: 20px; height: 20px}
-.primary-nav a.active {background: #0071e3; color: #fff; box-shadow: none}
-.primary-nav a.active svg {color: inherit}
-.sidebar-label {font-size: 12px; letter-spacing: 0; color: var(--muted); font-weight: 600}
-.task-group-button {min-height: 43px; font-size: 13px; border-radius: 11px; color: var(--text)}
-.task-group-icon {color: var(--accent)}
-.task-group-button.expanded, [data-theme='dark'] .task-group-button.expanded {border-color: transparent; background: var(--accent-soft)}
-.task-submenu-flyout, .instance-menu {border-color: var(--theme-menu-edge); border-radius: 16px; padding: 7px}
-.task-submenu-item {font-size: 13px; min-height: 38px; border-radius: 9px; color: var(--text)}
-.task-submenu-item.active .task-submenu-dot {box-shadow: none}
-.nav-search {border-radius: 10px; background: var(--surface-muted); color: var(--muted)}
-.nav-search input {font-size: 13px; min-height: 38px}
-.topbar {position: sticky; z-index: 80; margin: 0 0 0 24px; top: 0; height: var(--topbar-actual-height, 56px); padding: 0 18px; border: 1px solid var(--theme-topbar-edge, var(--glass-edge)); border-bottom: none; border-radius: var(--theme-topbar-radius, 26px) 0 0 var(--theme-topbar-radius, 26px); background: transparent; box-shadow: var(--theme-topbar-shadow, var(--glass-shadow)); isolation: isolate}
-/* 顶栏横跨容器两列，一直铺到屏幕右缘（右栏的 top 就在它下方）。 */
-.shell-frame > .topbar {grid-area: 1 / 1 / 2 / 3; width: auto; border-bottom: none !important}
-.topbar > :not(.glass-material):not(.alas-desktop-controls), .title-actions > :not(.glass-material) {position: relative; z-index: 1}
-.topbar > .glass-material {background: none; -webkit-backdrop-filter: none; backdrop-filter: none}
-/* 页标题动作区同样站在第 0 层，它里面的玻璃取一级面。 */
-.title-actions > .glass-material {background: var(--theme-surface-bg); -webkit-backdrop-filter: var(--theme-surface-filter); backdrop-filter: var(--theme-surface-filter)}
-.breadcrumb {font-size: 13px; gap: 10px}
-.breadcrumb .instance-caption strong {font-size: 13px}
-.breadcrumb span {color: var(--muted)}
-.breadcrumb .instance-switcher {min-height: 38px}
-.connection-label {color: var(--green); font-size: 12px}
-/* 不留上内边距：控件行与下面那个大容器之间的距离要紧凑。 */
-main {padding: 0 32px 32px}
-main:focus {outline: none}
-.page-title {margin-bottom: 14px; align-items: center}
-.page-title h1 {
-  position: relative;
-  isolation: isolate;
-  display: inline-block;
-  max-width: 100%;
-  color: rgb(255 255 255 / .36);
-  background: linear-gradient(180deg, rgb(255 255 255 / .48) 0%, rgb(255 255 255 / .14) 42%, rgb(184 215 238 / .04) 55%, rgb(255 255 255 / .24) 100%);
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  paint-order: stroke fill;
-  -webkit-text-stroke: .5px rgb(7 16 24 / .48);
-  text-shadow: 0 -1px 0 rgb(255 255 255 / .94), 0 1px .5px rgb(0 0 0 / .42), 0 3px 4px rgb(0 0 0 / .22), 0 7px 14px rgb(0 0 0 / .13);
-  filter: drop-shadow(0 .35px .25px rgb(0 0 0 / .32));
-  transition: filter .2s, text-shadow .2s, color .2s;
-}
-.page-title h1 {font-size: clamp(27px, 2.5vw, 36px); font-weight: 700; letter-spacing: -1px; overflow-wrap: anywhere; min-width: 0}
-.page-title h1::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background: rgb(235 247 255 / .2);
-  -webkit-backdrop-filter: blur(9px) saturate(140%) brightness(1.12);
-  backdrop-filter: blur(9px) saturate(140%) brightness(1.12);
-  mask-image: var(--page-title-mask);
-  -webkit-mask-image: var(--page-title-mask);
-  mask-position: center;
-  -webkit-mask-position: center;
-  mask-repeat: no-repeat;
-  -webkit-mask-repeat: no-repeat;
-  mask-size: 100% 100%;
-  -webkit-mask-size: 100% 100%;
-  pointer-events: none;
-}
-.page-title h1::after {
-  content: attr(data-text);
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  color: transparent;
-  -webkit-text-fill-color: transparent;
-  -webkit-text-stroke: .65px rgb(255 255 255 / .42);
-  clip-path: inset(0 0 52% 0);
-  filter: blur(.25px);
-  pointer-events: none;
-}
-/* 这一行是控件行与下方容器之间最大的一段间隔，字号压到 32px 收紧它。 */
-.instance-page-title h1 {font-size: 32px; line-height: 1.1; letter-spacing: -1px}
-.title-actions {position: relative; isolation: isolate; border-radius: 22px; padding: 5px; gap: 6px; box-shadow: var(--glass-shadow); max-width: 100%}
-
-/* 库默认使用居中定位和 Tailwind 工具类；在此限定为不参与布局的背景。 */
-.glass-material {position: absolute; inset: 0; border-radius: inherit; pointer-events: none; overflow: hidden; z-index: 0; background: var(--glass-tint); -webkit-backdrop-filter: blur(18px) saturate(125%); backdrop-filter: blur(18px) saturate(125%)}
-.glass-material > :not(.glass-material-lens) {display: none}
-.glass-material-lens {transform: none !important; pointer-events: none; border-radius: inherit; opacity: .28}
-.glass-material-lens > .glass {width: 100%; height: 100%; border-radius: inherit !important; box-shadow: inset 0 1px 0 var(--glass-edge) !important}
-.glass-material-lens .glass__warp {border-radius: inherit}
-.glass-material-lens > svg {inset: 0; max-width: 100%; max-height: 100%}
-.button {height: var(--form-height-button, 36px); padding: 0 17px; border-radius: 20px; font-size: 13px; font-weight: 600; transition: background .18s, color .18s, border-color .18s; box-shadow: var(--theme-control-shadow)}
-.button.primary, [data-theme='dark'] .button.primary {background: #0071e3; color: white}
-.button.primary:hover:not(:disabled) {background: #0062c4; transform: none}
-.button.secondary {background: var(--theme-control-bg); color: var(--text); border-color: var(--theme-control-edge)}
-.button.secondary:hover:not(:disabled) {background: var(--surface); border-color: color-mix(in srgb, var(--accent) 40%, var(--border))}
-.button.danger {background: #c9342c}
-.button.danger.subtle {background: color-mix(in srgb, var(--red) 10%, transparent); color: var(--red)}
-.button:active:not(:disabled) {filter: brightness(.94)}
-.icon-button {width: 36px; height: 36px; border-radius: 50%; color: var(--muted)}
-.text-button {font-size: 12px; min-height: 36px; padding: 6px 8px}
-.panel, .resource-card {
-  background: var(--theme-surface-bg);
-  -webkit-backdrop-filter: var(--theme-surface-filter);
-  backdrop-filter: var(--theme-surface-filter);
-  border: 1px solid var(--glass-edge);
-  border-radius: 26px;
-  box-shadow: var(--glass-shadow);
-}
-/* 资源卡不带边框：它自己是一级面，卡内另有内嵌的二级面，多一圈描边只会多出一条假边界。 */
-.resource-card {border: 0}
-
-.summary-metrics-panel .summary-metric-card,
-.summary-metrics-panel .summary-metrics section {
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: 12px;
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-  box-shadow: none;
-}
-.summary-metrics-panel .summary-metric-card:hover,
-.summary-metrics-panel .summary-metrics section:hover {
-  background: var(--theme-plate-bg);
-  border-color: var(--theme-plate-edge);
-  transform: none;
-}
-
-.panel-heading {min-height: 62px; padding: 18px 22px}
-.panel-heading h2 {font-size: 15px; font-weight: 650}
-.panel-heading > div > svg {color: var(--accent)}
-.status {font-size: 11px; font-weight: 550; border-radius: 20px; padding: 6px 10px; gap: 6px}
-.status.running, .task-state.running {color: var(--green); background: var(--green-soft)}
-.status.stopped {background: var(--surface-muted); color: var(--muted)}
-.status.updating {color: #997000; background: #fff3cd}
-.count-badge {font-size: 11px; border: 0; border-radius: 10px; padding: 3px 7px; color: var(--muted)}
-.resource-heading, .resource-foot, .resource-value small {color: var(--muted)}
-.resource-heading {font-size: 10px}
-.resource-foot {font-size: 8px}
-.resource-value {font-weight: 650; letter-spacing: -1px}
-.resource-heading > div {border-radius: 10px}
-.schedule-panel {height: 700px}
-@media (min-width: 951px) {
-  /* 外壳给确定高度，内层 height:100% 才解析得到；只设 min-height 时整条链按内容长。 */
-  .app-shell:has(.overview-page) {height: var(--viewport-height)}
-  /* 网格项的最小尺寸默认取内容高，归零后才受外壳高度约束。 */
-  .app-shell:has(.overview-page) .main-shell {min-height: 0}
-  /* 与 .overview-main 同高：内容超出时压缩日志栏而不是顶高面板。 */
-  .monitor-panel {height: auto; min-height: 0}
-}
-.task-state {font-size: 10px; border-radius: 6px}
-.task-row {min-height: 58px}
-.task-row time {font-size: 11px; color: var(--muted)}
-.task-row-name strong {font-size: 13px; font-weight: 550}
-.schedule-summary {font-size: 12px}
-.monitor-tabs {height: 64px; padding: 10px 16px; gap: 10px; display: flex; align-items: center; border-bottom: 1px solid color-mix(in srgb, var(--glass-edge) 54%, var(--border))}
-.monitor-panel {position: relative}
-.monitor-panel .log-toolbar {position: absolute; top: 10px; right: 16px; z-index: 3; height: 44px; display: flex; align-items: center; gap: 4px}
-.monitor-panel .log-toolbar .icon-button {width: 36px; height: 36px}
-.monitor-panel .log-toolbar .text-button {min-height: 36px; white-space: nowrap}
-.monitor-segmented {position: relative; display: inline-flex; align-items: center; gap: 2px; padding: 3px; border-radius: 999px; background: var(--theme-control-bg); border: 1px solid var(--theme-segment-border); box-shadow: inset 0 .5px .5px rgb(0 0 0 / .04); max-width: 100%; overflow-x: auto; vertical-align: middle; -webkit-backdrop-filter: var(--theme-control-filter); backdrop-filter: var(--theme-control-filter, blur(16px) saturate(120%)); scrollbar-width: none}
-.monitor-segmented .segmented-indicator {position: absolute; top: 0; left: 0; border-radius: 999px; box-shadow: 0 1px 3px #00000012, 0 0 0 .5px #00000008; transition: transform .18s cubic-bezier(.2,.65,.3,1); pointer-events: none}
-.monitor-segmented button {position: relative; flex: 0 0 auto; white-space: nowrap; z-index: 1; min-width: 92px; height: 34px; padding: 0 15px; display: inline-flex; align-items: center; justify-content: center; gap: 7px; border: 0; border-radius: 999px; background: transparent; color: var(--muted); font-size: 13px; font-weight: 600; box-sizing: border-box; cursor: pointer; transition: color .15s, background-color .15s}
-.monitor-segmented::-webkit-scrollbar {display: none}
-.monitor-segmented button:hover {color: var(--text)}
-.monitor-segmented button:not([aria-selected='true']):hover {background: rgb(127 127 127 / .08)}
-.monitor-segmented button:focus-visible {outline-offset: -2px}
-.monitor-segmented button[aria-selected='true'] {background: transparent; color: var(--text); box-shadow: none}
-.monitor-segmented button:active {filter: brightness(.94)}
-.statistics-category-control {margin-bottom: 20px}
-.monitor-segmented svg {stroke-width: 1.7}
-.monitor-tabs > a.text-button {margin-left: auto}
-.monitor-panel .log-content {font-size: 12px; line-height: 1.8}
-.monitor-panel .log-filters {
-  background: color-mix(in srgb, var(--surface) 18%, transparent);
-  border-color: color-mix(in srgb, var(--glass-edge) 54%, var(--border));
-}
-/* 日志贴片挂在面板本身：与内部日志列表矩形重合，但层级上属于面板内那一层的贴片。 */
-.monitor-panel .log-panel {
-  box-shadow: none;
-  border: 0;
-  border-radius: inherit;
-}
-.monitor-panel .log-content {
-  background: transparent;
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-}
-/* 经典玻璃主题卡片式日志适配 (LogCardView Apple Glass) */
-.log-card {
-  /* 日志栏内的子容器：接二级贴片的线，只取它的不透明度叠加，自己不叠磨砂。 */
-  background: var(--theme-plate-bg);
-  border-color: color-mix(in srgb, var(--glass-edge) 54%, var(--border));
-  border-radius: 10px;
-}
-/* 卡片内的表头与标题条同属子容器：同样只取二级贴片的不透明度。 */
-.log-card .native-log-table th {background: var(--theme-plate-bg)}
-.card-header {
-  background: var(--theme-plate-bg);
-  border-bottom-color: color-mix(in srgb, var(--glass-edge) 54%, var(--border));
-}
-.card-btn-action {
-  border-radius: 6px;
-  background: color-mix(in srgb, var(--surface) 70%, transparent);
-  border-color: color-mix(in srgb, var(--glass-edge) 45%, var(--border));
-}
-.card-btn-icon {
-  border-radius: 6px;
-}
-.trapezoid-visual {
-  border-radius: 10px;
-  background: color-mix(in srgb, var(--surface) 40%, transparent);
-  border-color: color-mix(in srgb, var(--glass-edge) 54%, var(--border));
-}
-.traceback-viewer {
-  border-radius: 10px;
-  background: color-mix(in srgb, var(--surface) 40%, transparent);
-  border-color: color-mix(in srgb, var(--glass-edge) 54%, var(--border));
-}
-.traceback-toolbar {
-  background: color-mix(in srgb, var(--surface) 70%, transparent);
-  border-bottom-color: color-mix(in srgb, var(--glass-edge) 54%, var(--border));
-}
-.traceback-frame-card {
-  border-radius: 8px;
-  background: color-mix(in srgb, var(--surface) 60%, transparent);
-  border-color: color-mix(in srgb, var(--glass-edge) 45%, var(--border));
-}
-.traceback-frame-header {
-  background: color-mix(in srgb, var(--surface) 45%, transparent);
-  border-bottom-color: color-mix(in srgb, var(--glass-edge) 45%, var(--border));
-}
-.statistics-note {border-left-color: var(--accent); border-radius: 12px}
-.group-nav {border: 0; padding: 6px; gap: 3px; border-radius: 16px; background: var(--surface-muted)}
-.group-nav a {border-radius: 10px}
-.group-indicator {background: var(--accent); width: 3px}
-.field-row {padding: 20px 24px}
-.field-label label {font-weight: 550}
-input, select, textarea {border-radius: 10px; min-height: 40px}
-.input-icon {border-radius: 12px}
-.input-icon > input {font-size: 13px}
-.toggle {width: 46px; height: 28px; padding: 3px; border-radius: 20px; background: #bcbcc2; position: relative}
-.toggle::before {content: ''; position: absolute; inset: -8px 0}
-.toggle > span {width: 22px; height: 22px; box-shadow: 0 2px 4px #0003}
-.toggle.on {background: #34c759}
-.toggle.on > span {transform: translateX(18px)}
-.modal::backdrop {background: #11111b2b}
-.modal h2 {font-size: 20px; letter-spacing: -.4px}
-.toast {border-radius: 22px; background: var(--text); color: var(--surface); box-shadow: 0 8px 32px #0002; font-size: 13px}
-.toast.error {background: #c9342c; color: #fff}
-.home-intro {padding: 12px 0 28px}
-.eyebrow {display: block; color: var(--accent); font-size: 12px; font-weight: 650; margin-bottom: 12px}
-.home-intro .page-title {margin-bottom: 14px}
-.home-intro .page-title h1 {font-size: clamp(28px, 3vw, 40px); letter-spacing: -1.3px}
-.home-intro p {color: var(--muted); line-height: 1.8; font-size: 14px}
-.home-summary {display: flex; flex-wrap: wrap; gap: 24px; padding: 22px 0 28px; margin-bottom: 26px; border-bottom: 1px solid var(--border)}
-.home-summary > div {display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 13px}
-.home-summary svg {color: var(--accent)}
-.home-summary strong {font-size: 20px; font-variant-numeric: tabular-nums; color: var(--text)}
-html.home-active .topbar,
-.main-shell:has(> main > .home-editorial) .topbar {
-  border-bottom: none !important;
-  box-shadow: none !important;
-}
-.home-main {
-  position: relative;
-  background: var(--theme-surface-bg);
-  -webkit-backdrop-filter: var(--theme-surface-filter);
-  backdrop-filter: var(--theme-surface-filter);
-  border: none;
-  border-bottom-left-radius: 26px;
-  box-shadow: none;
-}
-/* 首页的合并容器：与运行总览同一个形状——横臂在上、竖列在右，只是竖列左缘由卡座宽决定。
-   容器里两列：顶栏横跨两列占第一行（L 的横臂），卡座在第二行左列，实例卡在第二行右列（L 的竖列）。
-   材质与形状都长在容器上，顶栏与实例卡只留内容。
-   面一直铺到内容区最左，把主页按钮左侧那块隐藏/悬停区圈在面内。 */
-/* 内容区整体停在「视口 − 外壳那道缝」上：容器与编辑区同占这块高度，两者下缘因此齐平。 */
-.main-shell:has(> .shell-frame > .home-frame-topbar) {
-  height: calc(var(--viewport-height) - 14px);
-}
-.main-shell:has(> .shell-frame > .home-frame-topbar) .shell-frame {
-  grid-area: 1 / 1 / 3 / 2;
-  display: grid;
-  /* 容器里只有顶栏一个网格项，它横跨两列（L 的横臂）；台阶位置由形状自己按 --home-frame-card 画。 */
-  grid-template-rows: var(--topbar-actual-height, 56px) minmax(0, 1fr);
-  --home-frame-margin: 24px;
-  --home-frame-strip: var(--topbar-actual-height, 56px);
-  --home-frame-card: 34%;
-  --home-frame-corner: 26px;
-  /* 左端两角的半径：取顶栏实际高度的一半，顶栏矮时按比例缩小。 */
-  --home-frame-sc: min(var(--home-frame-corner), calc(var(--home-frame-strip) / 2));
-  background: var(--theme-surface-bg);
-  -webkit-backdrop-filter: var(--theme-surface-filter);
-  backdrop-filter: var(--theme-surface-filter);
-  /* 与运行总览同一个形状、四个弧同向，只把竖列左缘换成 --home-frame-card；
-     横条左端两角共用半径 min(corner, strip/2)，顶栏矮时按比例缩小，与 border-radius 同行为。 */
-  clip-path: shape(
-    from calc(var(--home-frame-margin) + var(--home-frame-sc)) 0,
-    line to 100% 0,
-    line to 100% 100%,
-    line to calc(var(--home-frame-card) + var(--home-frame-corner)) 100%,
-    arc to var(--home-frame-card) calc(100% - var(--home-frame-corner)) of var(--home-frame-corner) cw,
-    line to var(--home-frame-card) calc(var(--home-frame-strip) + var(--home-frame-corner)),
-    arc to calc(var(--home-frame-card) - var(--home-frame-corner)) var(--home-frame-strip) of var(--home-frame-corner) ccw,
-    line to calc(var(--home-frame-margin) + var(--home-frame-sc)) var(--home-frame-strip),
-    arc to var(--home-frame-margin) var(--home-frame-sc) of var(--home-frame-sc) cw,
-    arc to calc(var(--home-frame-margin) + var(--home-frame-sc)) 0 of var(--home-frame-sc) cw,
-    close
-  );
-}
-/* 材质归容器：顶栏自己不再画，只留内容；它也不参与滚动。 */
-.main-shell:has(> .shell-frame > .home-frame-topbar) .shell-frame > .topbar {
-  /* 与运行总览同一写法：左端留一个页边距（容器左缘在内容区最左）。 */
-  margin: 0 0 0 24px;
-  padding: 0 18px;
-  border: none !important;
-  border-radius: 0;
-  background: none;
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-  box-shadow: none !important;
-}
-/* 编辑区是容器的兄弟节点、不是后代：容器那条 clip-path 会裁掉所有后代，
-   而卡座落在 L 的凹口里，留在容器内会被整列裁掉。
-   它占内容区第二行，自己的两列仍按 --home-frame-card 分，与形状的台阶同源。 */
-.main-shell:has(> .shell-frame > .home-frame-topbar) > .home-editorial {
-  grid-area: 2 / 1 / 3 / 2;
-  min-height: 0;
-}
-/* 卡座内容长过它那一列时自己滚，不撑高编辑区。 */
-.main-shell:has(> .shell-frame > .home-frame-topbar) .home-deck {grid-area: 1 / 1 / 2 / 2; min-height: 0; overflow-y: auto}
-/* 材质归容器：卡片自己不画。 */
-.main-shell:has(> .shell-frame > .home-frame-topbar) .home-main {
-  grid-area: 1 / 2 / 2 / 3;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  background: none;
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-  border-radius: 0;
-  /* 卡片自己不滚：溢出的实例卡交给里面那个透明容器。 */
-  overflow: visible;
-}
-/* 一级面上挖出来的透明容器：不渲染材质、不画边框，只负责让实例卡滚动。 */
-.main-shell:has(> .shell-frame > .home-frame-topbar) .home-scroll {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-}
-.home-main-heading {border-bottom: 1px solid color-mix(in srgb, var(--border) 45%, transparent)}
-.instance-grid {gap: 20px}
-.instance-card {padding: 26px; border-radius: 24px; transition: box-shadow .2s, border-color .2s}
-.home-instance-grid .instance-card {
-  border-radius: 24px;
-  border-bottom-left-radius: 24px;
-  border: 1px solid color-mix(in srgb, var(--border) 45%, transparent);
-}
-.instance-card:hover {border-color: color-mix(in srgb, var(--accent) 35%, var(--border)); box-shadow: 0 12px 36px #0071e310}
-.home-instance-grid .instance-card:hover {
-  border-color: color-mix(in srgb, var(--accent) 45%, var(--glass-edge));
-  box-shadow: 0 12px 36px #0071e318;
-}
-.home-instance-icon {width: 48px; height: 48px; border-radius: 15px; background: linear-gradient(145deg, #51a9ff, #0071e3); color: white; box-shadow: inset 0 1px 0 #ffffff66, 0 4px 12px #0071e322}
-.instance-card h3 {font-size: 23px; letter-spacing: -.5px; margin-top: 26px}
-.instance-card-footer {font-size: 13px; margin-top: 28px}
-.instance-card-footer > svg {background: var(--accent-soft); border-radius: 50%; box-sizing: content-box; padding: 7px}
-.login-page {background: var(--bg)}
-.login-art {background: radial-gradient(ellipse at 25% 25%, #459bff, #3156b8 55%, #29285d); color: #ffffffb3}
-.login-art::before {opacity: .2; background: repeating-radial-gradient(circle at center, transparent 0, transparent 90px, #ffffff60 91px, transparent 92px)}
-.login-art > span {color: #fff; letter-spacing: 1px}
-.login-card {background: var(--surface); padding: 32px; width: 420px; border-radius: 28px; box-shadow: var(--shadow)}
-.login-card .brand-mark {background: transparent; margin-bottom: 4px}
-.skip-link {position: fixed; top: -100px; left: 16px; z-index: 200; background: var(--theme-control-bg); color: var(--accent); padding: 14px; border-radius: 12px}
-.skip-link:focus {top: 12px}
-
-/* 右侧任务计划：用中性材质深度表达队列层级，不使用状态色。 */
-.rail-section-heading {font-size: 12px}
-.rail-section-heading > div {font-size: 13px}
-.rail-section-heading > span {font-size: 10px}
-.rail-task-list {display: flex; flex-direction: column; gap: 12px; padding: 2px 2px 8px}
-.rail-queue-group {flex: 0 0 auto; overflow: hidden; border-radius: 18px; -webkit-backdrop-filter: var(--theme-inset-filter); backdrop-filter: var(--theme-inset-filter); transition: background .18s, border-color .18s, box-shadow .18s}
-.rail-queue-group.running {background: var(--theme-inset-bg); border: 1px solid color-mix(in srgb, var(--glass-edge) 90%, var(--border)); box-shadow: 0 8px 24px #1d1d1f0a, inset 0 1px 0 color-mix(in srgb, #fff 72%, transparent)}
-.rail-queue-group.pending {background: var(--theme-inset-bg); border: 1px solid color-mix(in srgb, var(--border) 64%, transparent); box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 44%, transparent)}
-.rail-queue-group.waiting {background: var(--theme-inset-bg); border: 1px solid color-mix(in srgb, var(--border) 42%, transparent); box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 24%, transparent)}
-.rail-queue-heading {min-height: 42px; padding: 9px 12px; display: flex; align-items: center; justify-content: space-between; gap: 10px;}
-.rail-queue-heading > div {display: flex; align-items: center; gap: 8px; min-width: 0}
-.rail-queue-heading strong {font-size: 12px; font-weight: 650}
-.rail-queue-group.pending .rail-queue-heading strong {font-weight: 600}
-.rail-queue-group.waiting .rail-queue-heading strong {font-weight: 550; color: color-mix(in srgb, var(--text) 72%, var(--muted))}
-.rail-queue-heading > span {min-width: 25px; height: 22px; display: grid; place-items: center; padding: 0 7px; border-radius: 999px; background: var(--theme-inset-bg); -webkit-backdrop-filter: var(--theme-inset-filter); backdrop-filter: var(--theme-inset-filter); color: var(--muted); font-size: 10px; font-variant-numeric: tabular-nums; border: 1px solid color-mix(in srgb, var(--border) 46%, transparent)}
-.rail-queue-heading svg {color: color-mix(in srgb, var(--text) 72%, var(--muted)); stroke-width: 1.7}
-.rail-queue-group.pending .rail-queue-heading svg {color: color-mix(in srgb, var(--text) 58%, var(--muted))}
-.rail-queue-group.waiting .rail-queue-heading svg {color: var(--muted)}
-.rail-queue-body {padding: 5px}
-.rail-task-item {grid-template-columns: minmax(0, 1fr) auto 13px; min-height: 58px; margin: 2px 0; padding: 10px 10px 10px 12px; border-radius: 13px}
-.rail-task-item:hover {background: color-mix(in srgb, var(--surface) 86%, transparent)}
-.rail-task-item strong {font-size: 13px; line-height: 1.35}
-.rail-task-item small {margin-top: 3px; font-size: 11px; line-height: 1.35}
-.rail-task-item .task-state {display: inline-flex; align-items: center; gap: 5px; font-size: 10px; padding: 4px 7px; border-radius: 999px; border: 1px solid color-mix(in srgb, var(--border) 46%, transparent); background: color-mix(in srgb, var(--surface) 72%, transparent); color: var(--muted); font-weight: 550}
-.rail-task-item .task-state svg {stroke-width: 1.7}
-.rail-queue-group.running .task-state.running {background: color-mix(in srgb, var(--surface) 98%, transparent); color: var(--text); border-color: color-mix(in srgb, var(--border) 72%, transparent)}
-.rail-queue-group.pending .task-state.pending {background: color-mix(in srgb, var(--surface) 66%, transparent); color: color-mix(in srgb, var(--text) 72%, var(--muted))}
-.rail-queue-group.waiting .task-state.waiting {background: color-mix(in srgb, var(--surface) 38%, transparent); color: var(--muted)}
-.rail-queue-empty {padding: 16px 12px; color: var(--muted); font-size: 11px; text-align: center}
-[data-theme='dark'] .rail-queue-group.running {box-shadow: 0 8px 24px #0003, inset 0 1px 0 #ffffff12}
-[data-theme='dark'] .rail-queue-group.pending {box-shadow: inset 0 1px 0 #ffffff0b}
-[data-theme='dark'] .rail-queue-group.waiting {box-shadow: inset 0 1px 0 #ffffff06}
-@media (max-width: 950px) {
-  :root {--topbar-height: 76px}
-  .app-shell {padding: 0}
-  .app-shell.mobile-open::after {content: ''; position: fixed; inset: 0; z-index: 90; background: rgb(17 17 27 / .38)}
-  .sidebar {width: 232px; left: -250px; top: 0; height: var(--viewport-height); z-index: 100; border-radius: 0 26px 26px 0; background: var(--surface); background: color-mix(in srgb, var(--surface) 96%, var(--bg)); -webkit-backdrop-filter: none; backdrop-filter: none}
-  .sidebar-brand {height: 56px; min-height: 56px}
-  .topbar, .app-shell.with-rail .topbar {width: auto; margin: 0 0 0 12px; top: 0; padding: 0 10px; height: 56px; min-height: 56px; gap: 6px; border-radius: 26px 0 0 26px}
-  .app-shell.with-rail .topbar {justify-content: flex-start}
-  /* 右栏在这个断点收成抽屉，与顶栏本就不相接：容器退回普通包裹，两块各自画材质。 */
-  .main-shell {display: flex; flex-direction: column}
-  .shell-frame:has(> .right-rail) {display: contents}
-  .shell-frame:has(> .right-rail) > .topbar,
-  .shell-frame:has(> .right-rail) > .right-rail {
-    background: var(--theme-surface-bg);
-    -webkit-backdrop-filter: var(--theme-surface-filter);
-    backdrop-filter: var(--theme-surface-filter);
-  }
-  .shell-frame:has(> .right-rail) > .right-rail {border-radius: 0 0 0 26px}
-  .right-rail {position: fixed; top: 56px; right: 0; width: min(360px, calc(100vw - 12px)); height: calc(var(--viewport-height) - 56px); z-index: 110; opacity: 0; visibility: hidden; pointer-events: none; transform: translateY(-12px) scale(.985); transform-origin: top right; transition: opacity .18s ease, transform .22s cubic-bezier(.22,.61,.36,1), visibility .18s}
-  .rail-open .right-rail {opacity: 1; visibility: visible; pointer-events: auto; transform: translateY(0) scale(1)}
-  .right-rail::before, .right-rail::after {display: none}
-  main {padding: 28px 18px}
-  .breadcrumb {font-size: 12px; gap: 6px}
-  .page-title {gap: 18px}
-  .instance-page-title h1 {font-size: 40px; line-height: 1.08; letter-spacing: -1.1px}
-  .title-actions {flex-wrap: wrap; gap: 4px}
-  .button {min-height: 44px; height: auto; padding: 10px 16px}
-  .icon-button {width: 44px; height: 44px}
-  .task-group-button, .task-submenu-item {min-height: 44px}
-  .sidebar-label .icon-button {width: 36px; height: 36px}
-  .mobile-close {position: static; margin-left: auto}
-  .monitor-tabs {height: 66px; padding: 8px 12px}
-  .monitor-segmented button {min-width: 92px; height: 40px; min-height: 40px; padding: 0 12px}
-  .monitor-tabs .text-button {font-size: 11px}
-  .monitor-tabs > span {font-size: 10px}
-  .monitor-panel .log-toolbar {top: 13px; right: 12px; height: 40px; gap: 2px}
-  .monitor-panel .log-toolbar .icon-button {width: 36px; height: 36px}
-  .monitor-panel .log-toolbar .text-button {min-height: 36px; padding: 6px 8px}
-  .schedule-panel, .monitor-panel {height: 520px}
-  .home-summary {gap: 16px 22px}
-  .home-summary > div {gap: 7px; font-size: 12px}
-  .instance-card {padding: 24px}
-  input, select, textarea {font-size: 16px; min-height: 44px}
-  .field-control > input, .field-control > select, .field-control > textarea {font-size: 16px}
-}
-@media (max-width: 300px) {.app-shell.with-rail .breadcrumb {display: none}}
-@media (max-width: 480px) {
-  .monitor-tabs {height: 60px; padding: 8px 10px}
-  .monitor-segmented button {min-width: 70px; height: 36px; min-height: 36px; padding: 0 8px; gap: 5px}
-  .monitor-panel .log-toolbar {top: 12px; right: 10px; height: 36px; gap: 1px}
-  .monitor-panel .log-toolbar .icon-button {width: 32px; height: 32px}
-  .monitor-panel .log-toolbar .text-button {width: 32px; min-height: 32px; padding: 0; gap: 0; justify-content: center; font-size: 0}
-}
-@media (prefers-contrast: more), (forced-colors: active) {
-  .wallpaper {display: none}
-  .glass-material, .sidebar, .home-main, .instance-menu, .task-submenu-flyout {background: var(--surface); -webkit-backdrop-filter: none; backdrop-filter: none}
-  .glass-material-lens {display: none}
-  .page-title h1 {color:var(--text); background:none; -webkit-text-fill-color:var(--text); -webkit-text-stroke:0; text-shadow:none; filter:none}
-  .page-title h1::before, .page-title h1::after {content:none}
-  .panel, .button, .topbar, .resource-card {border: 1px solid currentColor}
-}
-@media (prefers-reduced-motion: reduce) {
-  .glass-material-lens {display: none}
-}
-
-.update-notice.sidebar-update-notice {position: relative; overflow: hidden; flex-shrink: 0; padding: 4px 8px; gap: 0; border: 1px solid #ff0000; border-radius: 999px; color: #fff; background: linear-gradient(135deg, rgb(255 0 0 / .88), rgb(255 0 0 / .68)); box-shadow: inset 0 1px 0 rgb(255 255 255 / .20), inset 0 -1px 0 rgb(120 0 0 / .22), 0 2px 6px rgb(255 0 0 / .14), 0 0 3px rgb(255 0 0 / .06); backdrop-filter: blur(10px) saturate(185%); -webkit-backdrop-filter: blur(10px) saturate(185%); font-size: 10px; font-weight: 750; line-height: 1; letter-spacing: .2px; text-decoration: none}
-.sidebar-update-notice::before {content: ''; position: absolute; inset: 1px 2px auto; height: 38%; border-radius: inherit; background: linear-gradient(180deg, rgb(255 255 255 / .20), transparent); pointer-events: none}
-
-/* 按下「立刻运行」时底色与字色互换，替代位移或缩放反馈。 */
-.field-control > .field-actions .icon-only:hover:active:not(:disabled) {background: var(--theme-accent); color: var(--theme-on-accent)}
-
-/* 深色主题的强调色偏亮，白字压上去只有 2.4:1；沿用本仓库深色按钮的正文色。 */
-[data-theme='dark'] .field-control > .field-actions .icon-only:hover:active:not(:disabled) {color: #102d29}
-
-/* 窄屏（两列并成一列）下顶栏与卡片本就不相接，容器退回纯包裹，两块各自还原。 */
-@media (max-width: 950px) {
-  .main-shell:has(> .shell-frame > .home-frame-topbar) .shell-frame {display: contents}
-  .main-shell:has(> .shell-frame > .home-frame-topbar) .shell-frame > .topbar {
-    width: auto;
-    margin: 0 0 0 12px;
-    padding: 0 10px;
-    border: 1px solid var(--glass-edge);
-    border-bottom: none !important;
-    border-radius: 26px 0 0 26px;
-    background: var(--theme-surface-bg);
-    -webkit-backdrop-filter: var(--theme-surface-filter);
-    backdrop-filter: var(--theme-surface-filter);
-    box-shadow: var(--glass-shadow);
-  }
-  .main-shell:has(> .shell-frame > .home-frame-topbar) .home-main {
-    /* 单列布局里卡片自己画一级面：容器不参与布局，没有可透出的底。 */
-    background: var(--theme-surface-bg);
-    -webkit-backdrop-filter: var(--theme-surface-filter);
-    backdrop-filter: var(--theme-surface-filter);
-    border-bottom-left-radius: var(--theme-radius-panel, 26px);
-  }
-  .home-scroll {flex: none; margin-bottom: 0; overflow: visible; clip-path: none}
-}
-.dev-effect-lab {display:grid;grid-template-columns:minmax(0,1.35fr) minmax(260px,.65fr);gap:24px;padding:24px;border-bottom:1px solid var(--border)}
-.dev-effect-stage {position:relative;min-height:320px;border-radius:22px;overflow:hidden;border:1px solid var(--border);background:var(--surface-muted)}
-.dev-effect-wallpaper {position:absolute;inset:0;overflow:hidden;background:linear-gradient(135deg,#2b6cb0 0%,#5b4bb7 45%,#cf6b8d 100%)}
-.dev-effect-wallpaper i {position:absolute;border-radius:50%;filter:blur(1px);opacity:.86}
-.dev-effect-wallpaper i:nth-child(1) {width:180px;height:180px;background:#7ee8fa;left:8%;top:12%}
-.dev-effect-wallpaper i:nth-child(2) {width:230px;height:230px;background:#ffb86b;right:-20px;bottom:-35px}
-.dev-effect-wallpaper i:nth-child(3) {width:110px;height:110px;background:#7bffb7;right:24%;top:14%}
-.dev-effect-wallpaper > span {position:absolute;left:30px;bottom:24px;color:#fff;font-size:42px;font-weight:800;letter-spacing:-2px;text-shadow:0 2px 18px #0005}
-.dev-effect-glass {position:absolute;inset:42px;display:flex;flex-direction:column;justify-content:center;gap:10px;padding:26px;border:1px solid color-mix(in srgb,var(--glass-edge) 88%,transparent);color:var(--text);transition:backdrop-filter .12s,background .12s,border-radius .12s,box-shadow .12s}
-.dev-effect-glass strong {font-size:22px;letter-spacing:-.4px}
-.dev-effect-glass p {max-width:520px;color:var(--muted);font-size:12px;line-height:1.8}
-.dev-effect-controls {display:grid;gap:15px;align-content:center}
-.dev-effect-controls label {display:grid;grid-template-columns:1fr auto;gap:7px 12px;font-size:12px;color:var(--muted)}
-.dev-effect-controls label strong {color:var(--text);font-variant-numeric:tabular-nums}
-.dev-effect-controls input[type='range'] {grid-column:1/-1;width:100%;min-height:20px;padding:0;background:transparent;box-shadow:none}
-.dev-blur-presets {display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px;padding:20px 24px}
-.dev-blur-preset-wrap {display:grid;gap:7px;text-align:center;font-size:11px;color:var(--muted)}
-.dev-blur-preset-bg {height:92px;border-radius:16px;overflow:hidden;background:linear-gradient(135deg,#2775ff,#b54ae4 52%,#ff8c64);position:relative}
-.dev-blur-preset-bg::before {content:'DETAIL';position:absolute;inset:0;display:grid;place-items:center;color:#fff;font-size:26px;font-weight:800;letter-spacing:1px}
-.dev-blur-preset-bg > div {position:absolute;inset:14px;display:grid;place-items:center;border:1px solid #ffffff70;border-radius:12px;background:#ffffff42;color:#fff;font-size:11px;font-weight:700}
 .dev-intro {display:flex;align-items:center;justify-content:space-between;gap:18px;padding:18px 22px;margin-bottom:20px}
 .dev-intro > div {display:flex;align-items:flex-start;gap:12px;min-width:0}
 .dev-intro strong {display:block;font-size:14px;margin-bottom:4px}
@@ -3316,6 +2629,216 @@ html.home-active .topbar,
 
 /* 动效控制台与快捷工具：按钮组选中态需要可见反馈（aria-pressed 是语义源，也是样式源） */
 .dev-button-row .button.secondary[aria-pressed='true'] {border-color: var(--accent); color: var(--accent); background: var(--accent-soft)}
+/* 旧版主题配色：MD3 靛紫。
+   取值来自 master 的 assets/gui/css/light-alas.css 与 dark-alas.css；
+   变量键与 minimal-palette.css 一一对应，组件只消费 --theme-* 契约变量。 */
+:root {
+  color-scheme: light;
+  /* 基础色板 */
+  --bg: #f9f9f9; --surface: #ffffff; --surface-muted: #f6f6f9;
+  --text: #2c2c2c; --muted: #777777; --border: #e0e0e0;
+  --accent: #4e4c97; --accent-hover: #3f3d79; --accent-soft: #e8e8f8;
+  --secondary: #7a77bb; --secondary-soft: #eeedfa;
+  --sidebar: var(--surface); --radius: 8px; --shadow: 0 1px 2px rgb(0 0 0 / .1);
+  --red: #c9342c; --green: #248a3d; --green-soft: #e8f4ec;
+  --sidebar-width: 240px; --topbar-height: 56px;
+  /* 旧版家族的玻璃原始取值；普通材质由 theme-material.css 覆写成不透明。 */
+  --glass-tint: var(--theme-surface-bg);
+  --glass-edge: color-mix(in srgb, var(--border) 82%, transparent);
+  --glass-shadow: 0 8px 32px rgb(0 0 0 / .12);
+  --syntax-key: var(--accent); --syntax-string: var(--secondary); --syntax-value: #7b5ea7;
+  --syntax-comment: var(--muted); --syntax-punctuation: var(--text);
+  --theme-font-sans: 'MiSans', "Microsoft YaHei", -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", sans-serif;
+  --theme-font-mono: 'JetBrains Mono', 'JetBrains Mono NL', Consolas, "Cascadia Code", "Microsoft YaHei", monospace;
+
+  /* 契约层 —— 颜色 */
+  --theme-bg: var(--bg); --theme-surface: var(--surface); --theme-surface-muted: var(--surface-muted);
+  --theme-text: var(--text); --theme-muted: var(--muted); --theme-border: var(--border);
+  --theme-accent: var(--accent); --theme-accent-hover: var(--accent-hover); --theme-accent-soft: var(--accent-soft);
+  --theme-on-accent: #ffffff;
+  --theme-on-danger: #ffffff;
+  --theme-danger: var(--red); --theme-danger-soft: #fcebeb;
+  --theme-success: var(--green); --theme-success-soft: var(--green-soft);
+  --theme-warning: #805a14; --theme-warning-soft: #faf0d6; --theme-info: var(--secondary);
+  --theme-glass: var(--theme-surface-bg); --theme-glass-edge: var(--glass-edge);
+  --theme-glass-shadow: var(--glass-shadow); --theme-material-filter: var(--theme-surface-filter);
+
+  --theme-popover-filter: var(--theme-menu-filter); --theme-overlay-filter: none; --theme-overlay: color-mix(in srgb, var(--bg) 30%, transparent); --theme-chrome-filter: var(--theme-sidebar-filter);
+  /* 玻璃参数由旧版玻璃变体使用；普通材质由 theme-material.css 覆写为无滤镜。 */
+  --theme-glass-blur: var(--theme-surface-blur); --theme-glass-saturation: var(--theme-surface-saturation);
+  /* 区域化材质：参数键由旋钮写入、合成键由皮肤消费；默认值关系是一级面为基准，
+     二级菜单里每个区域都能独立调（动过的区写自己的参数键，没动过的区跟着一级面）。 */
+  --theme-surface-alpha: 78%;
+  --theme-surface-blur: 18px;
+  --theme-surface-saturation: 120%;
+  --theme-surface-radius: var(--theme-radius-panel);
+  --theme-surface-bg: color-mix(in srgb, var(--surface) var(--theme-surface-alpha), transparent);
+  --theme-surface-filter: blur(var(--theme-surface-blur)) saturate(var(--theme-surface-saturation));
+  --theme-surface-edge: var(--theme-glass-edge);
+  --theme-surface-shadow: var(--theme-glass-shadow);
+  --theme-plate-alpha: var(--theme-surface-alpha); --theme-plate-blur: 12px; --theme-plate-saturation: 120%;
+  --theme-plate-margin: 8px;
+  --theme-plate-radius: var(--theme-radius-card);
+  --theme-plate-bg: color-mix(in srgb, var(--surface) var(--theme-plate-alpha), transparent);
+  --theme-plate-filter: blur(var(--theme-plate-blur)) saturate(var(--theme-plate-saturation));
+  --theme-plate-edge: var(--theme-glass-edge); --theme-plate-shadow: var(--theme-glass-shadow);
+  /* 三级嵌面：贴在二级贴片内部的面（右栏的队列分组等）。 */
+  --theme-inset-alpha: var(--theme-plate-alpha); --theme-inset-blur: 8px; --theme-inset-saturation: 115%;
+  --theme-inset-radius: var(--theme-radius-control);
+  --theme-inset-bg: color-mix(in srgb, var(--surface) var(--theme-inset-alpha), transparent);
+  --theme-inset-filter: blur(var(--theme-inset-blur)) saturate(var(--theme-inset-saturation));
+  --theme-inset-edge: var(--theme-glass-edge); --theme-inset-shadow: var(--theme-glass-shadow);
+
+  --theme-control-alpha: 92%; --theme-control-blur: 8px; --theme-control-saturation: 110%;
+  --theme-control-radius: var(--theme-radius-control);
+  --theme-control-bg: color-mix(in srgb, var(--surface) var(--theme-control-alpha), transparent);
+  --theme-control-marker-bg: color-mix(in srgb, var(--surface) min(100%, calc(var(--theme-control-alpha) + 8%)), transparent);
+  /* 图表画布内的颜色。数值与曲线都是画在 canvas 上的，只能用组件 token 交给脚本读。 */
+  --theme-chart-primary: #159b88; --theme-chart-secondary: #de7861;
+  --theme-chart-rise: #dc2626; --theme-chart-fall: #16a34a;
+  --theme-control-filter: blur(var(--theme-control-blur)) saturate(var(--theme-control-saturation));
+  --theme-control-edge: var(--theme-glass-edge); --theme-control-shadow: var(--theme-glass-shadow);
+  /* 区域面：本族的侧栏与顶栏贴边、无磨砂；弹窗与菜单沿用各自的阴影语言。 */
+  --theme-sidebar-alpha: var(--theme-surface-alpha); --theme-sidebar-blur: 0px; --theme-sidebar-saturation: 100%;
+  --theme-sidebar-radius: var(--theme-surface-radius);
+  --theme-sidebar-bg: color-mix(in srgb, var(--surface) var(--theme-sidebar-alpha), transparent);
+  --theme-sidebar-filter: none;
+  --theme-sidebar-edge: var(--theme-glass-edge); --theme-sidebar-shadow: none;
+  --theme-topbar-alpha: var(--theme-surface-alpha); --theme-topbar-blur: 0px; --theme-topbar-saturation: 100%;
+  --theme-topbar-radius: var(--theme-surface-radius);
+  --theme-topbar-bg: color-mix(in srgb, var(--surface) var(--theme-topbar-alpha), transparent);
+  --theme-topbar-filter: none;
+  --theme-topbar-edge: var(--theme-glass-edge); --theme-topbar-shadow: none;
+  --theme-modal-alpha: var(--theme-surface-alpha); --theme-modal-blur: var(--theme-surface-blur); --theme-modal-saturation: var(--theme-surface-saturation);
+  --theme-modal-radius: var(--theme-surface-radius);
+  --theme-modal-bg: color-mix(in srgb, var(--surface) var(--theme-modal-alpha), transparent);
+  --theme-modal-filter: blur(var(--theme-modal-blur)) saturate(var(--theme-modal-saturation));
+  --theme-modal-edge: var(--theme-glass-edge); --theme-modal-shadow: var(--theme-shadow-modal);
+  --theme-menu-alpha: var(--theme-surface-alpha); --theme-menu-blur: 0px; --theme-menu-saturation: 100%;
+  --theme-menu-radius: var(--theme-radius-popover);
+  --theme-menu-bg: color-mix(in srgb, var(--surface) var(--theme-menu-alpha), transparent);
+  --theme-menu-filter: blur(var(--theme-menu-blur)) saturate(var(--theme-menu-saturation));
+  --theme-menu-edge: var(--theme-glass-edge); --theme-menu-shadow: var(--theme-shadow-popover);
+
+  --theme-tab-current-bg: var(--theme-tab-surface-bg);
+
+  --theme-overlay-blur: 0px;
+
+  /* 契约层 —— 形状与阴影：遵循 Material Design 3 (MD3) 规范 */
+  --theme-radius-control: 8px; --theme-radius-button: 20px; --theme-radius-panel: 16px;
+  --theme-radius-card: 12px; --theme-radius-popover: 12px; --theme-radius-modal: 28px; --theme-radius-pill: 999px;
+  --theme-shadow-panel: 0 1px 2px rgb(0 0 0 / .05);
+  --theme-shadow-popover: 0 4px 12px rgb(0 0 0 / .08);
+  --theme-shadow-modal: 0 8px 24px rgb(0 0 0 / .12);
+  --theme-shadow-floating: 0 2px 6px rgb(0 0 0 / .08);
+  --theme-shadow-hover: 0 2px 8px rgb(0 0 0 / .08);
+
+  /* 契约层 —— 导航：选中/悬停统一用浅靛紫底 + 深靛紫字 */
+  --theme-nav-text: var(--text); --theme-nav-icon: #2c2c2c;
+  --theme-nav-active-bg: #e8e8f8; --theme-nav-active-text: #1a1861;
+  --theme-nav-expanded-bg: var(--accent-soft); --theme-nav-hover-bg: var(--accent-soft);
+  --theme-nav-popover-edge: var(--border);
+  --theme-nav-popover-shadow: 0 1px 2px rgb(0 0 0 / .1);
+  --theme-primary-bg: var(--accent); --theme-primary-hover: var(--accent-hover);
+
+  /* 契约层 —— 表单：旧版聚焦不加光圈，只换底边框颜色 */
+  --theme-input-bg: var(--theme-control-bg); --theme-input-text: var(--text); --theme-input-border: #8e8e8e;
+  --theme-focus: var(--accent); --theme-focus-ring: transparent;
+  --theme-toggle-off: #79747e; --theme-toggle-on: #4e4c97; --theme-toggle-knob: #ffffff; --theme-toggle-shadow: none;
+   --theme-segment-border: var(--border);
+  --theme-segment-indicator: var(--accent-soft);
+  --theme-toast-bg: var(--text); --theme-toast-text: var(--surface); --theme-toast-error-bg: var(--red);
+  --theme-error-bg: var(--theme-danger-soft); --theme-error-border: var(--red);
+  --theme-selection: var(--accent-soft); --theme-scrollbar-thumb: #b5b5b5;
+  --theme-status-stopped-bg: var(--surface-muted); --theme-status-stopped-text: var(--muted);
+
+  /* 契约层 —— 日志 */
+  --theme-log-debug: #85929e; --theme-log-info: #0ea5e9; --theme-log-warning: #eab308;
+  --theme-log-error: #ef4444; --theme-log-critical: #f43f5e; --theme-log-time: #06b6d4;
+  --theme-log-true: #22c55e; --theme-log-false: #ef4444; --theme-log-null: #d946ef;
+  --theme-log-path: #a855f7; --theme-log-attr: #14b8a6; --theme-log-search: #fbbf2445;
+  --theme-resource-0-bg: var(--accent-soft); --theme-resource-0-text: var(--accent);
+  --theme-resource-1-bg: var(--secondary-soft); --theme-resource-1-text: var(--secondary);
+  --theme-resource-2-bg: var(--accent-soft); --theme-resource-2-text: var(--accent);
+  --theme-resource-3-bg: var(--secondary-soft); --theme-resource-3-text: var(--secondary);
+  --theme-preview-bg: var(--surface-muted); --theme-preview-text: var(--text); --theme-preview-muted: var(--muted);
+  --theme-login-art-bg: var(--accent-soft); --theme-login-art-text: var(--accent);
+  --theme-instance-icon-bg: var(--accent); --theme-instance-icon-shadow: none;
+
+  /* 契约层 —— 标题：旧版是普通实色标题，不做玻璃字 */
+  --theme-title-fill: none; --theme-title-color: var(--text); --theme-title-stroke: var(--text);
+  --theme-title-highlight-stroke: var(--text); --theme-title-glass: var(--surface); --theme-title-shadow: none;
+}
+
+/* 深色变体是独立主题值，与前缀式反代的主题名一一对应。 */
+:root[data-theme='legacy-dark'] {
+  color-scheme: dark;
+  --bg: #282a2f; --surface: #2f3136; --surface-muted: #36393f;
+  --text: #eeeeee; --muted: #adb5bd; --border: #484b52;
+  --accent: #b4b1e5; --accent-hover: #928fcf; --accent-soft: #3e3b6a;
+  --secondary: #928fcf; --secondary-soft: #363560;
+  --shadow: 0 1px 2px rgb(0 0 0 / .3);
+  --red: #f28b82; --green: #4ade80; --green-soft: #24362b;
+  --syntax-value: #c9a7f0;
+
+  --theme-danger-soft: #4a2c30;
+  --theme-on-danger: #282a2f;
+  --theme-warning: #e7c078; --theme-warning-soft: #403723;
+  --theme-overlay: color-mix(in srgb, var(--bg) 30%, transparent);
+
+  /* 深色下选中菜单改用中靛紫底 + 浅靛紫字 */
+  --theme-nav-icon: #dfdcfb;
+  --theme-nav-active-bg: #3e3b6a; --theme-nav-active-text: #dfdcfb;
+  --theme-nav-popover-edge: #40444b;
+  --theme-nav-popover-shadow: 0 2px 10px rgb(0 0 0 / .45);
+  --theme-primary-bg: var(--accent); --theme-primary-hover: var(--accent-hover); --theme-on-accent: #1a1861;
+
+  --theme-input-bg: var(--theme-control-bg); --theme-input-border: var(--border);
+  --theme-toggle-off: #938f99; --theme-toggle-on: #7a77bb; --theme-toggle-knob: #ffffff;
+  --theme-segment-indicator: #3e3b6a;
+  --theme-selection: #3e3b6a; --theme-scrollbar-thumb: #5a5e66;
+  --theme-shadow-panel: 0 1px 2px rgb(0 0 0 / .2);
+  --theme-shadow-popover: 0 4px 12px rgb(0 0 0 / .25);
+  --theme-shadow-modal: 0 8px 24px rgb(0 0 0 / .35);
+  --theme-shadow-floating: 0 2px 6px rgb(0 0 0 / .2);
+  --theme-shadow-hover: 0 2px 8px rgb(0 0 0 / .25);
+  --theme-instance-icon-bg: #7a77bb;
+}
+
+/* 本族的控件语言是硬朗直角（控件圆角 8px），按钮不跟 apple.css 的 20px 药丸；
+   带 data-theme 前缀是为了压过 apple.css 的同名 .button 规则（同为单类，靠文件顺序会输给它）。 */
+:root[data-theme='legacy-light'] .button, :root[data-theme='legacy-light'] .icon-button,
+:root[data-theme='legacy-dark'] .button, :root[data-theme='legacy-dark'] .icon-button {border-radius: var(--theme-radius-control)}
+/* 材质轴：玻璃与普通共用一份皮肤，只在面板底色与磨砂滤镜上分叉。
+   玻璃取值由家族调色板给出（新版是 Apple 玻璃，旧版是旧版色板上的磨砂）；
+   这里声明「普通」分支，把四个 token 压回不透明、无滤镜。 */
+:root[data-material='plain'] {
+  --theme-glass: var(--surface);
+  --theme-glass-edge: var(--border);
+  --theme-glass-shadow: none;
+  --theme-material-filter: none;
+  /* 材质皮肤里还有直接读原始玻璃变量的规则，一并压平，否则部分卡片仍是半透明。 */
+  --glass-tint: var(--surface);
+  --glass-edge: var(--border);
+  --glass-shadow: none;
+  /* 普通材质没有材质层：四个层级与四个区域一并压成不透明、无滤镜。 */
+  --theme-surface-alpha: 100%; --theme-plate-alpha: 100%; --theme-inset-alpha: 100%; --theme-control-alpha: 100%;
+  --theme-sidebar-alpha: 100%; --theme-topbar-alpha: 100%; --theme-modal-alpha: 100%; --theme-menu-alpha: 100%;
+  --theme-surface-bg: var(--surface);
+  --theme-plate-bg: var(--surface-muted); --theme-inset-bg: var(--surface); --theme-control-bg: var(--surface-muted); --theme-control-marker-bg: var(--surface);
+  /* 四个区域与一级面同底：普通材质下它们只是位置不同，不再是独立材质层。 */
+  --theme-sidebar-bg: var(--surface); --theme-topbar-bg: var(--surface); --theme-modal-bg: var(--surface); --theme-menu-bg: var(--surface);
+  --theme-surface-filter: none; --theme-plate-filter: none; --theme-inset-filter: none; --theme-control-filter: none;
+  --theme-sidebar-filter: none; --theme-topbar-filter: none; --theme-modal-filter: none; --theme-menu-filter: none;
+  /* 普通材质下标签页与标签栏同为一个不透明底色，选中态显不出来，只能另给一个手工填充色。 */
+  --theme-tab-current-bg: var(--surface-muted);
+}
+
+/* 普通材质没有磨砂层：与紧凑皮肤同一种做法，整棵子树关掉背景滤镜。 */
+:root[data-material='plain'] *, :root[data-material='plain'] *::before, :root[data-material='plain'] *::after {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
 /* 共用语义变量映射；材质由当前主题提供。 */
 html, body {font-family: var(--theme-font-sans); color: var(--theme-text); background: var(--theme-bg)}
 body {background-attachment: fixed}
@@ -3532,8 +3055,8 @@ button:focus-visible, a:focus-visible, summary:focus-visible {outline-color: var
   --instance-tab-foot: calc(2 * var(--instance-tab-radius-shape));
   /* 加号的圆圈与它左侧那条竖线之间的间距。 */
   --instance-tab-plus-gap: calc(var(--instance-tab-height) * .16);
-  /* 标签上边框与栏上边框之间的细缝；五档同比例，栏与标签一起收窄。 */
-  --instance-tab-gap-y: calc(var(--instance-tab-height) * .15);
+  /* 标签上边框与栏上边框之间的安全留白；五档同比例，避开窗口顶边缩放热区并便于拖拽。 */
+  --instance-tab-gap-y: calc(var(--instance-tab-height) * .28);
   --instance-tab-divider-height: calc(var(--instance-tab-height) * .47);
   --instance-tab-create-size: calc(var(--instance-tab-height) * .85);
   --instance-tab-divider-color: color-mix(in srgb, var(--theme-text, currentColor) 26%, transparent);
@@ -3696,265 +3219,6 @@ button:focus-visible, a:focus-visible, summary:focus-visible {outline-color: var
 @media (prefers-reduced-motion: reduce) {
   .instance-tab, .instance-tab-create, .instance-tab-create > .lucide {transition: none}
   .instance-tab.running .instance-tab-icon, .instance-tab.updating .instance-tab-icon {animation: none}
-}
-/*
- * AzurPilot theme contract.
- *
- * All visual primitives used by the application are normalized here to CSS
- * custom properties.  The file is deliberately imported after the legacy
- * component styles so a user theme only needs to override variables in the
- * external /theme.css file; component code and individual CSS files do not
- * need to be edited.
- */
-:root {
-  /* Typography */
-  --theme-font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
-  --theme-font-mono: "JetBrains Mono", "JetBrains Mono NL", "Cascadia Code", "Consolas", "Microsoft YaHei", monospace;
-
-  /* Core palette */
-  --theme-bg: var(--bg);
-  --theme-surface: var(--surface);
-  --theme-surface-muted: var(--surface-muted);
-  --theme-text: var(--text);
-  --theme-muted: var(--muted);
-  --theme-border: var(--border);
-  --theme-accent: var(--accent);
-  --theme-accent-hover: var(--accent-hover);
-  --theme-accent-soft: var(--accent-soft);
-  --theme-on-accent: #fff;
-  --theme-danger: var(--red);
-  --theme-danger-soft: color-mix(in srgb, var(--red) 10%, transparent);
-  --theme-on-danger: #fff;
-  --theme-success: var(--green, #248a3d);
-  --theme-success-soft: var(--green-soft, #eaf6ed);
-  --theme-warning: #997000;
-  --theme-warning-soft: #fff3cd;
-  --theme-info: #0ea5e9;
-
-  /* Chrome / glass */
-  --theme-glass: var(--theme-surface-bg);
-  --theme-glass-edge: var(--glass-edge, var(--border));
-  --theme-glass-shadow: var(--glass-shadow, var(--shadow));
-  --theme-glass-blur: var(--theme-surface-blur);
-  --theme-glass-saturation: var(--theme-surface-saturation);
-  /* 区域化材质：参数键由旋钮写入、合成键由皮肤消费；默认值关系是一级面为基准，
-     二级菜单里每个区域都能独立调（动过的区写自己的参数键，没动过的区跟着一级面）。 */
-  --theme-surface-alpha: 72.16%;
-  --theme-surface-blur: 24px;
-  --theme-surface-saturation: 130%;
-  --theme-surface-radius: var(--theme-radius-panel);
-  --theme-surface-bg: color-mix(in srgb, var(--surface) var(--theme-surface-alpha), transparent);
-  --theme-surface-filter: blur(var(--theme-surface-blur)) saturate(var(--theme-surface-saturation));
-  --theme-surface-edge: var(--theme-glass-edge);
-  --theme-surface-shadow: var(--theme-glass-shadow);
-  --theme-plate-alpha: var(--theme-surface-alpha); --theme-plate-blur: 12px; --theme-plate-saturation: 120%;
-  /* 二级贴片与一级层之间的微弱边距；无玻璃材质的族由自己的调色板取 0，两层完整对齐。 */
-  --theme-plate-margin: 8px;
-  --theme-plate-radius: var(--theme-radius-card);
-  --theme-plate-bg: color-mix(in srgb, var(--surface) var(--theme-plate-alpha), transparent);
-  --theme-plate-filter: blur(var(--theme-plate-blur)) saturate(var(--theme-plate-saturation));
-  --theme-plate-edge: var(--theme-glass-edge); --theme-plate-shadow: var(--theme-glass-shadow);
-  /* 三级嵌面：贴在二级贴片内部的面（右栏的队列分组等）。 */
-  --theme-inset-alpha: var(--theme-plate-alpha); --theme-inset-blur: 8px; --theme-inset-saturation: 115%;
-  --theme-inset-radius: var(--theme-radius-control);
-  --theme-inset-bg: color-mix(in srgb, var(--surface) var(--theme-inset-alpha), transparent);
-  --theme-inset-filter: blur(var(--theme-inset-blur)) saturate(var(--theme-inset-saturation));
-  --theme-inset-edge: var(--theme-glass-edge); --theme-inset-shadow: var(--theme-glass-shadow);
-
-  --theme-control-alpha: 92%; --theme-control-blur: 8px; --theme-control-saturation: 110%;
-  --theme-control-radius: var(--theme-radius-control);
-  --theme-control-bg: color-mix(in srgb, var(--surface) var(--theme-control-alpha), transparent);
-  --theme-control-marker-bg: color-mix(in srgb, var(--surface) min(100%, calc(var(--theme-control-alpha) + 8%)), transparent);
-  /* 图表画布内的颜色。数值与曲线都是画在 canvas 上的，只能用组件 token 交给脚本读。 */
-  --theme-chart-primary: #159b88; --theme-chart-secondary: #de7861;
-  --theme-chart-rise: #dc2626; --theme-chart-fall: #16a34a;
-  --theme-control-filter: blur(var(--theme-control-blur)) saturate(var(--theme-control-saturation));
-  --theme-control-edge: var(--theme-glass-edge); --theme-control-shadow: var(--theme-glass-shadow);
-  /* 区域面：侧栏、顶栏、弹窗、菜单各一套参数键与合成键，默认从一级面派生；
-     旋钮动过哪个区，哪个区就写自己的参数键，没动过的跟着一级面走。 */
-  --theme-sidebar-alpha: var(--theme-surface-alpha); --theme-sidebar-blur: var(--theme-surface-blur); --theme-sidebar-saturation: var(--theme-surface-saturation);
-  --theme-sidebar-radius: var(--theme-surface-radius);
-  --theme-sidebar-bg: color-mix(in srgb, var(--surface) var(--theme-sidebar-alpha), transparent);
-  --theme-sidebar-filter: blur(var(--theme-sidebar-blur)) saturate(var(--theme-sidebar-saturation));
-  --theme-sidebar-edge: var(--theme-glass-edge); --theme-sidebar-shadow: var(--theme-glass-shadow);
-  --theme-topbar-alpha: var(--theme-surface-alpha); --theme-topbar-blur: var(--theme-surface-blur); --theme-topbar-saturation: var(--theme-surface-saturation);
-  --theme-topbar-radius: var(--theme-surface-radius);
-  --theme-topbar-bg: color-mix(in srgb, var(--surface) var(--theme-topbar-alpha), transparent);
-  --theme-topbar-filter: blur(var(--theme-topbar-blur)) saturate(var(--theme-topbar-saturation));
-  --theme-topbar-edge: var(--theme-glass-edge); --theme-topbar-shadow: var(--theme-glass-shadow);
-  --theme-modal-alpha: var(--theme-surface-alpha); --theme-modal-blur: var(--theme-surface-blur); --theme-modal-saturation: var(--theme-surface-saturation);
-  --theme-modal-radius: var(--theme-surface-radius);
-  --theme-modal-bg: color-mix(in srgb, var(--surface) var(--theme-modal-alpha), transparent);
-  --theme-modal-filter: blur(var(--theme-modal-blur)) saturate(var(--theme-modal-saturation));
-  --theme-modal-edge: var(--theme-glass-edge); --theme-modal-shadow: var(--theme-glass-shadow);
-  --theme-menu-alpha: var(--theme-surface-alpha); --theme-menu-blur: 28px; --theme-menu-saturation: 145%;
-  --theme-menu-radius: var(--theme-radius-popover);
-  --theme-menu-bg: color-mix(in srgb, var(--surface) var(--theme-menu-alpha), transparent);
-  /* 弹出层比一级面亮一档：提亮写进合成键，不开放成旋钮。 */
-  --theme-menu-filter: blur(var(--theme-menu-blur)) saturate(var(--theme-menu-saturation)) brightness(1.04);
-  --theme-menu-edge: var(--theme-glass-edge); --theme-menu-shadow: var(--theme-glass-shadow);
-  /* 标签页是材质层：圆角、阴影与磨砂程度都不接受调节，只有不透明度跟随一级面，
-     并按 --theme-tab-fill-boost 加浓；自己不叠磨砂，于是下方标签栏的材质直接透出来。 */
-  --theme-tab-current-bg: var(--theme-tab-surface-bg);
-
-  --theme-overlay: #11111b40;
-  --theme-overlay-blur: 8px;
-
-  /* Shape */
-  --theme-radius-control: 10px;
-  --theme-radius-button: 20px;
-  --theme-radius-panel: 26px;
-  --theme-radius-card: 24px;
-  --theme-radius-popover: 16px;
-  --theme-radius-pill: 999px;
-  --theme-radius-modal: 16px;
-
-  /* Shadows */
-  --theme-shadow-panel: var(--glass-shadow, var(--shadow));
-  --theme-shadow-popover: 0 12px 40px #0002;
-  --theme-shadow-modal: 0 24px 100px #0003;
-  --theme-shadow-floating: 0 18px 56px #0003;
-  --theme-shadow-hover: 0 12px 36px color-mix(in srgb, var(--accent) 7%, transparent);
-
-  /* Navigation */
-  --theme-nav-text: var(--text);
-  --theme-nav-icon: var(--accent);
-  --theme-nav-active-bg: color-mix(in srgb, var(--accent) 14%, transparent);
-  --theme-nav-active-text: var(--accent);
-  --theme-nav-expanded-bg: color-mix(in srgb, var(--accent) 20%, transparent);
-  --theme-nav-hover-bg: color-mix(in srgb, var(--accent) 8%, transparent);
-  --theme-nav-popover-edge: color-mix(in srgb, #fff 62%, var(--border));
-  --theme-nav-popover-shadow: 0 18px 48px #1d1d1f24, 0 2px 10px #1d1d1f0d, inset 0 1px 0 color-mix(in srgb, #fff 78%, transparent);
-
-  /* Buttons */
-  --theme-primary-bg: var(--accent);
-  --theme-primary-hover: var(--accent-hover);
-
-  /* Form controls */
-  --theme-input-bg: var(--theme-control-bg);
-  --theme-input-text: var(--text);
-  --theme-input-border: var(--border);
-  --theme-focus: var(--accent);
-  /* 无自定义主题时焦点环的兜底：焦点表现靠 --theme-focus 的边框色；
-     新版与旧版四个主题由 public/theme.css 覆写成强调色的淡环，简约与紧凑走各自调色板。 */
-  --theme-focus-ring: transparent;
-  --theme-toggle-off: #bcbcc2;
-  --theme-toggle-on: #34c759;
-  --theme-toggle-knob: #fff;
-  --theme-toggle-shadow: 0 2px 4px #0003;
-
-  /* Segmented controls */
-
-  --theme-segment-border: #18181b0a;
-  --theme-segment-indicator: var(--theme-control-marker-bg);
-
-  /* Feedback */
-  --theme-toast-bg: var(--text);
-  --theme-toast-text: var(--surface);
-  --theme-toast-error-bg: var(--red);
-  --theme-error-bg: color-mix(in srgb, var(--red) 7%, transparent);
-  --theme-error-border: color-mix(in srgb, var(--red) 13%, transparent);
-  --theme-selection: color-mix(in srgb, var(--accent) 25%, transparent);
-  --theme-scrollbar-thumb: color-mix(in srgb, var(--muted) 28%, transparent);
-
-  /* Status and logs */
-  --theme-status-stopped-bg: var(--surface-muted);
-  --theme-status-stopped-text: var(--muted);
-  --theme-log-debug: #85929e;
-  --theme-log-info: #0ea5e9;
-  --theme-log-warning: #eab308;
-  --theme-log-error: #ef4444;
-  --theme-log-critical: #f43f5e;
-  --theme-log-time: #06b6d4;
-  --theme-log-true: #22c55e;
-  --theme-log-false: #ef4444;
-  --theme-log-null: #d946ef;
-  --theme-log-path: #a855f7;
-  --theme-log-attr: #14b8a6;
-  --theme-log-search: #fbbf2445;
-
-  /* Resource cards */
-  --theme-resource-0-bg: #eaf5fa;
-  --theme-resource-0-text: #6d9cbb;
-  --theme-resource-1-bg: #faf4e8;
-  --theme-resource-1-text: #c6a45b;
-  --theme-resource-2-bg: #eef0fb;
-  --theme-resource-2-text: #8b91bc;
-  --theme-resource-3-bg: #e9f6f3;
-  --theme-resource-3-text: #63a58f;
-
-  /* Preview / login artwork */
-  --theme-preview-bg: radial-gradient(ellipse at 50% 45%, #243e4c, #162b39 65%);
-  --theme-preview-text: #adc3cc;
-  --theme-preview-muted: #718c99;
-  --theme-login-art-bg: radial-gradient(ellipse at 25% 25%, #459bff, #3156b8 55%, #29285d);
-  --theme-login-art-text: #fff;
-  --theme-instance-icon-bg: linear-gradient(145deg, color-mix(in srgb, var(--accent) 62%, #ffffff), var(--accent));
-  --theme-instance-icon-shadow: inset 0 1px 0 #ffffff66, 0 4px 12px color-mix(in srgb, var(--accent) 13%, transparent);
-
-  /* Page-title glass lettering */
-  --theme-title-fill: linear-gradient(180deg, rgb(255 255 255 / .48) 0%, rgb(255 255 255 / .14) 42%, rgb(184 215 238 / .04) 55%, rgb(255 255 255 / .24) 100%);
-  --theme-title-color: rgb(255 255 255 / .36);
-  --theme-title-stroke: rgb(7 16 24 / .48);
-  --theme-title-highlight-stroke: rgb(255 255 255 / .42);
-  --theme-title-glass: rgb(235 247 255 / .2);
-  --theme-title-shadow: 0 -1px 0 rgb(255 255 255 / .94), 0 1px .5px rgb(0 0 0 / .42), 0 3px 4px rgb(0 0 0 / .22), 0 7px 14px rgb(0 0 0 / .13);
-}
-
-:root[data-theme='dark'] {
-  /* 暗色下材质皮肤的玻璃透明度与浅色不同（#242426d9）。 */
-  --theme-surface-alpha: 85.1%;
-  --theme-on-accent: #fff;
-  --theme-toggle-off: #515154;
-
-  --theme-segment-border: #ffffff0d;
-  --theme-segment-indicator: var(--theme-control-marker-bg);
-  --theme-resource-0-bg: #ffffff08;
-  --theme-resource-1-bg: #ffffff08;
-  --theme-resource-2-bg: #ffffff08;
-  --theme-resource-3-bg: #ffffff08;
-  --theme-nav-expanded-bg: color-mix(in srgb, var(--accent) 20%, transparent);
-  --theme-nav-popover-edge: color-mix(in srgb, #fff 14%, var(--border));
-  --theme-nav-popover-shadow: 0 20px 56px #0006, 0 2px 10px #0004, inset 0 1px 0 #ffffff12;
-}
-
-:root {
-  --theme-material-filter: var(--theme-surface-filter);
-
-  --theme-chrome-filter: var(--theme-sidebar-filter);
-  --theme-popover-filter: var(--theme-menu-filter);
-  --theme-overlay-filter: blur(var(--theme-overlay-blur));
-}
-
-/* 材质轴：玻璃与普通共用一份皮肤，只在面板底色与磨砂滤镜上分叉。
-   玻璃取值由家族调色板给出（新版是 Apple 玻璃，旧版是旧版色板上的磨砂）；
-   这里声明「普通」分支，把四个 token 压回不透明、无滤镜。 */
-:root[data-material='plain'] {
-  --theme-glass: var(--surface);
-  --theme-glass-edge: var(--border);
-  --theme-glass-shadow: none;
-  --theme-material-filter: none;
-  /* 材质皮肤里还有直接读原始玻璃变量的规则，一并压平，否则部分卡片仍是半透明。 */
-  --glass-tint: var(--surface);
-  --glass-edge: var(--border);
-  --glass-shadow: none;
-  /* 普通材质没有材质层：四个层级与四个区域一并压成不透明、无滤镜。 */
-  --theme-surface-alpha: 100%; --theme-plate-alpha: 100%; --theme-inset-alpha: 100%; --theme-control-alpha: 100%;
-  --theme-sidebar-alpha: 100%; --theme-topbar-alpha: 100%; --theme-modal-alpha: 100%; --theme-menu-alpha: 100%;
-  --theme-surface-bg: var(--surface);
-  --theme-plate-bg: var(--surface-muted); --theme-inset-bg: var(--surface); --theme-control-bg: var(--surface-muted); --theme-control-marker-bg: var(--surface);
-  /* 四个区域与一级面同底：普通材质下它们只是位置不同，不再是独立材质层。 */
-  --theme-sidebar-bg: var(--surface); --theme-topbar-bg: var(--surface); --theme-modal-bg: var(--surface); --theme-menu-bg: var(--surface);
-  --theme-surface-filter: none; --theme-plate-filter: none; --theme-inset-filter: none; --theme-control-filter: none;
-  --theme-sidebar-filter: none; --theme-topbar-filter: none; --theme-modal-filter: none; --theme-menu-filter: none;
-  /* 普通材质下标签页与标签栏同为一个不透明底色，选中态显不出来，只能另给一个手工填充色。 */
-  --theme-tab-current-bg: var(--surface-muted);
-}
-
-/* 普通材质没有磨砂层：与紧凑皮肤同一种做法，整棵子树关掉背景滤镜。 */
-:root[data-material='plain'] *, :root[data-material='plain'] *::before, :root[data-material='plain'] *::after {
-  -webkit-backdrop-filter: none !important;
-  backdrop-filter: none !important;
 }
 /* 全站表单共用现有主题契约，外部 theme.css 仍可覆盖颜色与圆角。 */
 :root {
@@ -4245,6 +3509,23 @@ input[type='range']:focus-visible {outline: 2px solid var(--theme-focus); outlin
 .material-detail-modal .field-label label {color: var(--theme-text); font-size: 13px}
 .material-detail-modal .knob-value {color: var(--theme-text); font-size: 13px}
 .material-detail-modal .knob-region-title {font-size: 14px}
+/* 旧版字体：正文 MiSans、日志 JetBrains Mono NL。
+   字体文件放在 frontend/public/，用相对路径引用，才能在前缀式反代下同样命中。 */
+@font-face {
+  font-family: 'MiSans';
+  src: url('./MiSans-Demibold.ttf') format('truetype');
+  font-weight: 600;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono NL';
+  src: url('./JetBrainsMonoNL-Regular.ttf') format('truetype');
+  font-display: swap;
+}
+
+/* 日志区用等宽字体变量，与共享层的取值同源。 */
+.log-content {font-family: var(--theme-font-mono)}
 /* ============================================================================
    motion.css —— AzurPilot 全站动效系统
    由各皮肤（classic / minimal / legacy）在自身条目之后引入，确保覆盖同级规则。
@@ -4411,11 +3692,795 @@ dialog.modal[open]::backdrop { animation: motion-backdrop-in var(--dur-3) var(--
 
 /* 任务列表 / 队列继续沿用各自已有的 keyframes，此处不重复定义。 */
 
-/* 深色档覆盖：本皮肤只有这一档明暗；玻璃取值由材质层 theme-material.css 给出。 */
-:root[data-theme='dark'] {
-  color-scheme: dark;
-  --bg: #161618; --surface: #242426; --surface-muted: #1c1c1e;
-  --text: #f5f5f7; --muted: #aaaab0; --border: #38383a; --accent: #64aaff;
-  --accent-hover: #8bbfff; --accent-soft: #25364d;
+/* 旧版侧栏贴边、只有一条右边框，顶栏与右栏不带圆角。 */
+.sidebar, .right-rail, .topbar {border-radius: 0}
+/* 背景随内容滚，不固定在视口上（主题骨架默认 fixed）。 */
+body {background-attachment: scroll}
+
+/* MD3 输入框：底部强调指示线与浅色容器背景，聚焦时底线加粗变主色 */
+:root {--form-shadow: none}
+input:where(:not([type='checkbox']):not([type='radio']):not([type='range'])),
+textarea, .select-trigger, .input-icon {
+  border: 0;
+  border-bottom: 1px solid var(--theme-input-border);
+  border-radius: 4px 4px 0 0;
+  background: var(--theme-input-bg);
+  transition: border-bottom-color .2s cubic-bezier(.2, 0, 0, 1), background-color .2s cubic-bezier(.2, 0, 0, 1);
 }
+input:focus, textarea:focus,
+.select-trigger:focus-visible, .select-trigger[aria-expanded='true'], .input-icon:focus-within {
+  background: var(--accent-soft);
+  border-bottom: 2px solid var(--theme-focus);
+  box-shadow: none;
+  outline: none;
+}
+input[aria-invalid='true'], textarea[aria-invalid='true'], .select-trigger[aria-invalid='true'] {
+  border-bottom: 2px solid var(--red);
+  background: color-mix(in srgb, var(--red) 6%, var(--theme-input-bg));
+}
+
+/* MD3 开关：52×32px 胶囊轨道 + 16px/24px 圆形滑块；未选中带 outline，选中换主色并放大滑块。 */
+.toggle {
+  position: relative;
+  width: 52px;
+  height: 32px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  box-sizing: border-box;
+  background: transparent;
+  cursor: pointer;
+}
+.toggle::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  border: 2px solid var(--theme-toggle-off);
+  background: var(--surface-muted);
+  box-sizing: border-box;
+  transition: all .2s cubic-bezier(.2, 0, 0, 1);
+}
+.toggle > span {
+  position: relative;
+  z-index: 1;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--theme-toggle-off);
+  box-shadow: none;
+  transform: translateX(8px);
+  transition: all .2s cubic-bezier(.2, 0, 0, 1);
+}
+.toggle.on::before {
+  background: var(--theme-toggle-on);
+  border-color: var(--theme-toggle-on);
+}
+.toggle.on > span {
+  width: 24px;
+  height: 24px;
+  background: var(--theme-toggle-knob);
+  transform: translateX(24px);
+}
+.toggle:active:not(:disabled) > span {
+  width: 28px;
+}
+.toggle:not(.on):active:not(:disabled) > span {
+  transform: translateX(6px);
+}
+.toggle.on:active:not(:disabled) > span {
+  transform: translateX(20px);
+}
+.toggle:disabled {
+  opacity: .38;
+  cursor: not-allowed;
+}
+.toggle:disabled::before {
+  background: transparent;
+  border-color: var(--theme-toggle-off);
+}
+.toggle:disabled > span {
+  background: var(--theme-toggle-off);
+}
+.toggle.on:disabled::before {
+  background: var(--theme-toggle-off);
+  border-color: transparent;
+}
+.toggle.on:disabled > span {
+  background: var(--surface);
+}
+
+/* 旧版浅色/深色不挂载壁纸层；首页指挥台的文字色改回正文色。 */
+:root[data-theme='legacy-light'] .home-deck,
+:root[data-theme='legacy-dark'] .home-deck {
+  color: var(--text);
+  text-shadow: none;
+}
+
+/* 跳转链接必须在网格流之外，否则会占掉侧栏那一列。 */
+.skip-link {position: fixed; top: -100px; left: 16px; z-index: 200; background: var(--theme-control-bg); color: var(--accent); padding: 14px; border-radius: 8px}
+.skip-link:focus {top: 12px}
+
+/* 侧栏与顶栏各走自己的区域材质；普通材质分支会把它们压回不透明（见 theme-material.css）。 */
+.sidebar, .right-rail {background: var(--theme-surface-bg); -webkit-backdrop-filter: var(--theme-surface-filter); backdrop-filter: var(--theme-surface-filter)}
+.topbar {background: var(--theme-surface-bg); -webkit-backdrop-filter: var(--theme-surface-filter); backdrop-filter: var(--theme-surface-filter)}
+.sidebar {padding: 0 14px 14px}
+.sidebar-brand {height: var(--topbar-height); padding: 0 8px; margin-bottom: 14px}
+.brand-title {font-size: 22px}
+.brand-mark {color: var(--secondary)}
+.sidebar-label, .sidebar-label button {color: var(--muted)}
+.primary-nav a, .task-group-button {font-size: 14px; font-weight: 500; min-height: 44px; border-radius: 22px; transition: background-color .2s cubic-bezier(.2, 0, 0, 1), color .2s cubic-bezier(.2, 0, 0, 1)}
+.task-submenu-item {font-size: 13px; min-height: 36px; border-radius: 18px}
+.task-group-button.expanded {border-color: var(--accent)}
+/* 收起后仍是当前所在的大类：保持展开时的底色、边框与强调。 */
+.task-group-button.active:not(.expanded) {color: var(--accent); background: var(--accent-soft); border-color: var(--accent); font-weight: 600}
+.task-group-button.active:not(.expanded) .task-group-icon {color: var(--accent)}
+.topbar {position: sticky; top: 0; z-index: 80; height: var(--topbar-height); margin: 0; padding: 0 24px}
+.right-rail {top: var(--topbar-height); height: calc(var(--viewport-height) - var(--topbar-height)); z-index: 70}
+.breadcrumb, .breadcrumb .instance-caption strong {font-size: 13px}
+/* 上内边距归零：内容区顶部那条「主页 / 实例」行已与下方留出距离，再加 24px 会在
+   「主页文字底到容器顶边框」之间多出一段空隙。 */
+main {padding: 0 28px 24px}
+main:focus {outline: none}
+.page-title h1 {font-size: clamp(24px, 2.4vw, 32px); letter-spacing: -.6px; overflow-wrap: anywhere}
+.home-intro {padding: 8px 0 24px}
+.eyebrow {display: block; margin-bottom: 10px; font-size: 12px; font-weight: 600}
+.home-intro .page-title {margin-bottom: 12px}
+.home-intro p {color: var(--muted); line-height: 1.8}
+.home-summary {display: flex; flex-wrap: wrap; gap: 20px; padding: 18px 0 24px; margin-bottom: 24px; border-bottom: 1px solid var(--border)}
+.home-summary > div {display: flex; align-items: center; gap: 9px; color: var(--muted); font-size: 13px}
+.home-summary strong {color: var(--text); font-size: 20px; font-variant-numeric: tabular-nums}
+.title-actions {position: relative; gap: 8px; padding: 4px}
+.panel-heading h2 {font-size: 15px}
+.panel, .resource-card, .instance-card {border-radius: var(--theme-radius-panel)}
+
+/* MD3 按钮规范：高度 40px，全胶囊圆角 20px，文字 14px Medium，标准状态层 */
+.button {
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: .1px;
+  height: 40px;
+  min-height: 40px;
+  border-radius: var(--theme-radius-button, 20px);
+  padding: 0 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid transparent;
+  box-sizing: border-box;
+  transition: background-color .2s cubic-bezier(.2, 0, 0, 1), box-shadow .2s cubic-bezier(.2, 0, 0, 1), border-color .2s cubic-bezier(.2, 0, 0, 1), color .2s cubic-bezier(.2, 0, 0, 1);
+}
+.button:has(> svg) {padding: 0 16px}
+.button.primary {
+  background: var(--theme-primary-bg);
+  color: var(--theme-on-accent);
+  box-shadow: var(--theme-shadow-panel);
+}
+.button.primary:hover:not(:disabled) {
+  transform: none;
+  background: var(--theme-primary-hover);
+  box-shadow: var(--theme-shadow-hover);
+}
+.button.secondary {
+  /* 按钮是控件族，面取控件区域的 token。 */
+  background: var(--theme-control-bg);
+  -webkit-backdrop-filter: var(--theme-control-filter);
+  backdrop-filter: var(--theme-control-filter);
+  color: var(--accent);
+  border-color: var(--border);
+  box-shadow: none;
+}
+.button.secondary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--theme-accent) 14%, transparent);
+  border-color: var(--accent);
+}
+.button.subtle:not(.danger) {
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-color: transparent;
+  box-shadow: none;
+}
+.button.subtle:not(.danger):hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent) 20%, var(--accent-soft));
+}
+.button.danger {
+  background: var(--red);
+  color: var(--theme-on-danger);
+  border-color: transparent;
+}
+.button.danger.subtle {
+  background: var(--theme-danger-soft);
+  color: var(--red);
+  border-color: transparent;
+}
+.button.danger:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--red) 85%, black);
+}
+.icon-button {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color .15s, color .15s, transform .12s cubic-bezier(.2, 0, 0, 1);
+}
+.icon-button:hover:not(:disabled) {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.text-button {
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: .1px;
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: 18px;
+  color: var(--accent);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background-color .15s, transform .12s cubic-bezier(.2, 0, 0, 1);
+}
+.text-button:hover:not(:disabled) {
+  background: var(--accent-soft);
+}
+.yaml-editor:focus-within, .nav-search:focus-within {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.input-icon > input:focus, .nav-search input:focus {outline: none}
+button:disabled, input:disabled, textarea:disabled, select:disabled, .select-trigger:disabled,
+.checkbox-control:has(:disabled), .select-option[aria-disabled='true'] {opacity: 1; color: var(--muted)}
+.button:disabled {background: var(--surface-muted); border-color: var(--border); box-shadow: none}
+.input-icon, .schedule-summary, .count-badge, .nav-search {background: var(--surface-muted)}
+.status, .task-state {border-radius: 8px; font-weight: 500}
+
+.scheduler-widget {
+  background: var(--theme-surface-bg);
+  -webkit-backdrop-filter: var(--theme-surface-filter);
+  backdrop-filter: var(--theme-surface-filter);
+  border: 1px solid var(--border);
+  border-radius: var(--theme-radius-panel, 16px);
+  padding: 16px 18px;
+}
+.scheduler-widget-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.scheduler-widget-heading > div {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+}
+.scheduler-widget-heading > div > svg {
+  color: var(--accent);
+}
+/* 状态提示与新版本同层：无面，只留文字与间距。 */
+.scheduler-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+  line-height: 1.3;
+}
+.scheduler-status svg {
+  flex-shrink: 0;
+}
+.scheduler-status.running {
+  background: var(--theme-success-soft);
+  color: var(--theme-success);
+  border-color: color-mix(in srgb, var(--theme-success) 24%, transparent);
+  font-weight: 600;
+}
+.scheduler-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.scheduler-stats > div {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--theme-inset-bg);
+  border: 1px solid var(--border);
+  box-sizing: border-box;
+  -webkit-backdrop-filter: var(--theme-inset-filter);
+  backdrop-filter: var(--theme-inset-filter);
+  transition: border-color .15s ease, background-color .15s ease;
+}
+.scheduler-stats > div:hover {
+  border-color: color-mix(in srgb, var(--accent) 30%, var(--border));
+}
+.scheduler-stats span {
+  display: block;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.scheduler-stats strong {
+  display: block;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+.scheduler-toggle {
+  width: 100%;
+  min-height: 40px;
+  height: 40px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: .1px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.resource-foot > svg, .resource-editor-grip {color: var(--muted)}
+.resource-editor-card, .resource-picker {background: var(--surface); border-color: var(--border)}
+.resource-editor-card.dragging {opacity: 1; border-color: var(--accent); transform: none; background: var(--accent-soft)}
+.resource-editor-remove:hover {background: var(--theme-danger-soft)}
+.resource-editor-add-icon, .resource-editor-add, .resource-editor-add:hover, .resource-editor-add.open {background: var(--accent-soft)}
+.statistics-note {border-left-color: var(--secondary)}
+.panel.chart-expanded {inset: 0; border-radius: 0; z-index: 150}
+/* 旧版版式：只在实例视图生效（App.tsx 的 .legacy-shell）。
+   旧版外壳是「顶栏跨全宽 + 文字菜单在顶栏下方」，与共享层的「侧栏整列 + 顶栏在主内容列内」
+   是两套网格，所以在这里整块重排，主页视图不受影响。 */
+.app-shell.legacy-shell {
+  /* 旧版文字菜单宽 12rem(16px 基准)=192px；本仓库根字号是 14px，所以直接写像素。 */
+  --sidebar-width: 192px;
+  /* 内容区顶部那行「主页 / 实例 / 任务」，算进页内两列的高度预算里；
+     分页模式下这行会被放缩，所以取值与它的实际高度同源，不能写死。 */
+  --legacy-page-nav-height: var(--instance-page-nav-height, 42px);
+  grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+  /* 行高的隐含最小值是 auto，内容算高了会把整壳顶出视口、页面就能滚；钳成 0 让内容自己滚。 */
+  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-areas: 'topbar topbar' 'sidebar main';
+  /* 光是 minmax(0, 1fr) 还不够：外壳不裁剪时网格会按内容测量，行照样被撑高、整壳溢出视口。
+     裁掉溢出后这一行才真正只占「视口 − 顶栏」，多出来的部分由各列自己滚。 */
+  overflow: hidden;
+  /* 基类的 .app-shell 只给了 min-height，网格就会跟着内容长到视口之外。
+     钉成正好一屏，内容多出来的部分交给内部滚动。 */
+  height: var(--viewport-height);
+}
+.app-shell.legacy-shell.with-rail {
+  grid-template-columns: var(--sidebar-width) minmax(0, 1fr) var(--right-rail-width);
+  grid-template-areas: 'topbar topbar topbar' 'sidebar main rail';
+}
+.app-shell.legacy-shell > .topbar {grid-area: topbar; width: auto}
+.app-shell.legacy-shell > .sidebar {grid-area: sidebar; padding-top: 12px}
+.app-shell.legacy-shell > .main-shell {grid-area: main; min-height: 0; overflow: hidden; display: flex; flex-direction: column}
+/* 内容列的高度：非实例页（如 /dev、设置）由 main 自身滚动并防止卡片挤压，实例页由内部两列各自滚。
+   增加 padding-top 确保页面卡片与标签栏底部分割线保持舒适的安全呼吸间隙，避免紧贴。 */
+.app-shell.legacy-shell > .main-shell > main {min-height: 0; flex: 1 1 0; display: flex; flex-direction: column; overflow-y: auto; padding: 14px 28px 24px}
+.app-shell.legacy-shell > .main-shell > main:has(.instance-page-grid),
+.app-shell.legacy-shell > .main-shell > main:has(.task-config-legacy) {overflow-y: hidden}
+.app-shell.legacy-shell > .main-shell > main > * {flex-shrink: 0}
+/* 旧版两主题的按压反馈：鼠标按下时轻微收缩，主按钮同时收回悬停的上移。 */
+:root[data-theme='legacy-light'] .button,
+:root[data-theme='legacy-dark'] .button {transition: background-color .15s, box-shadow .15s, border-color .15s, color .15s, transform .12s cubic-bezier(.2, 0, 0, 1)}
+:root[data-theme='legacy-light'] .button:active:not(:disabled),
+:root[data-theme='legacy-dark'] .button:active:not(:disabled),
+:root[data-theme='legacy-light'] .icon-button:active:not(:disabled),
+:root[data-theme='legacy-dark'] .icon-button:active:not(:disabled),
+:root[data-theme='legacy-light'] .text-button:active:not(:disabled),
+:root[data-theme='legacy-dark'] .text-button:active:not(:disabled),
+:root[data-theme='legacy-light'] .legacy-stat-title:active,
+:root[data-theme='legacy-dark'] .legacy-stat-title:active {transform: scale(.97)}
+:root[data-theme='legacy-light'] .button.primary:active:not(:disabled),
+:root[data-theme='legacy-dark'] .button.primary:active:not(:disabled) {transform: translateY(0) scale(.97)}
+:root[data-theme='legacy-light'] .toggle:active,
+:root[data-theme='legacy-dark'] .toggle:active {transform: scale(.96)}
+:root[data-theme='legacy-light'] .monitor-segmented button:active,
+:root[data-theme='legacy-dark'] .monitor-segmented button:active {background: var(--accent-soft)}
+/* 旧版外壳下换页：页面内容淡入，动画挂在页面根元素与内容列上。 */
+.app-shell.legacy-shell .instance-page-grid,
+.app-shell.legacy-shell .statistics-legacy,
+.app-shell.legacy-shell .task-config-settings-inner,
+.app-shell.legacy-shell .task-config-rail-slot .task-rail-directory {animation: legacy-page-in .22s cubic-bezier(.22, .61, .36, 1)}
+@keyframes legacy-page-in {from {opacity: 0} to {opacity: 1}}
+/* 总览页在两个视图间切换：面板用自己的动画，按切换方向淡入。 */
+.app-shell.legacy-shell .instance-page-panel {animation: none}
+.app-shell.legacy-shell .instance-page-panel.panel-drop {animation: panel-drop .24s cubic-bezier(.22, .61, .36, 1)}
+.app-shell.legacy-shell .instance-page-panel.panel-rise {animation: panel-rise .24s cubic-bezier(.22, .61, .36, 1)}
+@keyframes panel-drop {from {opacity: 0} to {opacity: 1}}
+@keyframes panel-rise {from {opacity: 0} to {opacity: 1}}
+@media (prefers-reduced-motion: reduce) {.app-shell.legacy-shell .instance-page-grid, .app-shell.legacy-shell .statistics-legacy, .app-shell.legacy-shell .task-config-settings-inner, .app-shell.legacy-shell .instance-page-panel, .app-shell.legacy-shell .instance-page-panel.panel-drop, .app-shell.legacy-shell .instance-page-panel.panel-rise, .app-shell.legacy-shell .task-config-rail-slot .task-rail-directory {animation: none}}
+.app-shell.legacy-shell > .main-shell > main > .instance-page-grid,
+.app-shell.legacy-shell > .main-shell > main > .task-config-legacy {flex-shrink: 1; min-height: 0}
+.app-shell.legacy-shell > .right-rail {grid-area: rail}
+/* 顶层页面（主页 / 更新器 / 设置 / 配置管理…）没有页内滚动区：外壳既把这一行裁掉，
+   又没给 main 留滚动容器，长页面就被整段裁掉、页面还滚不动。
+   main 在实例页是 flex 列（页内两列要 flex 撑满），到这里会把普通面板压扁而不是溢出，
+   所以这里同时退回块级布局并补上滚动容器；顶栏与侧栏照旧常驻，与实例页一致。 */
+.app-shell.legacy-home-shell > .main-shell > main {display: block; min-height: 0; overflow-y: auto}
+/* 招牌随顶栏走：顶栏里的那份紧贴左侧，不参与侧栏那套 72px 间距。 */
+.legacy-topbar-brand {height: auto; margin-bottom: 0; padding: 0}
+/* 旧版顶栏的第三列是居中的页面名。 */
+.legacy-topbar-title {flex: 1; min-width: 0; text-align: center; font-size: 1.2rem; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap}
+/* 旧版实例页的页名由顶栏居中显示，内容区只留一个给读屏的标题。 */
+.legacy-sr-title {position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; opacity: 1 !important; z-index: 4}
+/* 旧版标签栏：槽是一级面加磨砂；内容盒 = 标签高 + 上缝 + 下边框——
+   上面那条缝是标签上边框与栏上边框之间的间距，下面 1px 是栏自己的下边框。标签贴底，底边因此落在栏的下边框上。
+   标签的形状、竖线、加号与状态色由 theme-primitives 统一给出，这里只给皮相。 */
+:root[data-theme='legacy-light'] .legacy-page-nav,
+:root[data-theme='legacy-dark'] .legacy-page-nav,
+.app-shell.legacy-shell .legacy-page-nav {
+  background: var(--theme-surface-bg);
+  -webkit-backdrop-filter: var(--theme-surface-filter);
+  backdrop-filter: var(--theme-surface-filter);
+  height: calc(var(--instance-tab-height) + var(--instance-tab-gap-y) + 1px);
+  padding: 0 16px !important;
+  display: flex !important;
+  align-items: center !important;
+  border-bottom: 1px solid var(--border) !important;
+  box-sizing: border-box !important;
+}
+/* 轨道贴底：标签的下边缘压在栏的下边框上。 */
+.app-shell.legacy-shell .legacy-page-nav .instance-tabs {align-self: flex-end}
+/* 竖线取固定色，不跟主题的文字色走。 */
+:root[data-theme='legacy-light'] {--instance-tab-divider-color: rgba(0, 0, 0, .22)}
+:root[data-theme='legacy-dark'] {--instance-tab-divider-color: rgba(255, 255, 255, .26)}
+.legacy-page-nav .instance-picker {margin: 0}
+
+/* 「主页」链接：与标签同高、同一条基准线；纵向内边距归零，选中框因此不会探出栏外。 */
+.legacy-page-nav .breadcrumb .topbar-actions > a {
+  padding-top: 0;
+  padding-bottom: 0;
+  height: var(--instance-tab-height);
+  align-self: flex-end;
+}
+
+:root[data-tab-size] .app-shell.legacy-shell .legacy-page-nav .breadcrumb,
+.app-shell.legacy-shell .legacy-page-nav .breadcrumb {
+  display: flex !important;
+  align-items: center !important;
+  height: 100% !important;
+  gap: 8px !important;
+}
+
+/* 选中或悬浮时的容器必须留在标签栏内：去掉上下内边距，高度与文字行齐平并纵向居中。 */
+.legacy-page-nav .breadcrumb > a {
+  align-self: center;
+  height: 26px;
+  padding: 0 8px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 6px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 500;
+  transition: all .15s ease;
+  margin-bottom: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  max-height: 26px;
+}
+.legacy-page-nav .breadcrumb > a:hover {
+  background: color-mix(in srgb, var(--theme-plate-bg) 50%, transparent);
+  color: var(--text);
+}
+
+
+/* 侧栏任务菜单：分组展开后具体任务往下列（旧版树状格式）。 */
+.task-group-button:hover .task-group-arrow {transform: none}
+.task-group-button.expanded .task-group-arrow {color: var(--accent); transform: rotate(180deg)}
+/* 内层承载外边距，外层高度从 0 过渡到自身高度，展开折叠才有动画。 */
+:root {interpolate-size: allow-keywords}
+.task-submenu-list {height: 0; overflow: hidden; transition: height .24s cubic-bezier(.22, .61, .36, 1)}
+.task-submenu-list.expanded {height: auto}
+.task-submenu-inner {margin: 2px 0 6px 12px; padding-left: 8px; border-left: 1px solid var(--border); display: flex; flex-direction: column; gap: 2px}
+.task-submenu-list:not(.expanded) .task-submenu-inner {visibility: hidden}
+@media (prefers-reduced-motion: reduce) {.task-submenu-list {transition: none} .rail-task-item {animation: none !important}}
+
+/* 顶栏的「任务配置」下拉：旧版实例页删掉了页内的分组导航，跨任务跳转放在这里。 */
+.task-picker {position: relative; flex-shrink: 0}
+.task-picker-trigger {display: inline-flex; align-items: center; gap: 4px; color: var(--muted); font-size: 13px; white-space: nowrap}
+.task-picker-trigger:hover, .task-picker-trigger[aria-expanded='true'] {color: var(--accent)}
+.task-picker-menu {position: absolute; top: calc(100% + 8px); left: 0; z-index: 40; width: min(22rem, 70vw); max-height: min(30rem, 70vh); overflow-y: auto; padding: 8px; border: 1px solid var(--theme-menu-edge); border-radius: var(--theme-radius-popover); background: var(--theme-menu-bg); -webkit-backdrop-filter: var(--theme-menu-filter); backdrop-filter: var(--theme-menu-filter); box-shadow: var(--theme-shadow-popover)}
+.task-picker-group + .task-picker-group {margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--border)}
+.task-picker-group-name {display: block; padding: 6px 8px 4px; color: var(--muted); font-size: 11px}
+.task-picker-menu button {display: flex; align-items: center; gap: 8px; width: 100%; padding: 8px; border-radius: 4px; text-align: left; font-size: 13px}
+.task-picker-menu button span {flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap}
+.task-picker-menu button:hover, .task-picker-menu button:focus-visible, .task-picker-menu button[aria-checked='true'] {background: var(--accent-soft); color: var(--accent)}
+.task-picker-empty {padding: 14px 8px; color: var(--muted); font-size: 12px; text-align: center}
+
+@media (min-width: 951px) {
+  /* 顶栏占了第一行，侧栏与右栏从它下方开始各自滚动。 */
+  .app-shell.legacy-shell > .topbar {position: relative; justify-content: flex-start; gap: 14px}
+  .legacy-topbar-title {position: absolute; left: 50%; transform: translateX(-50%); max-width: min(30rem, 38%); flex: 0 0 auto}
+  .app-shell.legacy-shell > .sidebar,
+  .app-shell.legacy-shell > .right-rail {top: var(--topbar-height); height: calc(var(--viewport-height) - var(--topbar-height))}
+  .app-shell.legacy-shell > .sidebar {padding-top: 14px}
+  .app-shell.legacy-shell .legacy-sidebar-actions {display: none}
+
+  /* 旧版实例页：左列调度器与任务计划，右列页面内容。总览与资源统计共用这一套，
+     所以左列由各页面自己渲染（LegacyRail），不是外壳的一列。 */
+  .instance-page-grid {
+    display: grid;
+    /* 用 flex 撑满 main 的剩余高度，不再按「视口 − 顶栏 − 页内行 − 常量」推算：
+       那个常量会随着顶栏与页内行的实际高度漂移，容器底边就跟着上下跳。
+       上面 main 与 .legacy-shell 已逐级撑满，所以不靠百分比高度也不会把整壳顶高。 */
+    /* 基准写 0 而不是 auto：auto 会以内容高度为基准把容器撑到内容那么高。 */
+    flex: 1 1 0;
+    min-height: 0;
+    grid-template-columns: minmax(16rem, 20rem) minmax(24rem, 1fr);
+    gap: 14px;
+    align-items: stretch;
+  }
+  /* 左列整体滚动；队列列表自身填满剩余高度并在内部滚动，与其它主题一致。 */
+  .instance-page-rail {display: flex; flex-direction: column; gap: 12px; min-height: 0; overflow-y: auto}
+/* 调度栏一级容器与内部贴片同心：顶部对齐 16px 的调度器组件，底部对齐 12px 的队列区。 */
+.instance-page-rail {border-radius: 16px 16px 12px 12px}
+  .instance-page-rail .rail-task-list {flex: 1 1 0%; min-height: 0; overflow-y: auto}
+  /* 右栏那套边距会让调度器与任务计划比同列其他卡片窄，这里清零让三块左右对齐。 */
+  .instance-page-rail .scheduler-widget {margin: 0}
+  .instance-page-rail .rail-schedule {padding: 12px 12px 10px}
+  /* 右栏不滚，滚动交给面板：滚动条只在面板内出现与消失，同列的资源卡片宽度不变。 */
+  .instance-page-main {display: flex; flex-direction: column; gap: 12px; min-height: 0; overflow: hidden}
+  .instance-page-main .resource-grid {margin-bottom: 0}
+  .instance-page-panel {display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; overflow-y: auto}
+  /* 搜索框与参数卡同宽，「任务设置和搜索对齐」；下方间距交给 --config-card-gap，与卡片之间保持一致。 */
+  .task-config-settings .config-toolbar .input-icon {max-width: none}
+  /* 资源统计在旧版下没有左列，整页一条内容带；和 .instance-page-grid 一样撑满 main 的剩余高度。 */
+  .statistics-legacy {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    /* flex-basis 取 auto：内容比视口高时停在自己的内容高上，交给外层滚动；
+       本类有两处用法，外层滚动容器不同：独立统计页是 main；
+       总览页的日志/统计面板是 .instance-panel-stats（那边 main 是 overflow:hidden）。 */
+    flex: 1 0 auto;
+    min-height: 0;
+    overflow-y: auto;
+  }
+  .statistics-legacy .statistics-toolbar-row {display: flex; align-items: center; gap: 12px; flex-wrap: wrap}
+  /* 分段控件按内容自然宽度排，不拉伸：upstream 的紧凑版式靠 offsetWidth 量它的自然宽度。 */
+  .statistics-legacy .statistics-toolbar-row .statistics-category-control {margin-bottom: 0; flex: 0 0 auto; width: max-content}
+/* 旧版统计页的内容容器没有内边距，切换入口的衬底外扩 6px 会被容器边缘裁掉；
+   工具栏行让出 6px，使衬底外缘正好落在内容边界上。 */
+.statistics-legacy .statistics-toolbar-row {padding: 6px 0 0 6px}
+  .statistics-legacy .statistics-toolbar-row .title-actions {margin-left: auto}
+
+  /* 旧版的任务详细设置：参数卡在左、分组导航在右（旧版是 13rem≈208px 的右列）。
+     和总览一样定高 + 内部滚动，顶栏与侧栏才不会跟着滚走。 */
+  .task-config-legacy {
+    display: grid;
+    flex: 1 1 auto;
+    height: calc(var(--viewport-height) - var(--topbar-height) - 2 * var(--row-pad, 4px) - var(--legacy-page-nav-height, 42px) - 64px);
+    /* 右列宽度取自新版右栏的契约变量，与断点同步收放。 */
+    grid-template-columns: minmax(0, 1fr) min(268px, var(--right-rail-width));
+    gap: 22px;
+    align-items: stretch;
+  }
+  /* 高度逐层传到右列：网格行高必须能压住这两层，内层的滚动才拿得到约束。 */
+  .task-config-rail-slot {display: flex; flex-direction: column; min-height: 0; overflow: hidden}
+  /* 一级面与二级贴片之间的间隙。 */
+  .task-config-rail {--rail-plate-gap: 4px; display: flex; flex-direction: column; gap: 10px; min-height: 0; max-height: 100%; overflow: hidden}
+  /* 切换按钮即各视图标题左侧的图标，两态共用同一坐标与尺寸。 */
+  .task-rail-toggle {display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; padding: 0; margin-right: 1px; border: 0; background: none; color: var(--muted); cursor: pointer; flex-shrink: 0}
+  .task-rail-toggle:hover {color: var(--accent)}
+  /* 两个视图的标题行共用同一套字号、图标与间距。 */
+  .task-rail-scheduler .scheduler-widget-heading, .task-rail-directory .rail-section-heading {margin-bottom: 13px; color: var(--text)}
+/* 调度块的外边距归零，内边距与目录卡片一致。 */
+  .task-rail-scheduler .scheduler-widget-heading > div, .task-rail-directory .rail-section-heading > div {gap: 7px; font-size: 12px; font-weight: 650; color: var(--text)}
+  /* 整列面板即一张卡片，内部层次靠分隔线而非嵌套卡片。 */
+  .task-rail-scheduler {border: 1px solid var(--border); border-radius: var(--radius); padding: var(--rail-plate-gap); background: var(--theme-surface-bg); -webkit-backdrop-filter: var(--theme-surface-filter); backdrop-filter: var(--theme-surface-filter)}
+  .task-rail-scheduler .scheduler-widget {margin: 0; flex-shrink: 0; border-radius: calc(var(--radius) - var(--rail-plate-gap))}
+/* 右栏里的调度器组件与新版本同层：二级贴片。 */
+.scheduler-widget {background: var(--theme-plate-bg); -webkit-backdrop-filter: var(--theme-plate-filter); backdrop-filter: var(--theme-plate-filter)}
+  .task-rail-scheduler .rail-schedule {border-top: 1px solid var(--border); padding-top: 14px; margin-top: 4px}
+  /* 高度逐层传递：滚动只放在最外层，内层任务列表随内容撑开。 */
+  .task-rail-scheduler {flex: 1 1 auto; display: flex; flex-direction: column; gap: 12px; min-height: 0; overflow-y: auto}
+  .task-rail-scheduler .rail-schedule {flex: 0 0 auto; min-height: 0; margin: 0; border-top: 0; padding: 0}
+  .task-rail-scheduler .rail-task-list {flex: 0 0 auto; min-height: 0}
+  /* 目录视图与调度视图同构：外层装饰容器画一级面，内层贴片画二级层，视图切换按钮因此落在同一坐标上。 */
+  .task-rail-directory {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    padding: var(--rail-plate-gap);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--theme-surface-bg);
+    -webkit-backdrop-filter: var(--theme-surface-filter);
+    backdrop-filter: var(--theme-surface-filter);
+  }
+  .task-rail-directory .rail-plate {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    padding: 16px 18px;
+    border: 1px solid var(--border);
+    border-radius: calc(var(--radius) - var(--rail-plate-gap));
+    background: var(--theme-plate-bg);
+    -webkit-backdrop-filter: var(--theme-plate-filter);
+    backdrop-filter: var(--theme-plate-filter);
+  }
+  .task-rail-directory .rail-section-heading {justify-content: space-between}
+  /* 贴片自己就是那张面，目录列表不再叠一层。 */
+  .task-rail-directory .group-nav {
+    flex: 1 1 auto;
+    padding: 0;
+    border: 0;
+    background: none;
+    box-shadow: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  /* 切视图时按方向滑入并淡入。 */
+  .task-rail-scheduler, .task-rail-directory {animation: rail-view-in .26s cubic-bezier(.22, .61, .36, 1)}
+  .task-rail-scheduler {animation-name: rail-view-in-right}
+  .task-rail-directory {animation-name: rail-view-in-left}
+  @media (prefers-reduced-motion: reduce) {.task-rail-scheduler, .task-rail-directory {animation: none}}
+  /* 参数列给宽度上限：宽屏下与输入框等宽的控件会被拉到读不过来的一整行。
+     只限定这一列，不动外壳，所以中列填满视口的行为不受影响。 */
+  .task-config-settings {width: 100%; min-width: 0; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; max-width: 1108px; margin-inline: auto}
+  .task-config-legacy .group-nav {max-height: 100%}
+  /* 参数列自己滚，锚点跳转不需要再给吸顶的顶栏留出 72px。 */
+  .task-config-legacy .config-group {scroll-margin-top: 0}
+}
+/* 旧版总览页左栏里的统计小卡：二级贴片，与调度器组件同层。 */
+.legacy-stat-card {display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 16px; flex-shrink: 0; background: var(--theme-plate-bg); -webkit-backdrop-filter: var(--theme-plate-filter); backdrop-filter: var(--theme-plate-filter)}
+/* 切换主区显示日志还是统计：两个状态都要有隐藏式的悬停选取框。
+   选中态不用手型指针：它已不可再点，避免鼠标压在按钮上时看起来像还残留着高亮。 */
+.legacy-stat-title {padding: 3px 8px; margin-left: -8px; border: 1px solid transparent; border-radius: var(--theme-radius-control, 8px); background: none; color: var(--text); font: inherit; font-size: 15px; font-weight: 600; line-height: 1.4; cursor: pointer; transition: background-color .15s, border-color .15s, color .15s}
+.legacy-stat-title:hover {border-color: var(--accent); background: var(--accent-soft); color: var(--accent)}
+.legacy-stat-title[aria-pressed='true'] {cursor: default}
+.legacy-stat-title:focus-visible {outline: 2px solid var(--accent); outline-offset: 1px}
+/* 统计内容的滚动容器：内容层只自然撑高，滚动条在本层出现。 */
+.instance-panel-stats {display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; overflow-y: auto}
+.group-nav {padding: 6px; border-radius: var(--theme-radius-panel)}
+.group-nav a {border-radius: 4px}
+.monitor-tabs {height: auto; min-height: 60px; padding: 10px 16px; flex-wrap: wrap; gap: 8px}
+.monitor-panel .log-toolbar {display: flex; align-items: center; margin-left: auto; gap: 4px}
+.monitor-panel .log-panel {border: 0; border-radius: 0}
+.monitor-panel .log-content {font-size: 12px; line-height: 1.8; background: var(--theme-plate-bg); -webkit-backdrop-filter: var(--theme-plate-filter); backdrop-filter: var(--theme-plate-filter)}
+/* MD3 卡片式日志体系适配 (LogCardView Legacy) */
+.log-content.log-cards-mode,
+.monitor-panel .log-content.log-cards-mode {
+  /* 卡片视图下日志栏自身也是二级贴片：接上它才随一/二级滑块变化。 */
+  background: var(--theme-plate-bg);
+}
+.log-card {
+  border-radius: var(--theme-radius-card, 12px);
+  box-shadow: var(--theme-shadow-panel);
+  border: 1px solid var(--border);
+  background: var(--theme-plate-bg);
+}
+.card-header {
+  border-bottom: 1px solid var(--border);
+  background: var(--theme-plate-bg);
+}
+.log-card .native-log-table th {
+  background: var(--theme-plate-bg);
+}
+.card-btn-action {
+  border-radius: 12px;
+}
+.card-btn-icon {
+  border-radius: 50%;
+}
+.trapezoid-visual {
+  border-radius: var(--theme-radius-control, 8px);
+}
+.traceback-viewer {
+  border-radius: var(--theme-radius-control, 8px);
+}
+.traceback-frame-card {
+  border-radius: var(--theme-radius-control, 8px);
+}
+.section-action {
+  border-radius: var(--theme-radius-control, 8px);
+}
+.badge-pill {
+  border-radius: 999px;
+}
+.monitor-segmented {display: inline-flex; align-items: center; gap: 0; padding: 0; border: 1px solid var(--border); border-radius: 20px; background: transparent; max-width: 100%; overflow: hidden}
+.monitor-segmented button {display: inline-flex; align-items: center; justify-content: center; gap: 7px; flex-shrink: 0; min-height: 36px; padding: 6px 16px; border: 0; border-right: 1px solid var(--border); border-radius: 0; color: var(--muted); font-size: 13px; font-weight: 500; white-space: nowrap; transition: background-color .15s, color .15s}
+.monitor-segmented button:last-child {border-right: 0}
+/* 页面切换入口要让一级衬底探出轨道，轨道因此不裁剪子元素；
+   旧版按钮是直角，首末两个的选中填充会探出轨道圆角，按同心圆角收掉内缩的那 1px。 */
+:root[data-theme^='legacy'] .statistics-category-control > button:first-of-type {border-top-left-radius: calc(20px - 1px); border-bottom-left-radius: calc(20px - 1px)}
+:root[data-theme^='legacy'] .statistics-category-control > button:last-of-type {border-top-right-radius: calc(20px - 1px); border-bottom-right-radius: calc(20px - 1px)}
+.monitor-segmented button[aria-selected='true'] {background: var(--accent-soft); color: var(--accent)}
+.monitor-segmented button:focus-visible {outline-offset: -2px}
+/* 统计页类别目录栏补一层二级贴片：淡色文字直接压在底图上几乎不可见。 */
+.statistics-category-control {background: var(--theme-plate-bg); -webkit-backdrop-filter: var(--theme-plate-filter); backdrop-filter: var(--theme-plate-filter)}
+.checkbox-mark input[type='checkbox'] {border-radius: 2px}
+.statistics-category-control {margin-bottom: 20px}
+.log-rule .rule-bar {opacity: 1; background: var(--border)}
+.log-rule.rule-double .rule-bar {opacity: 1; border-color: var(--border)}
+.preview-screen .radar > div, .radar::before, .radar::after {display: none}
+.live-label {border-color: var(--green)}
+.rail-task-list {display: flex; flex-direction: column; gap: 12px}
+.rail-queue-group {flex-shrink: 0; border: 1px solid var(--border); border-radius: var(--theme-radius-panel); overflow: hidden}
+.rail-queue-group.running, .rail-queue-group.pending, .rail-queue-group.waiting {background: var(--theme-inset-bg); border-color: var(--border); -webkit-backdrop-filter: var(--theme-surface-filter); backdrop-filter: var(--theme-surface-filter)}
+.rail-queue-heading {display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 12px; border-bottom: 1px solid var(--border)}
+.rail-queue-heading > div {display: flex; align-items: center; gap: 8px; font-size: 12px}
+.rail-queue-heading > span {color: var(--muted); font-size: 11px}
+.rail-queue-heading svg {color: var(--secondary)}
+.rail-queue-body {padding: 4px}
+.rail-queue-empty {padding: 14px 12px; color: var(--muted); font-size: 12px; line-height: 1.6}
+.rail-task-item {padding: 10px 8px; border-radius: 4px}
+.rail-task-item:hover {background: var(--surface-muted)}
+.rail-task-item strong {font-size: 12px}
+.rail-task-item small {font-size: 11px}
+.modal {
+  border: 0;
+  border-radius: var(--theme-radius-modal, 28px);
+  padding: 24px;
+  /* 弹窗取弹窗区的面。 */
+  background: var(--theme-modal-bg);
+  -webkit-backdrop-filter: var(--theme-modal-filter);
+  backdrop-filter: var(--theme-modal-filter);
+  box-shadow: var(--theme-shadow-modal);
+}
+.toast {
+  border: 0;
+  border-radius: 8px;
+  box-shadow: var(--theme-shadow-popover);
+}
+@media (max-width: 950px) {
+  /* 窄屏下侧栏与右栏都是抽屉，旧版版式回到共享层的单列流。 */
+  .app-shell.legacy-shell {display: block}
+  /* 窄屏没有页内滚动区（下面的定高规则都在 ≥951px 里），
+     外壳再钉死视口加 overflow:hidden 就会把后面的内容整段裁掉、页面还滚不动。 */
+  .app-shell.legacy-shell, .app-shell.legacy-shell > .main-shell {height: auto; overflow: visible}
+  /* 桌面 main 的零基准伸缩和裁剪也必须复位，否则子页仍被压成零高。 */
+  .app-shell.legacy-shell > .main-shell > main,
+  .app-shell.legacy-shell > .main-shell > main:has(.instance-page-grid),
+  .app-shell.legacy-shell > .main-shell > main:has(.task-config-legacy) {flex: none; overflow: visible}
+  .instance-page-grid {display: flex; flex-direction: column; gap: 12px; height: auto}
+  .instance-page-rail, .instance-page-main {overflow: visible}
+  .task-config-legacy {display: block}
+  .legacy-page-nav {padding: 0 16px}
+  /* 窄屏顶栏放不下两块招牌：顶栏那份收起来，侧栏抽屉里那份照旧。 */
+  .app-shell.legacy-shell .legacy-topbar-brand {display: none}
+  .topbar, .app-shell.with-rail .topbar {width: 100%; padding: 0 14px}
+  .sidebar, .right-rail {top: 0; height: var(--viewport-height); z-index: 100}
+  .sidebar-brand {padding: 0}
+  .sidebar-brand .mobile-close {position: static; margin-left: auto}
+  main {padding: 28px 16px}
+  .monitor-segmented button {min-height: 44px}
+}
+@media (forced-colors: active) {
+  .monitor-segmented button[aria-selected='true'] {border: 2px solid Highlight}
+  .button:disabled {color: GrayText}
+}
+
+.dev-state-box, .dev-demo-card, .dev-shadow-grid {background: var(--surface-muted)}
+.dev-nav-preview {background: var(--surface)}
+
+/* 按下「立刻运行」时底色与字色互换，与按钮的缩放动画叠加。 */
+.field-control > .field-actions .icon-only:hover:active:not(:disabled) {background: var(--theme-accent); color: var(--theme-on-accent)}
+
+@keyframes rail-view-in-right {from {opacity: 0; transform: translateX(7px)} to {opacity: 1; transform: none}}
+@keyframes rail-view-in-left {from {opacity: 0; transform: translateX(-7px)} to {opacity: 1; transform: none}}
+
+/* 任务设置列表与右侧栏不显示滚动条。 */
+.app-shell.legacy-shell .task-nav,
+.app-shell.legacy-shell .group-nav {scrollbar-width: none}
+.app-shell.legacy-shell .task-nav::-webkit-scrollbar,
+.app-shell.legacy-shell .group-nav::-webkit-scrollbar {width: 0}
+
+/* 总览页的统计面板只留分类切换那一行与操作按钮：周期控件是为独占整页的独立统计页排的，
+   落在窄面板里会换行留白；它在面板下方还有一份，隐藏这里不影响选择时间范围与各类筛选。 */
+.instance-panel-stats .statistics-controls.period-controls {display: none}
 `;export{e as default};
