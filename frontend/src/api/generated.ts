@@ -18,6 +18,10 @@ export interface Parameters {
   "stock.request": { instance: string; path: string; method?: "GET" | "POST" | "DELETE"; body?: Record<string, unknown> | null; etag?: string }
   "scheduler.start": { instance: string }
   "scheduler.stop": { instance: string }
+  "global_scheduler.status": Record<string, never>
+  "global_scheduler.start": Record<string, never>
+  "global_scheduler.stop": Record<string, never>
+  "global_scheduler.save": { config_list?: string | null; run_single_cycle?: boolean | null; when_task_queue_empty?: "close_emulator" | "app_stop" | "goto_main" | "stay_there" | null; wait_between_configs?: number | null; switch_on_error?: boolean | null }
   "scheduler.program.catalog": { instance: string }
   "scheduler.program.get": { instance: string }
   "scheduler.program.save": { instance: string; document: { entry: string; nodes: Array<{ id: string; type: string; label?: string; comment?: string; params?: Record<string, unknown>; position?: Record<string, unknown> }>; edges?: Array<{ id: string; source: string; sourcePort: string; target: string; targetPort?: string; kind?: "control" | "data" }>; schemaVersion?: number; name?: string; subgraphs?: Array<{ entry: string; nodes: Array<{ id: string; type: string; label?: string; comment?: string; params?: Record<string, unknown>; position?: Record<string, unknown> }>; edges?: Array<{ id: string; source: string; sourcePort: string; target: string; targetPort?: string; kind?: "control" | "data" }>; id: string; name: string; pure?: boolean; inputs?: Array<{ name: string; type?: "any" | "number" | "boolean" | "string" | "time" | "duration" | "resource" | "task" | "tasks" | "result" | "list" | "object"; required?: boolean }>; outputs?: Array<{ name: string; type?: "any" | "number" | "boolean" | "string" | "time" | "duration" | "resource" | "task" | "tasks" | "result" | "list" | "object"; required?: boolean }> }>; variables?: Array<{ name: string; type?: "any" | "number" | "boolean" | "string" | "time" | "duration" | "resource" | "task" | "tasks" | "result" | "list" | "object"; initial?: unknown; persistent?: boolean }>; viewport?: Record<string, unknown> }; revision: string }

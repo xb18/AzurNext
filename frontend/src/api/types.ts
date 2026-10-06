@@ -177,6 +177,10 @@ export interface Results {
   'overview.get': Overview
   'scheduler.start': Overview
   'scheduler.stop': Overview
+  'global_scheduler.status': GlobalSchedulerStatus
+  'global_scheduler.start': GlobalSchedulerStatus
+  'global_scheduler.stop': GlobalSchedulerStatus
+  'global_scheduler.save': GlobalSchedulerStatus
   'tasks.run': Overview
   'logs.get': Logs
   'preview.capture': Preview
@@ -189,6 +193,47 @@ export interface Results {
   'settings.patch': {updated: string[]}
   'startup.get': {enabled: boolean; remember: boolean}
   'startup.set': {enabled: boolean; remember: boolean}
+}
+
+export interface GlobalSchedulerQueueStep {
+  index: number
+  instance: string
+  state: 'running' | 'completed' | 'pending' | 'idle'
+}
+
+export interface GlobalSchedulerTaskItem {
+  instance: string
+  name: string
+  label: string
+  nextRun: string
+  state: 'running' | 'pending' | 'waiting'
+}
+
+export interface GlobalSchedulerSettings {
+  configList: string
+  runSingleCycle: boolean
+  whenTaskQueueEmpty: 'close_emulator' | 'app_stop' | 'goto_main' | 'stay_there'
+  waitBetweenConfigs: number
+  switchOnError: boolean
+}
+
+export interface GlobalSchedulerStatus {
+  running: boolean
+  status: 'running' | 'switching' | 'waiting' | 'idle' | string
+  mainInstance: string
+  activeInstance: string | null
+  currentConfig: string
+  currentTask: string
+  currentTaskLabel: string
+  nextRun: string
+  updatedAt: string
+  allInstances: string[]
+  configList: string[]
+  queue: GlobalSchedulerQueueStep[]
+  settings: GlobalSchedulerSettings
+  runningTasks: GlobalSchedulerTaskItem[]
+  pendingTasks: GlobalSchedulerTaskItem[]
+  waitingTasks: GlobalSchedulerTaskItem[]
 }
 
 export interface StockExchangeStatus {url: string; instance:string; instanceId:string; bindingKey:string; bound: boolean; boundUsername:string; authenticated:boolean; message: string; lastObservedAt: number; snapshot: {instance: string; actionPoints: number; observedAt: number} | null}
