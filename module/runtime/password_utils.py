@@ -73,30 +73,19 @@ def generate_webui_password(length: int = 32) -> str:
 
 
 def ensure_password_for_host(key: str | None, host: str, demo: bool = False) -> str | None:
-    """监听公网且未设置密码时自动生成随机密码并写入文件。
+    """解析访问密码配置。
 
-    只负责生成与落盘；是否把密码回写部署配置、如何记录日志由调用方决定，
-    这样 WebUI 与独立 MCP 能共享同一份密码策略。
+    默认不自动生成随机密码（免密访问），仅当用户显式配置了密码时才启用密码保护。
 
     Args:
         key: 已有的密码配置，可能为 None。
         host: 监听地址字符串。
-        demo: 是否处于演示环境，演示环境不生成密码。
+        demo: 是否处于演示环境。
 
     Returns:
-        str | None: 有效密码；未设置且无需生成时原样返回 key。
-
-    Raises:
-        Exception: 密码生成或原子写入失败。
+        str | None: 用户配置的密码原值。
     """
-    if demo or not is_public_webui_host(host) or is_webui_password_set(key):
-        return key
-
-    password = generate_webui_password()
-    from deploy.atomic import atomic_write
-
-    atomic_write(WEBUI_AUTO_PASSWORD_FILE, f"{password}\n")
-    return password
+    return key
 
 
 def host_name(value: str) -> str:
