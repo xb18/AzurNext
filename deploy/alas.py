@@ -100,7 +100,7 @@ class AlasManager(DeployConfig):
             self.execute(f'taskkill /f /pid {row[2]}', allow_failure=True, output=False)
 
     def alas_kill(self):
-        """终止当前正在运行的 AzurPilot 相关进程（alas.exe 和 python.exe）。"""
-        logger.hr(f'Kill existing AzurPilot', 0)
+        """终止当前正在运行的 AzurNext 相关进程（alas.exe 和 python.exe）。"""
+        logger.hr(f'Kill existing AzurNext', 0)
         self.kill_by_name('alas.exe')
         self.kill_by_name('python.exe')

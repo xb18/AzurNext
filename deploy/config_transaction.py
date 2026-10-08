@@ -70,10 +70,14 @@ class DeployConfigTransaction:
 
     def _sync_config(self):
         """将字典配置同步到实例属性中并执行重定向。"""
-        for key, value in self.config.items():
-            if hasattr(type(self), key):
-                object.__setattr__(self, key, value)
-        self.config_redirect()
+        self._syncing_config = True
+        try:
+            for key, value in self.config.items():
+                if hasattr(type(self), key):
+                    object.__setattr__(self, key, value)
+            self.config_redirect()
+        finally:
+            self._syncing_config = False
 
     def _load_config(self):
         """加载配置模板和用户配置文件。
