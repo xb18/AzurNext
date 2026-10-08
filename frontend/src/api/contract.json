@@ -447,6 +447,116 @@
         "type": "object"
       }
     },
+    "global_scheduler.status": {
+      "mutates": false,
+      "params": {
+        "additionalProperties": false,
+        "description": "API 入参基础模型，禁止额外字段并启用严格类型校验。",
+        "properties": {},
+        "title": "Params",
+        "type": "object"
+      }
+    },
+    "global_scheduler.start": {
+      "mutates": true,
+      "params": {
+        "additionalProperties": false,
+        "description": "API 入参基础模型，禁止额外字段并启用严格类型校验。",
+        "properties": {},
+        "title": "Params",
+        "type": "object"
+      }
+    },
+    "global_scheduler.stop": {
+      "mutates": true,
+      "params": {
+        "additionalProperties": false,
+        "description": "API 入参基础模型，禁止额外字段并启用严格类型校验。",
+        "properties": {},
+        "title": "Params",
+        "type": "object"
+      }
+    },
+    "global_scheduler.save": {
+      "mutates": true,
+      "params": {
+        "additionalProperties": false,
+        "description": "全局调度配置修改请求参数模型。",
+        "properties": {
+          "config_list": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Config List"
+          },
+          "run_single_cycle": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Run Single Cycle"
+          },
+          "when_task_queue_empty": {
+            "anyOf": [
+              {
+                "enum": [
+                  "close_emulator",
+                  "app_stop",
+                  "goto_main",
+                  "stay_there"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "When Task Queue Empty"
+          },
+          "wait_between_configs": {
+            "anyOf": [
+              {
+                "maximum": 3600,
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Wait Between Configs"
+          },
+          "switch_on_error": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Switch On Error"
+          }
+        },
+        "title": "GlobalSchedulerSaveParams",
+        "type": "object"
+      }
+    },
     "scheduler.program.catalog": {
       "mutates": false,
       "params": {
