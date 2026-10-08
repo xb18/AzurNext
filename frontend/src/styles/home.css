@@ -5,7 +5,7 @@
 :root[data-tab-size='xl'] {--row-scale: 1.55}
 :root[data-tab-size='sm'] {--row-scale: .78}
 :root[data-tab-size='xs'] {--row-scale: .62}
-:root {--instance-tab-height: calc(26px * var(--row-scale, 1)); --instance-tab-font: calc(12px * var(--row-scale, 1)); --row-pad: var(--instance-tab-gap-y); --instance-tab-pad: calc(9px * var(--row-scale, 1)); --instance-tab-max: calc(210px * var(--row-scale, 1)); --instance-tab-icon: calc(14px * var(--row-scale, 1)); --instance-tab-gap: 1px}
+:root {--instance-tab-height: calc(32px * var(--row-scale, 1)); --instance-tab-font: calc(13px * var(--row-scale, 1)); --row-pad: max(8px, var(--instance-tab-gap-y)); --instance-tab-pad: calc(12px * var(--row-scale, 1)); --instance-tab-max: calc(220px * var(--row-scale, 1)); --instance-tab-icon: calc(15px * var(--row-scale, 1)); --instance-tab-gap: 2px}
 
 .update-notice.sidebar-update-notice {padding: 4px 8px; border-radius: 999px; background: var(--red); color: #fff; font-size: 10px; font-weight: 750; line-height: 1; flex-shrink: 0}
 .sidebar-brand {padding-top: 0; margin-bottom: 20px}

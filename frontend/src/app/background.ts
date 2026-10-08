@@ -73,6 +73,25 @@ export const proxyUrl = (url: string, token: string) => `/api/v1/background/medi
 const MIGRATED_KEY = 'azurpilot.background.migrated'
 /** initBackgroundGallery 只跑一次的守卫（它是幂等的引导流程，重复调用会引发重解析循环）。 */
 let bootstrapped = false
+let pendingReadySync = false
+
+api.subscribe?.(() => {
+  if (api.getSnapshot?.() !== 'ready' || !pendingReadySync) return
+  pendingReadySync = false
+  void syncWhenConnected()
+})
+
+async function syncWhenConnected() {
+  await refreshGallery()
+  await migrateStoredUpload()
+  if (snapshot.source === 'upload') {
+    if (snapshot.entry && gallery.some(item => item.id === snapshot.entry)) publish({assetUrl: galleryUrl(snapshot.entry), loading: false})
+    else applyGalleryEntry()
+  }
+  if (snapshot.source === 'url' && (!snapshot.directUrl || snapshot.resolveError)) {
+    void resolveActiveBackground()
+  }
+}
 
 /** 迁移这类一次性动作的留痕，失败也不该打断用户。 */
 function logger(message: string) {
@@ -278,6 +297,7 @@ export async function resolveActiveBackground() {
     lastGoodAssetUrl = proxyUrl(result.final_url, token)
     publish({assetUrl: lastGoodAssetUrl, directUrl: result.final_url, resolving: false, resolveError: ''})
   } catch (error) {
+    if (api.getSnapshot && api.getSnapshot() !== 'ready') pendingReadySync = true
     /* 解析失败就退回原地址直接当图片用（很多 API 本身就是图片），并把原因留给界面显示。 */
     const fallback = lastGoodAssetUrl || url
     publish({assetUrl: fallback, resolving: false, resolveError: (error as Error).message})
@@ -303,6 +323,7 @@ export async function initBackgroundGallery() {
      没有这个守卫就会「解析→revision 变→effect 重跑→再解析」无限重解析（随机图 API 每次都是新图，表现就是背景狂闪）。 */
   if (bootstrapped) return
   bootstrapped = true
+  if (api.getSnapshot && api.getSnapshot() !== 'ready') pendingReadySync = true
   await refreshGallery()
   /* 迁移必须排在"随机铺一张"之前：随机铺一张会把快照里的名字换成库里的条目名，
      迁移再拿这个名字去登记，旧图的文件名就丢了。 */

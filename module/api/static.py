@@ -39,6 +39,22 @@ class FrontendFiles(StaticFiles):
     保留 SPA 单页应用路由回退，同时让缺失的静态资源返回真实的 404 状态码。
     """
 
+    def is_not_modified(self, response_headers, request_headers) -> bool:
+        """严格按 ETag (If-None-Match) 校验缓存是否未修改，遵循 RFC 9110 §13.1.2。
+
+        Starlette 原生 StaticFiles.is_not_modified 在 If-None-Match 与 ETag 不一致时，
+        不会直接返回 False，而是继续回退比较 If-Modified-Since >= Last-Modified。
+        当重新解压前端预构建包或切换分支导致 index.html 的 mtime 早于浏览器缓存时间时，
+        原生逻辑会错误返回 304 Not Modified，使浏览器持续使用旧 index.html 并请求已不存在的
+        带哈希 JS 资源，进而导致页面白屏。
+        """
+        try:
+            if_none_match = request_headers['if-none-match']
+            etag = response_headers['etag']
+            return etag in [tag.strip(' W/') for tag in if_none_match.split(',')]
+        except KeyError:
+            return False
+
     async def get_response(self, path: str, scope: dict):
         """处理静态资源或 SPA 页面请求响应。
 

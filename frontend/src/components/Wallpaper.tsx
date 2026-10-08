@@ -49,7 +49,6 @@ export function Wallpaper() {
     // 图片预载与解码：解码完成再上屏，避免大图流式加载时的逐行扫出。
     let cancelled = false
     const img = new Image()
-    img.src = targetUrl
     img.referrerPolicy = 'no-referrer'
 
     const handleReady = () => {
@@ -73,11 +72,12 @@ export function Wallpaper() {
       }
     }
 
+    img.onload = tryDecodeAndReady
+    img.onerror = handleError
+    img.src = targetUrl
+
     if (img.complete && img.naturalWidth > 0) {
       tryDecodeAndReady()
-    } else {
-      img.onload = tryDecodeAndReady
-      img.onerror = handleError
     }
 
     return () => {
