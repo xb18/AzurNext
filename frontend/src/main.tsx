@@ -20,6 +20,8 @@ import { RemoteAccess } from './pages/RemoteAccess'
 import { Settings } from './pages/Settings'
 import { DevControls } from './pages/DevControls'
 import { ConfigManager } from './pages/ConfigManager'
+import { GlobalScheduler } from './pages/GlobalScheduler'
+import { initAlasDesktop } from './desktop/alasDesktop'
 import {StockExchangeBoundary,StockExchangeFallback} from './stock/OverviewLink'
 import { translateCurrentUi } from './i18n'
 
@@ -41,7 +43,7 @@ const StockExchange = lazy(() => import('./pages/StockExchange').then(module => 
 const ResourceManagement = lazy(() => import('./pages/ResourceManagement').then(module => ({default: module.ResourceManagement})))
 
 const router = createHashRouter([
-  {path: '/', element: <App/>, errorElement: <ErrorPage/>, children: [{index: true, element: <Home/>}, {path: 'announcement', element: <Announcement/>}, {path: 'interface', element: <InterfaceSettings/>}, {path: 'remote', element: <RemoteAccess/>}, {path: 'settings', element: <Settings/>}, {path: 'updater', element: <Updater/>}, {path: 'configs', element: <ConfigManager/>}, {path: 'dev', element: <DevControls/>}]},
+  {path: '/', element: <App/>, errorElement: <ErrorPage/>, children: [{index: true, element: <Home/>}, {path: 'global-scheduler', element: <GlobalScheduler/>}, {path: 'announcement', element: <Announcement/>}, {path: 'interface', element: <InterfaceSettings/>}, {path: 'remote', element: <RemoteAccess/>}, {path: 'settings', element: <Settings/>}, {path: 'updater', element: <Updater/>}, {path: 'configs', element: <ConfigManager/>}, {path: 'dev', element: <DevControls/>}]},
   {path: '/i/:instance', element: <App/>, errorElement: <ErrorPage/>, children: [
     {index: true, element: <Navigate to="overview" replace/>},
     {path: 'overview', element: <Overview/>}, {path: 'task/:task', element: <TaskConfig/>},
@@ -52,6 +54,7 @@ const router = createHashRouter([
   ]},
   {path: '*', element: <Navigate to="/" replace/>},
 ])
+initAlasDesktop()
 // 先读取偏好并加载当前主题，再挂载页面，避免简约首屏短暂请求壁纸或玻璃库。
 void applyTheme(getThemePreference()).then(() => {
   createRoot(document.getElementById('root')!).render(<ErrorBoundary><AppProvider><ThemeWallpaper/><RouterProvider router={router}/></AppProvider></ErrorBoundary>)

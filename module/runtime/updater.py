@@ -92,8 +92,11 @@ class Updater(DeployConfig, GitManager):
             命令执行的标准输出字符串。
         """
         command = command.replace(r"\\", "/").replace("\\", "/").replace('"', '"')
+        kwargs = {}
+        if os.name == "nt":
+            kwargs["creationflags"] = getattr(subprocess, "CREATE_NO_WINDOW", 0x08000000)
         log = subprocess.run(
-            command, capture_output=True, text=True, encoding="utf8", shell=True
+            command, capture_output=True, text=True, encoding="utf8", shell=True, **kwargs
         ).stdout
         return log
 
