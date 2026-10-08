@@ -41,6 +41,7 @@ class Router:
         self.configs, self.runtime = configs, runtime
         self._accounts = None
         self._scheduler_programs = None
+        self._global_scheduler = None
         self._opsi_simulator = None
         self._opsi_simulator_lock = threading.Lock()
         self._stock_exchange = None
@@ -65,6 +66,10 @@ class Router:
             'stock.request': Method(p.StockRequestParams, lambda x: self.stock_exchange.request(x.instance, x.path, x.method, x.body, x.etag), True),
             'scheduler.start': Method(p.InstanceParams, lambda x: runtime.start(x.instance), True),
             'scheduler.stop': Method(p.InstanceParams, lambda x: runtime.stop(x.instance), True),
+            'global_scheduler.status': Method(p.Params, lambda _: self.global_scheduler.status()),
+            'global_scheduler.start': Method(p.Params, lambda _: self.global_scheduler.start(), True),
+            'global_scheduler.stop': Method(p.Params, lambda _: self.global_scheduler.stop(), True),
+            'global_scheduler.save': Method(p.GlobalSchedulerSaveParams, lambda x: self.global_scheduler.save(x), True),
             'scheduler.program.catalog': Method(p.InstanceParams, lambda x: self.programs.catalog(x.instance)),
             'scheduler.program.get': Method(p.InstanceParams, lambda x: self.programs.get(x.instance)),
             'scheduler.program.save': Method(p.ProgramSaveParams, lambda x: self.programs.save(x.instance, x.revision, x.document), True),
@@ -107,6 +112,14 @@ class Router:
                                                     lambda x: {'removed': background.gallery_remove(x.id)}, True),
             'background.gallery.open': Method(p.Params, lambda _: background.gallery_open(), True),
         }
+
+    @property
+    def global_scheduler(self):
+        """获取多配置全局调度控制服务单例。"""
+        if self._global_scheduler is None:
+            from module.api.global_scheduler_service import GlobalSchedulerService
+            self._global_scheduler = GlobalSchedulerService(self.configs, self.runtime)
+        return self._global_scheduler
 
     @property
     def opsi_simulator(self):

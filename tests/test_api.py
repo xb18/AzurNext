@@ -488,6 +488,63 @@ class SocketApiTests(unittest.TestCase):
         self.assertEqual('', remote['address'])
         self.assertEqual('ssh_not_found', remote['error'])
 
+    def test_global_scheduler_methods(self):
+        """全局调度控制接口支持查询状态、保存设置以及启动/停止轮转。"""
+        from module.runtime.process_manager import ProcessManager
+
+        manager = SimpleNamespace(alive=False, state=2, current_task=None, config_name='testpilot', is_global_scheduler=False)
+
+        def start(*args, **kwargs):
+            manager.alive = True
+            manager.state = 1
+            manager.is_global_scheduler = kwargs.get('is_global_scheduler', False)
+
+        def stop():
+            manager.alive = False
+            manager.state = 2
+            manager.is_global_scheduler = False
+            return True
+
+        manager.start = Mock(side_effect=start)
+        manager.stop_by_user = Mock(side_effect=stop)
+        stop_event = object()
+
+        with patch.object(ProcessManager, 'get_manager', return_value=manager), \
+                patch.object(ProcessManager, 'running_instances', side_effect=lambda: [manager] if manager.alive else []), \
+                patch.object(RuntimeService, '_record_running_now'), \
+                patch('module.runtime.updater.updater', SimpleNamespace(event=stop_event)), \
+                self.client.websocket_connect('/api/v1/ws') as ws:
+            self.login(ws)
+            status_resp = self.call(ws, 'global_scheduler.status')
+            self.assertTrue(status_resp['ok'], status_resp)
+            self.assertEqual('testpilot', status_resp['result']['mainInstance'])
+            self.assertIn('testpilot', status_resp['result']['allInstances'])
+            self.assertFalse(status_resp['result']['running'])
+
+            save_resp = self.call(ws, 'global_scheduler.save', {
+                'config_list': 'testpilot',
+                'run_single_cycle': True,
+                'when_task_queue_empty': 'app_stop',
+                'wait_between_configs': 8,
+                'switch_on_error': False,
+            })
+            self.assertTrue(save_resp['ok'], save_resp)
+            self.assertEqual('testpilot', save_resp['result']['settings']['configList'])
+            self.assertTrue(save_resp['result']['settings']['runSingleCycle'])
+            self.assertEqual('app_stop', save_resp['result']['settings']['whenTaskQueueEmpty'])
+            self.assertEqual(8, save_resp['result']['settings']['waitBetweenConfigs'])
+            self.assertFalse(save_resp['result']['settings']['switchOnError'])
+
+            start_resp = self.call(ws, 'global_scheduler.start')
+            self.assertTrue(start_resp['ok'], start_resp)
+            self.assertTrue(start_resp['result']['running'])
+            manager.start.assert_called_once_with('alas', ev=stop_event, is_global_scheduler=True)
+
+            stop_resp = self.call(ws, 'global_scheduler.stop')
+            self.assertTrue(stop_resp['ok'], stop_resp)
+            self.assertFalse(stop_resp['result']['running'])
+            manager.stop_by_user.assert_called_once()
+
     def test_health_and_missing_frontend(self):
         self.assertEqual({'status': 'ok', 'protocolVersion': 1}, self.client.get('/healthz').json())
         self.assertEqual(503, self.client.get('/').status_code)
@@ -624,6 +681,31 @@ class ProducerCadenceTests(unittest.IsolatedAsyncioTestCase):
             await asyncio.gather(task, return_exceptions=True)
             self.assertEqual(set(), hub.listeners)
 
+    def test_frontend_files_revalidates_strictly_by_etag(self):
+        from starlette.datastructures import Headers
+        from module.api.static import FrontendFiles
+
+        static_files = FrontendFiles(directory=ROOT / 'frontend/dist', check_dir=False)
+        response_headers = Headers({
+            'etag': '"new-etag-123"',
+            'last-modified': 'Sat, 26 Sep 2026 15:09:44 GMT',
+        })
+        stale_request_headers = Headers({
+            'if-none-match': '"old-etag-456"',
+            'if-modified-since': 'Sat, 26 Sep 2026 15:33:15 GMT',
+        })
+        self.assertFalse(
+            static_files.is_not_modified(response_headers, stale_request_headers),
+            'ETag 不匹配时即使 If-Modified-Since 晚于 Last-Modified 也严禁返回 304',
+        )
+
+        matching_request_headers = Headers({
+            'if-none-match': 'W/"new-etag-123"',
+            'if-modified-since': 'Sat, 26 Sep 2026 15:09:44 GMT',
+        })
+        self.assertTrue(static_files.is_not_modified(response_headers, matching_request_headers))
+
 
 if __name__ == '__main__':
     unittest.main()
+

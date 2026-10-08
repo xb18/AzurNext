@@ -245,6 +245,15 @@ class AccountParams(InstanceParams):
     enabled: StrictBool = False
 
 
+class GlobalSchedulerSaveParams(Params):
+    """全局调度配置修改请求参数模型。"""
+    config_list: StrictStr | None = Field(default=None, max_length=2000)
+    run_single_cycle: StrictBool | None = None
+    when_task_queue_empty: Literal['close_emulator', 'app_stop', 'goto_main', 'stay_there'] | None = None
+    wait_between_configs: StrictInt | None = Field(default=None, ge=0, le=3600)
+    switch_on_error: StrictBool | None = None
+
+
 def response(request_id, result):
     """组装成功的标准响应协议字典。
 
