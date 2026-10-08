@@ -109,11 +109,13 @@ export function TaskConfig() {
   }
 
   const groups = schema?.args[task]
+  const pkgEdit = edits['Alas.Emulator.PackageName']
+  const currentPackageName = pkgEdit ? pkgEdit.value : config?.values.Alas?.Emulator?.PackageName ?? schema?.args.Alas?.Emulator?.PackageName?.value
   const visibleGroups = Object.entries(groups ?? {}).map(([group, fields]) => {
     const visible = Object.entries(fields).filter(([arg, field]) => {
       const edit = edits[`${task}.${group}.${arg}`]
       const value = edit?.status === 'saved' ? edit.value : config?.values[task]?.[group]?.[arg] ?? field.value
-      return isFieldVisible(arg, field, value) && `${t(`${group}.${arg}.name`)} ${group}.${arg}`.toLowerCase().includes(search.toLowerCase())
+      return isFieldVisible(arg, field, value, currentPackageName) && `${t(`${group}.${arg}.name`)} ${group}.${arg}`.toLowerCase().includes(search.toLowerCase())
     })
     return {group, visible}
   }).filter(({visible}) => visible.length)
