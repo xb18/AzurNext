@@ -45,5 +45,13 @@ class LocalClientTests(unittest.TestCase):
         self.assertFalse(is_local_client('127.0.0.1', '127.0.0.1:22267', None, '1'))
 
 
+class EnsurePasswordTests(unittest.TestCase):
+    def test_default_without_password_remains_empty(self):
+        from module.runtime.password_utils import ensure_password_for_host
+        self.assertIsNone(ensure_password_for_host(None, '0.0.0.0'))
+        self.assertEqual('', ensure_password_for_host('', '0.0.0.0'))
+        self.assertEqual('custom-secret', ensure_password_for_host('custom-secret', '0.0.0.0'))
+
+
 if __name__ == '__main__':
     unittest.main()

@@ -214,8 +214,8 @@ button:focus-visible, a:focus-visible, summary:focus-visible {outline-color: var
   --instance-tab-foot: calc(2 * var(--instance-tab-radius-shape));
   /* 加号的圆圈与它左侧那条竖线之间的间距。 */
   --instance-tab-plus-gap: calc(var(--instance-tab-height) * .16);
-  /* 标签上边框与栏上边框之间的细缝；五档同比例，栏与标签一起收窄。 */
-  --instance-tab-gap-y: calc(var(--instance-tab-height) * .15);
+  /* 标签上边框与栏上边框之间的安全留白；五档同比例，避开窗口顶边缩放热区并便于拖拽。 */
+  --instance-tab-gap-y: calc(var(--instance-tab-height) * .28);
   --instance-tab-divider-height: calc(var(--instance-tab-height) * .47);
   --instance-tab-create-size: calc(var(--instance-tab-height) * .85);
   --instance-tab-divider-color: color-mix(in srgb, var(--theme-text, currentColor) 26%, transparent);
