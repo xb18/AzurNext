@@ -291,5 +291,20 @@ class ConfigTransactionTests(unittest.TestCase):
             self.assertEqual(now, datetime.fromisoformat(fields['FleetRecord']))
             self.assertEqual([[0, 360_000_000, 85]], fields['FleetRecoveryState']['segments'])
 
+    def test_runtime_deploy_config_port_redirect_does_not_recurse(self):
+        """测试 WebuiPort 为生产默认端口时，运行时 DeployConfig 属性拦截不会发生递归死循环。"""
+        from module.runtime.config import DeployConfig as RuntimeDeployConfig
+
+        with tempfile.TemporaryDirectory() as directory:
+            deploy_yaml = Path(directory) / 'deploy.yaml'
+            deploy_yaml.write_text('Deploy:\n  Webui:\n    WebuiPort: 25548\n', encoding='utf-8')
+            # 正常实例化并调用 read，验证不会触发 RecursionError
+            cfg = RuntimeDeployConfig(file=str(deploy_yaml))
+            self.assertEqual(cfg.WebuiPort, 25548)
+            # 验证修改其他属性时正常保存
+            cfg.Language = 'ja-JP'
+            reloaded = RuntimeDeployConfig(file=str(deploy_yaml))
+            self.assertEqual(reloaded.Language, 'ja-JP')
+
 if __name__ == '__main__':
     unittest.main()
