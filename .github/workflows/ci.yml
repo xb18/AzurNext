@@ -80,6 +80,8 @@ jobs:
           uv run python -m unittest tests.test_island_walk_rules tests.test_island_cargo_preparation tests.test_mind_calculator tests.test_mind_scan tests.test_mind_scan_stuck tests.test_mind_scan_bottom tests.test_mind_scan_identity tests.test_dock_scan_recovery tests.test_fleet_tech tests.test_fleet_tech_scan
           uv run python -m unittest tests.test_dock_data tests.test_dock_service tests.test_fleet_database tests.test_fleet_database_lifecycle tests.test_fleet_ledger tests.test_fleet_legacy tests.test_fleet_legacy_service tests.test_mind_calculator_mock
           npm run build --prefix frontend
+          uv run python -c "from pathlib import Path; from deploy.frontend import source_fingerprint; d = Path('frontend'); (d / 'dist/.source-fingerprint').write_text(source_fingerprint(d) + '\n', encoding='utf-8')"
+          git diff --exit-code -- frontend/dist
           npm test --prefix frontend
       - name: 浏览器端到端测试
         working-directory: frontend

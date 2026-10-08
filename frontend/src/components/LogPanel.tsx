@@ -180,8 +180,9 @@ function loadLogViewMode(): 'cards' | 'classic' {
   return 'cards'
 }
 
-export function LogPanel({active = true, logs}: {active?: boolean; logs?: LogsData | null}) {
-  const {instance = ''} = useParams()
+export function LogPanel({active = true, logs, instance: instanceProp}: {active?: boolean; logs?: LogsData | null; instance?: string}) {
+  const {instance: routeInstance = ''} = useParams()
+  const instance = instanceProp ?? routeInstance
   const [entries, setEntries] = useState<LogEntry[]>([])
   const [search, setSearch] = useState('')
   const [level, setLevel] = useState(() => loadLogLevel(instance))
@@ -254,7 +255,7 @@ export function LogPanel({active = true, logs}: {active?: boolean; logs?: LogsDa
   }
 
   useEffect(() => {
-    if (connection !== 'ready' || external) return
+    if (connection !== 'ready' || external || !instance) return
     let active = true
     const buf = logBuffer.current
     if (buf.rafId !== null) {

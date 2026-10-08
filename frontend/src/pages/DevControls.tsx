@@ -10,6 +10,7 @@ import type { Value } from '../api/types'
 import { useApp } from '../app/context'
 import { usesMaterial } from '../app/theme'
 import { previewUpdate, simulateStatus, useDevOverride } from '../app/devOverride'
+import { notifyDesktop } from '../desktop/alasDesktop'
 import { readMotionPrefs, resetMotionPrefs, setMotionReduced, setMotionSpeed, setMotionStrength, subscribeMotionPrefs } from '../app/motionPrefs'
 import { replayLastPageTransition } from '../app/pageMotion'
 import { FieldInput } from '../components/FieldInput'
@@ -89,6 +90,10 @@ export function DevControls() {
         <div className="dev-control-label"><strong>{ui('developer.updateNotice')}</strong><span>{ui('developer.updateNoticeHint')}</span></div>
         <div className="dev-button-row">
           <button type="button" className="button secondary" aria-pressed={override.updatePreview} onClick={() => previewUpdate(!override.updatePreview)}><Bell size={15}/>{ui('developer.updateNoticeToggle')}</button>
+          <button type="button" className="button secondary" onClick={() => {
+            const sent = notifyDesktop('桌面通知测试', '这是一条来自开发者工具的系统通知，点击可唤醒主窗口。')
+            notify(sent ? '已触发桌面系统原生通知' : '当前为浏览器环境，已回退为页面通知')
+          }}><Bell size={15}/>测试桌面通知</button>
         </div>
       </div>
       <div className="dev-control-block">

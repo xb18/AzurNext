@@ -108,6 +108,7 @@ class ProcessManager:
         self.thd_log_queue_handler: threading.Thread | None = None
         self._state_override: int | None = None
         self._state_override_deadline: float | None = None
+        self.is_global_scheduler: bool = False
 
     @classmethod
     def _get_lifecycle_lock(cls, config_name: str) -> threading.RLock:
@@ -166,12 +167,18 @@ class ProcessManager:
             return None
         return self._state_override
 
-    def start(self, func: str | None, ev: threading.Event | None = None) -> None:
+    def start(
+        self,
+        func: str | None = None,
+        ev: threading.Event | None = None,
+        is_global_scheduler: bool = False,
+    ) -> None:
         """启动实例子进程运行指定任务或调度器。
 
         Args:
             func: 执行的功能或模块名称；为 None 时自动从配置获取。
             ev: 可选的通知子进程退出的同步事件对象。
+            is_global_scheduler: 是否以多配置全局调度模式运行。
         """
         # 更新事务持有 restart_lock；清理过程持有 cleanup_lock。请求线程不能在事务
         # 期间长期阻塞；同线程的 RLock 重入仍允许更新失败后的实例恢复。
@@ -200,6 +207,7 @@ class ProcessManager:
                             f"[{self.config_name}] Worker 登记不一致，拒绝启动以避免重复"
                         )
                         return
+                    self.is_global_scheduler = is_global_scheduler
                     if func is None:
                         func = get_config_mod(self.config_name)
                     prepare_statistics()
@@ -229,6 +237,7 @@ class ProcessManager:
                         account_key,
                         self._program_queue,
                         str(current_directory()),
+                        is_global_scheduler,
                     )
                     process = Process(
                         target=ProcessManager.run_process,
@@ -347,6 +356,7 @@ class ProcessManager:
             )
         if stopped:
             self._process = None
+            self.is_global_scheduler = False
             stopped = self._unregister_process()
             if stopped and pid is not None:
                 with self._runtime_lock:
@@ -778,6 +788,7 @@ class ProcessManager:
         account_key=None,
         program_queue=None,
         business_directory=None,
+        is_global_scheduler: bool = False,
     ) -> None:
         """工作子进程的主入口点函数。
 
@@ -791,7 +802,9 @@ class ProcessManager:
             preview_queue: 预览帧队列。
             run_id: 运行轮次 ID。
             account_key: 解密注入的账号密钥。
+            program_queue: 调度程序状态队列。
             business_directory: 父进程实际使用的普通总库目录。
+            is_global_scheduler: 是否以多配置全局调度模式运行。
         """
         from module.runtime.worker_events import initialize
 
@@ -805,7 +818,9 @@ class ProcessManager:
         try:
             if business_directory is not None:
                 prepare_statistics(business_directory)
-            result = ProcessManager._run_process(config_name, func, q, e, preview_queue, run_id)
+            result = ProcessManager._run_process(
+                config_name, func, q, e, preview_queue, run_id, is_global_scheduler=is_global_scheduler
+            )
         except SystemExit as exc:
             if exc.code in (None, 0):
                 result = WorkerResult.UPDATE if e is not None and e.is_set() else WorkerResult.FINISHED
@@ -816,7 +831,9 @@ class ProcessManager:
             q.put(ExitEvent(run_id, result))
 
     @staticmethod
-    def _run_process(config_name: str, func: str, q, e, preview_queue, run_id) -> WorkerResult:
+    def _run_process(
+        config_name: str, func: str, q, e, preview_queue, run_id, is_global_scheduler: bool = False
+    ) -> WorkerResult:
         """子进程执行具体业务的核心流程。
 
         Args:
@@ -826,6 +843,7 @@ class ProcessManager:
             e: 退出事件。
             preview_queue: 预览帧输出队列。
             run_id: 运行轮次 ID。
+            is_global_scheduler: 是否以多配置全局调度模式运行。
 
         Returns:
             WorkerResult: 执行最终结果状态。
@@ -878,6 +896,7 @@ class ProcessManager:
 
         # 设置环境变量，使预加载模块（如 al_ocr.py）可以提前读取配置
         os.environ["ALAS_CONFIG_NAME"] = config_name
+        os.environ["ALAS_GLOBAL_SCHEDULER"] = "1" if is_global_scheduler else "0"
 
         if e is not None:
             AzurLaneConfig.stop_event = e
@@ -889,12 +908,18 @@ class ProcessManager:
 
                 if e is not None:
                     AzurLaneAutoScript.stop_event = e
-                task_result = AzurLaneAutoScript(config_name=config_name).loop()
+                task_result = AzurLaneAutoScript(
+                    config_name=config_name,
+                    is_global_scheduler=is_global_scheduler,
+                ).loop()
             elif func in get_available_func():
                 from alas import AzurLaneAutoScript
 
                 single_task = True
-                task_result = AzurLaneAutoScript(config_name=config_name).run(
+                task_result = AzurLaneAutoScript(
+                    config_name=config_name,
+                    is_global_scheduler=is_global_scheduler,
+                ).run(
                     inflection.underscore(func), skip_first_screenshot=True
                 )
             elif func in get_available_mod():
