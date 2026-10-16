@@ -5,6 +5,7 @@ import sys
 from typing import Optional, Union
 
 from deploy.config_transaction import DeployConfigTransaction
+from deploy.geo import get_country_code
 from deploy.utils import (
     DEVELOPMENT_WEBUI_PORT,
     PRODUCTION_WEBUI_PORT,
