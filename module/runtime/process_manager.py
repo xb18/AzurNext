@@ -819,7 +819,7 @@ class ProcessManager:
             if business_directory is not None:
                 prepare_statistics(business_directory)
             result = ProcessManager._run_process(
-                config_name, func, q, e, preview_queue, run_id, is_global_scheduler=is_global_scheduler
+                config_name, func, q, e, preview_queue, run_id, is_global_scheduler
             )
         except SystemExit as exc:
             if exc.code in (None, 0):
