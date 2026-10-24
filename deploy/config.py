@@ -20,7 +20,7 @@ GIT_OVER_CDN_FALLBACK_REPOSITORY = GIT_OVER_CDN_FALLBACK_REPOSITORIES[1]
 def choose_fallback_repository() -> str:
     """在可用的国内镜像源（CNB 与 GitCode）之间分流，避免单一镜像源流量过大引发风控。"""
     return random.choice(GIT_OVER_CDN_FALLBACK_REPOSITORIES)
-GITHUB_REPOSITORY = 'https://github.com/wess09/AzurPilot'
+GITHUB_REPOSITORY = 'https://github.com/xb18/AzurNext'
 
 
 class ErrorCodes:
@@ -49,7 +49,7 @@ class ConfigModel:
     """部署配置模型，定义所有配置项及其默认值。"""
     # Git 配置
     Repository: str = GITHUB_REPOSITORY
-    Branch: str = "master"
+    Branch: str = "main"
     GitExecutable: str = "./.venv/Scripts/git/cmd/git.exe" if sys.platform == "win32" else "./.venv/bin/git"
     GitProxy: Optional[str] = None
     SSLVerify: bool = False

@@ -1,5 +1,6 @@
 import os
 import random
+import shutil
 import subprocess
 import sys
 from typing import Optional, Union
@@ -16,7 +17,7 @@ from deploy.Windows.utils import DEPLOY_CONFIG, DEPLOY_TEMPLATE, cached_property
 
 
 GIT_OVER_CDN_REPOSITORY = 'git://git.pull/AzurPilot'
-GITHUB_REPOSITORY = 'https://github.com/wess09/AzurPilot'
+GITHUB_REPOSITORY = 'https://github.com/xb18/AzurNext'
 GIT_OVER_CDN_FALLBACK_REPOSITORIES = [
     'https://cnb.cool/AzurPilot/AzurPilot',
     'https://gitcode.com/ddl2/AzurPilot',
@@ -41,7 +42,7 @@ class ConfigModel:
     """Windows 部署配置模型，定义所有配置项及其默认值。"""
     # Git 配置
     Repository: str = GITHUB_REPOSITORY
-    Branch: str = "master"
+    Branch: str = "main"
     GitExecutable: str = "./.venv/Scripts/git/cmd/git.exe"
     GitProxy: Optional[str] = None
     SSLVerify: bool = False
@@ -231,11 +232,21 @@ class DeployConfig(DeployConfigTransaction, ConfigModel):
         Returns:
             str: Git 绝对路径或回退命令 'git'。
         """
-        exe = self.filepath(self.GitExecutable)
-        if os.path.exists(exe):
-            return exe
+        raw = getattr(self, 'GitExecutable', '')
+        if raw:
+            if os.path.isabs(raw) and os.path.exists(raw):
+                return raw
+            exe = self.filepath(raw)
+            if os.path.exists(exe):
+                return exe
+            which_git = shutil.which(raw)
+            if which_git:
+                return which_git
+        which_git = shutil.which('git')
+        if which_git:
+            return which_git
 
-        logger.warning(f'GitExecutable: {exe} does not exist, use `git` instead')
+        logger.warning(f'GitExecutable: {raw or "git"} does not exist, use `git` instead')
         return 'git'
 
     @cached_property

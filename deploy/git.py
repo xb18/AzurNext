@@ -1,4 +1,5 @@
 import random
+import shutil
 import subprocess
 import time
 from typing import Optional
@@ -34,11 +35,21 @@ class GitManager(DeployConfig):
         Returns:
             str: Git 可执行文件绝对路径或回退命令 'git'。
         """
-        exe = self.filepath('GitExecutable')
-        if os.path.exists(exe):
-            return exe
+        raw = getattr(self, 'GitExecutable', '')
+        if raw:
+            if os.path.isabs(raw) and os.path.exists(raw):
+                return raw
+            exe = self.filepath('GitExecutable')
+            if os.path.exists(exe):
+                return exe
+            which_git = shutil.which(raw)
+            if which_git:
+                return which_git
+        which_git = shutil.which('git')
+        if which_git:
+            return which_git
 
-        logger.warning(f'GitExecutable: {exe} does not exist, use `git` instead')
+        logger.warning(f'GitExecutable: {raw or "git"} does not exist, use `git` instead')
         return 'git'
 
     @staticmethod
