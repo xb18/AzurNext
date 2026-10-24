@@ -121,12 +121,18 @@ class ConfigApiTests(unittest.TestCase):
         imports.mkdir()
         shutil.copyfile(self.configs.directory / 'testpilot.json', imports / 'shared.json')
         (imports / 'broken.json').write_text('{ not json', encoding='utf-8')
-        (imports / 'link.json').symlink_to(imports / 'shared.json')
+        has_symlink = False
+        try:
+            (imports / 'link.json').symlink_to(imports / 'shared.json')
+            has_symlink = True
+        except OSError:
+            pass
 
         names = [entry['name'] for entry in self.configs.importable()]
         self.assertIn('shared', names)
         self.assertNotIn('broken', names)     # 解不开的 JSON
-        self.assertNotIn('link', names)       # 符号链接
+        if has_symlink:
+            self.assertNotIn('link', names)   # 符号链接
         self.assertNotIn('testpilot', names)  # 实例目录里的不会被当作导入源
 
         # 文件名不合规的不能被列出来：read_import 会拒掉它，列出来就是一个选不了的选项
