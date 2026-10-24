@@ -7563,7 +7563,7 @@
       "GroupRemoteAccess": "远程访问",
       "GroupWebui": "WebUI 配置",
       "Repository": "AzurPilot 仓库地址",
-      "RepositoryHelp": "用于更新和安装的 Git 仓库地址。国内用户可使用 git://git.pull/AzurPilot。",
+      "RepositoryHelp": "用于更新和安装的 Git 仓库地址。留空则使用内置默认地址；填入私有仓库地址可避免被国内镜像检测改写成上游地址。",
       "Branch": "分支",
       "BranchHelp": "稳定版通常使用 master，开发或测试可填写 dev、app 等分支。",
       "GitExecutable": "Git 可执行文件",

@@ -7563,7 +7563,7 @@
       "GroupRemoteAccess": "Remote Access",
       "GroupWebui": "WebUI",
       "Repository": "AzurPilot Repository",
-      "RepositoryHelp": "Git repository used for install and update. CN users may use git://git.pull/AzurPilot.",
+      "RepositoryHelp": "Git repository used for install and update. A custom repository address is never rewritten to an upstream mirror by region detection.",
       "Branch": "Branch",
       "BranchHelp": "Use master for stable releases, or dev/app for testing.",
       "GitExecutable": "Git Executable",

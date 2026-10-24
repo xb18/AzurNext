@@ -7563,7 +7563,7 @@
       "GroupRemoteAccess": "遠端存取",
       "GroupWebui": "WebUI 設定",
       "Repository": "AzurPilot 倉庫地址",
-      "RepositoryHelp": "用於更新和安裝的 Git 倉庫地址。中國大陸使用者可使用 git://git.pull/AzurPilot。",
+      "RepositoryHelp": "用於更新和安裝的 Git 倉庫地址。留空則使用內建預設地址；填入私有倉庫地址可避免被中國大陸鏡像偵測改寫成上游地址。",
       "Branch": "分支",
       "BranchHelp": "穩定版通常使用 master，開發或測試可填寫 dev、app 等分支。",
       "GitExecutable": "Git 可執行檔",

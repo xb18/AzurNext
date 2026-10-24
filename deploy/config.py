@@ -15,12 +15,15 @@ GIT_OVER_CDN_FALLBACK_REPOSITORIES = [
     'https://gitcode.com/ddl2/AzurPilot',
 ]
 GIT_OVER_CDN_FALLBACK_REPOSITORY = GIT_OVER_CDN_FALLBACK_REPOSITORIES[1]
+# 内置镜像（cn / cnb / gitcode / git://git.pull）只镜像官方仓库，改写目标也以官方地址为基准。
+# 私有 fork 用的是自己的地址，绝不能被国内网络检测替换成上游镜像，否则更新会拉到上游历史。
+OFFICIAL_REPOSITORY = 'https://github.com/wess09/AzurPilot'
+GITHUB_REPOSITORY = 'https://github.com/xb18/AzurNext'
 
 
 def choose_fallback_repository() -> str:
     """在可用的国内镜像源（CNB 与 GitCode）之间分流，避免单一镜像源流量过大引发风控。"""
     return random.choice(GIT_OVER_CDN_FALLBACK_REPOSITORIES)
-GITHUB_REPOSITORY = 'https://github.com/xb18/AzurNext'
 
 
 class ErrorCodes:
@@ -131,7 +134,7 @@ class DeployConfig(DeployConfigTransaction, ConfigModel):
         # 地区查询可能等待网络；预读仅用于查询，事务内仍重新读取最新配置。
         values = {**poor_yaml_read(self.template_file), **poor_yaml_read(self.file)}
         self._github_country_code = (get_country_code()
-                                     if values.get('Repository') == GITHUB_REPOSITORY else None)
+                                     if values.get('Repository') == OFFICIAL_REPOSITORY else None)
         self.read()
 
         self.show_config()
@@ -183,7 +186,7 @@ class DeployConfig(DeployConfigTransaction, ConfigModel):
             self.Repository in ['cn', GIT_OVER_CDN_REPOSITORY] and self.Branch == 'master'
         )
         if self.Repository in ['global']:
-            super().__setattr__('Repository', 'https://github.com/wess09/AzurPilot')
+            super().__setattr__('Repository', GITHUB_REPOSITORY)
         if self.Repository in ['cn', GIT_OVER_CDN_REPOSITORY]:
             super().__setattr__('Repository', choose_fallback_repository())
         if self.Repository in ['cnb']:
@@ -198,7 +201,7 @@ class DeployConfig(DeployConfigTransaction, ConfigModel):
 
     def _redirect_github_repository(self):
         """为官方 GitHub 源一次性选择适合当前网络的更新镜像。"""
-        if self._github_location_checked or self.Repository != GITHUB_REPOSITORY:
+        if self._github_location_checked or self.Repository != OFFICIAL_REPOSITORY:
             return
 
         self._github_location_checked = True

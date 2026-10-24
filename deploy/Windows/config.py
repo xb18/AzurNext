@@ -17,6 +17,9 @@ from deploy.Windows.utils import DEPLOY_CONFIG, DEPLOY_TEMPLATE, cached_property
 
 
 GIT_OVER_CDN_REPOSITORY = 'git://git.pull/AzurPilot'
+# 内置镜像（cn / cnb / gitcode / git://git.pull）只镜像官方仓库，改写目标也以官方地址为基准。
+# 私有 fork 用的是自己的地址，绝不能被国内网络检测替换成上游镜像，否则更新会拉到上游历史。
+OFFICIAL_REPOSITORY = 'https://github.com/wess09/AzurPilot'
 GITHUB_REPOSITORY = 'https://github.com/xb18/AzurNext'
 GIT_OVER_CDN_FALLBACK_REPOSITORIES = [
     'https://cnb.cool/AzurPilot/AzurPilot',
@@ -124,7 +127,7 @@ class DeployConfig(DeployConfigTransaction, ConfigModel):
         # 网络查询不持有配置文件锁，避免多个进程启动时串行等待网络。
         values = {**poor_yaml_read(self.template_file), **poor_yaml_read(self.file)}
         self._github_country_code = (get_country_code()
-                                     if values.get('Repository') == GITHUB_REPOSITORY else None)
+                                     if values.get('Repository') == OFFICIAL_REPOSITORY else None)
         self.read()
 
         self.show_config()
@@ -151,7 +154,7 @@ class DeployConfig(DeployConfigTransaction, ConfigModel):
         # 绕过 webui.config.DeployConfig.__setattr__()，不写入 deploy.yaml
         super().__setattr__('GitOverCdn', self.Repository in ['cn', GIT_OVER_CDN_REPOSITORY])
         if self.Repository in ['global']:
-            super().__setattr__('Repository', 'https://github.com/wess09/AzurPilot')
+            super().__setattr__('Repository', OFFICIAL_REPOSITORY)
         if self.Repository in ['cn', GIT_OVER_CDN_REPOSITORY]:
             super().__setattr__('Repository', choose_fallback_repository())
         if self.Repository in ['cnb']:
@@ -166,7 +169,7 @@ class DeployConfig(DeployConfigTransaction, ConfigModel):
 
     def _redirect_github_repository(self):
         """为官方 GitHub 源一次性选择适合当前网络的更新镜像。"""
-        if self._github_location_checked or self.Repository != GITHUB_REPOSITORY:
+        if self._github_location_checked or self.Repository != OFFICIAL_REPOSITORY:
             return
 
         self._github_location_checked = True

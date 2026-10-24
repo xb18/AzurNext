@@ -7563,7 +7563,7 @@
       "GroupRemoteAccess": "リモートアクセス",
       "GroupWebui": "WebUI 設定",
       "Repository": "AzurPilot リポジトリ",
-      "RepositoryHelp": "インストールと更新に使う Git リポジトリです。中国本土では git://git.pull/AzurPilot も使用できます。",
+      "RepositoryHelp": "インストールと更新に使う Git リポジトリです。独自リポジトリを指定すると、中国本土向けミラー検出による上流 URL への書き換えを防げます。",
       "Branch": "ブランチ",
       "BranchHelp": "安定版は通常 master、開発やテストでは dev、app などを指定します。",
       "GitExecutable": "Git 実行ファイル",

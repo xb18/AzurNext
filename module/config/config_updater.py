@@ -588,8 +588,9 @@ class ConfigGenerator:
     def generate_deploy_template():
         """根据基础模板生成各环境（国内镜像、AidLux、Docker、Linux）的部署配置模板。"""
         template = poor_yaml_read(DEPLOY_TEMPLATE)
+        # 内置镜像只镜像官方 AzurPilot 仓库；本仓库是私有 fork，所有模板都必须指向自己的地址，
+        # 否则国内网络会拉取上游代码并把私有分支重置到上游历史。
         cn = {
-            'Repository': 'git://git.pull/AzurPilot',
             'PypiMirror': 'https://mirrors.aliyun.com/pypi/simple',
             'Language': 'zh-CN',
         }

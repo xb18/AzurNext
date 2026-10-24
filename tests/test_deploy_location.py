@@ -40,7 +40,7 @@ class TestDeployLocation(unittest.TestCase):
         root = Path(directory.name)
         template = root / 'template.yaml'
         file = root / 'deploy.yaml'
-        text = f'Repository: {repository or config_module.GITHUB_REPOSITORY}\nBranch: master\n'
+        text = f'Repository: {repository or config_module.OFFICIAL_REPOSITORY}\nBranch: master\n'
         template.write_text(text)
         file.write_text(text)
         template_patch = (patch.object(config_module, 'get_deploy_template', return_value=str(template))
@@ -48,6 +48,28 @@ class TestDeployLocation(unittest.TestCase):
                           else patch.object(config_module, 'DEPLOY_TEMPLATE', str(template)))
         with template_patch, patch.object(config_module.DeployConfig, 'show_config'):
             return config_module.DeployConfig(str(file))
+
+    def test_private_fork_repository_is_never_rewritten(self):
+        """私有 fork 用自家地址，国内网络检测不得把它换成上游镜像（否则更新会拉到上游历史）。"""
+        for config_module in (deploy_config, windows_config):
+            with self.subTest(config_module=config_module.__name__), patch.object(
+                config_module, 'get_country_code', return_value='cn'
+            ) as get_country_code:
+                config = self.make_config(config_module, config_module.GITHUB_REPOSITORY)
+
+                config.config_redirect()
+
+                self.assertEqual(config.Repository, config_module.GITHUB_REPOSITORY)
+                self.assertEqual(config.config['Repository'], config_module.GITHUB_REPOSITORY)
+                self.assertFalse(config.GitOverCdn)
+                get_country_code.assert_not_called()
+
+    def test_official_repository_differs_from_private_fork(self):
+        for config_module in (deploy_config, windows_config):
+            with self.subTest(config_module=config_module.__name__):
+                self.assertNotEqual(
+                    config_module.OFFICIAL_REPOSITORY, config_module.GITHUB_REPOSITORY
+                )
 
     def test_china_uses_cdn_and_gitcode_fallback(self):
         for config_module in (deploy_config, windows_config):
@@ -91,9 +113,9 @@ class TestDeployLocation(unittest.TestCase):
                 config.config_redirect()
                 config.config_redirect()
 
-                self.assertEqual(config.config['Repository'], config_module.GITHUB_REPOSITORY)
+                self.assertEqual(config.config['Repository'], config_module.OFFICIAL_REPOSITORY)
                 self.assertFalse(config.GitOverCdn)
-                self.assertEqual(config.Repository, config_module.GITHUB_REPOSITORY)
+                self.assertEqual(config.Repository, config_module.OFFICIAL_REPOSITORY)
                 get_country_code.assert_called_once_with()
 
     def test_failed_lookup_keeps_github(self):
@@ -105,7 +127,7 @@ class TestDeployLocation(unittest.TestCase):
 
                 config.config_redirect()
 
-                self.assertEqual(config.config['Repository'], config_module.GITHUB_REPOSITORY)
+                self.assertEqual(config.config['Repository'], config_module.OFFICIAL_REPOSITORY)
                 self.assertFalse(config.GitOverCdn)
 
     def test_custom_repository_does_not_query_location(self):
