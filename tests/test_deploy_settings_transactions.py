@@ -114,7 +114,8 @@ class DeploySettingsTransactionsTests(unittest.TestCase):
     def test_parallel_startup_does_not_hold_config_lock_during_location_lookup(self):
         for config_module in (deploy_config, windows_config):
             with self.subTest(config_module=config_module.__name__):
-                text = TEMPLATE.replace('https://example.invalid/custom', config_module.GITHUB_REPOSITORY)
+                # 只有官方仓库会触发地区查询；本仓库是私有 fork，判定基准已拆分为 OFFICIAL_REPOSITORY。
+                text = TEMPLATE.replace('https://example.invalid/custom', config_module.OFFICIAL_REPOSITORY)
                 self.file.write_text(text)
                 self.template.write_text(text)
                 barrier = threading.Barrier(8, timeout=5)
@@ -127,8 +128,8 @@ class DeploySettingsTransactionsTests(unittest.TestCase):
                         ThreadPoolExecutor(max_workers=8) as executor:
                     configs = list(executor.map(lambda _: config_module.DeployConfig(str(self.file)), range(8)))
                 self.assertEqual(locate.call_count, 8)
-                self.assertTrue(all(config.Repository == config_module.GITHUB_REPOSITORY for config in configs))
-                self.assertEqual(poor_yaml_read(str(self.file))['Repository'], config_module.GITHUB_REPOSITORY)
+                self.assertTrue(all(config.Repository == config_module.OFFICIAL_REPOSITORY for config in configs))
+                self.assertEqual(poor_yaml_read(str(self.file))['Repository'], config_module.OFFICIAL_REPOSITORY)
 
     def test_concurrent_startup_additions_preserve_both_instances(self):
         self.race(lambda: deploy_settings.set_startup_run('account_a', True),
