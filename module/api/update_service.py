@@ -125,7 +125,14 @@ class UpdateService:
             bool: 属于重写前的陈旧上游历史返回 True，否则返回 False。
         """
         from module.runtime.upstream_history import REWRITE_BASES
-        return any(self.is_ancestor(local, base) for base in REWRITE_BASES)
+        if any(self.is_ancestor(local, base) for base in REWRITE_BASES):
+            return True
+        # dist-main 分支按 CI 构建 force push 重写：本地 tip 是自动生成的 dist 快照
+        # （提交主题以 build(dist): 开头），后续任何一次更新源历史都不会包含它。
+        # 安装副本是浅克隆（--depth 1），父提交对象不存在，无法做父提交祖先检查，
+        # 因此仅按提交主题识别——该前缀只由打包流水线生成，不应手写。
+        subject = self.git('log', '-1', '--format=%s', local, optional=True)
+        return bool(subject) and subject.startswith('build(dist):')
 
     def heads(self) -> tuple[str, str]:
         """获取本地分支与追踪的远程上游分支的最新提交哈希。

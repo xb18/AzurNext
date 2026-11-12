@@ -87,6 +87,19 @@ class UpdateServiceTest(unittest.TestCase):
         self.assertTrue(migrated['canApply'])
         self.assertFalse(migrated['shaMismatch'])
 
+    def test_dist_snapshot_commit_is_treated_as_stale(self):
+        """CI 自动生成的 dist 快照提交（build(dist):）不算本地独有提交。
+
+        dist-main 每次构建 force push 重写，旧 dist 快照必然不在新历史上；
+        此时 ahead 是重写假象，按"只是落后"处理，不弹 SHA 不匹配确认。
+        """
+        self.git('commit', '--allow-empty', '-m', 'build(dist): 预构建前端产物 main@043e09d7')
+        with patch.object(State, 'restart_event', threading.Event()), patch.object(State, 'dependency_sync_event', threading.Event()):
+            status = self.service.status()
+        self.assertEqual((status['ahead'], status['behind']), (0, 1))
+        self.assertFalse(status['shaMismatch'])
+        self.assertTrue(status['canApply'])
+
     def test_missing_upstream_and_no_supervisor_are_readable(self):
         with patch.object(State, 'restart_event', None):
             self.assertFalse(self.service.status()['canApply'])
