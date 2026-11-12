@@ -96,6 +96,10 @@ class FrontendInstallFallbackTests(unittest.TestCase):
         (self.frontend / 'dist/index.html').write_text('旧页面', encoding='utf-8')
         self.marker = self.frontend / 'dist/.source-fingerprint'
         self.marker.write_text('old\n', encoding='utf-8')
+        # 回退机制只在开发环境生效；生产环境 dist 存在即直接使用。
+        production = patch('deploy.frontend.is_production_environment', return_value=False)
+        production.start()
+        self.addCleanup(production.stop)
         for target, value in (
             ('deploy.frontend.npm_command', ['node', 'npm-cli.js']),
             ('deploy.frontend.subprocess.run', None),

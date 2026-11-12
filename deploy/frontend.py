@@ -241,8 +241,10 @@ def ensure_frontend(root=None):
         if marker.read_text().strip() == fingerprint:
             return
 
-    # 生产环境中若已有可用的前端静态页面，优先保障极速启动与可用性，避免因缺少 Node 或 npm 网络卡死
-    if dist_html.is_file() and not marker.is_file() and is_production_environment(str(directory.parent)):
+    # dist-main 快照由 CI 原子构建（源码与 dist 同提交），但 Windows 检出的换行
+    # 差异会让指纹比对必然失败。生产环境下 dist 存在即视为匹配，跳过重建；
+    # 开发环境仍走指纹比对以捕捉源码漂移。
+    if dist_html.is_file() and is_production_environment(str(directory.parent)):
         logger.info('生产环境已存在前端静态资源，跳过前端构建以保障极速启动')
         return
 
