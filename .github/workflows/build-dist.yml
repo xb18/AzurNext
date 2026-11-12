@@ -81,9 +81,12 @@ jobs:
             parent=$(git rev-parse FETCH_HEAD)
           fi
 
-          # 期望树 = main 的完整源码树 + 构建产物 dist。
+          # 期望树 = main 的完整源码树 - 开发专属目录 + 构建产物 dist。
+          # launcher/（启动器源码，约 50MB）只服务于开发和打包 CI，
+          # 安装副本用不到，从发布快照中剔除，避免客户端更新白拉。
           export GIT_INDEX_FILE="$PWD/.git/dist-index"
           git read-tree HEAD
+          git rm -r --cached -q launcher 2>/dev/null || true
           git add -f frontend/dist
           tree=$(git write-tree)
           rm -f "$GIT_INDEX_FILE"
