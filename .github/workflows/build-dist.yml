@@ -3,22 +3,17 @@ name: build-dist
 # 分支职责：
 #   upstream  = 纯上游镜像（wess09/AzurPilot master），每次运行自动 force push 对齐
 #   main      = 二次修改开发分支，上游合并由 sync-upstream 技能手动完成
-#   dist-main = main + 单个 dist 提交，本工作流构建发布
+#   dist-main = 发布分支：每次构建在其上**追加**一个全量树快照提交
+#               （main 源码 + 预构建 dist，用 git read-tree/commit-tree 组树，
+#               父提交是上一次的 dist-main tip）。只追加、从不重写，
+#               保证安装副本的 HEAD 永远是更新源历史的祖先：
+#               更新恒为 fast-forward，ahead 恒为 0，不存在 SHA 不匹配。
 #
-# 客户端更新器以 --depth 1 浅拉取 dist-main，仅下载最新树，分支历史重写无影响。
-# 客户端 deploy.yaml：
-#
-# dist-main = main + 单个 dist 提交，每次构建后 force push。
-# 客户端更新器以 --depth 1 浅拉取，仅下载最新树，分支历史重写无影响。
 # 客户端 deploy.yaml：
 #   Repository: https://github.com/xb18/AzurNext
 #   Branch: dist-main
-# 即可在更新时获得与源码指纹匹配的预构建 dist，无需本地安装 Node。
 #
-# main 的上游合并沿用 sync-upstream 技能的 merge 追加方式；push 到 main 即触发构建。
-#
-# 幂等保障：dist-main 提交的父提交等于 main 当前 tip 时跳过构建，
-# 防止重复触发形成循环。
+# 幂等：dist-main 顶端提交内嵌的 main 短 SHA 与当前 main 一致时跳过构建。
 
 on:
   push:
@@ -52,12 +47,12 @@ jobs:
       - name: 检查 dist-main 是否已对齐
         id: aligned
         run: |
-          if git fetch --depth 2 origin dist-main 2>/dev/null; then
-            dist_parent=$(git rev-parse FETCH_HEAD^)
-            main_sha=$(git rev-parse HEAD)
-            echo "dist_main_parent=$dist_parent"
-            echo "main=$main_sha"
-            if [ "$dist_parent" = "$main_sha" ]; then
+          main_short=$(git rev-parse --short=12 HEAD)
+          if git fetch --depth 1 origin dist-main 2>/dev/null; then
+            tip_main=$(git log -1 --format=%s FETCH_HEAD | sed -n 's/.*main@\([0-9a-f]\{12,\}\).*/\1/p')
+            echo "tip_main=$tip_main"
+            echo "main_short=$main_short"
+            if [ -n "$tip_main" ] && [ "$tip_main" = "$main_short" ]; then
               echo "aligned=true" >> "$GITHUB_OUTPUT"
               exit 0
             fi
@@ -76,11 +71,33 @@ jobs:
           npm run build --prefix frontend
           python3 -c "from pathlib import Path; from deploy.frontend import source_fingerprint; p = Path('frontend'); (p / 'dist/.source-fingerprint').write_text(source_fingerprint(p) + '\n', encoding='utf-8')"
 
-      - name: 发布 dist-main
-        if: steps.aligned.outputs.aligned == 'false'
+      - name: 发布 dist-main（追加式全量快照）
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+
+          parent=""
+          if git fetch --depth 1 origin dist-main 2>/dev/null; then
+            parent=$(git rev-parse FETCH_HEAD)
+          fi
+
+          # 期望树 = main 的完整源码树 + 构建产物 dist。
+          export GIT_INDEX_FILE="$PWD/.git/dist-index"
+          git read-tree HEAD
           git add -f frontend/dist
-          git commit -m "build(dist): 预构建前端产物 main@$(git rev-parse --short HEAD)"
-          git push --force origin HEAD:refs/heads/dist-main
+          tree=$(git write-tree)
+          rm -f "$GIT_INDEX_FILE"
+
+          # 树内容与 dist-main 顶端完全一致时（例如仅后端无关改动重跑）跳过发布。
+          if [ -n "$parent" ] && [ "$tree" = "$(git rev-parse "$parent^{tree}")" ]; then
+            echo "dist-main 顶端与期望树一致，跳过发布"
+            exit 0
+          fi
+
+          if [ -n "$parent" ]; then
+            commit=$(git commit-tree "$tree" -p "$parent" -m "build(dist): 预构建前端产物 main@$(git rev-parse --short=12 HEAD)")
+          else
+            commit=$(git commit-tree "$tree" -m "build(dist): 预构建前端产物 main@$(git rev-parse --short=12 HEAD)")
+          fi
+          # 追加模式：父提交就是 dist-main 当前 tip，推送恒为 fast-forward。
+          git push origin "$commit:refs/heads/dist-main"
