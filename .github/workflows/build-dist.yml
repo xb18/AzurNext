@@ -104,3 +104,20 @@ jobs:
           fi
           # 追加模式：父提交就是 dist-main 当前 tip，推送恒为 fast-forward。
           git push origin "$commit:refs/heads/dist-main"
+
+          # 安卓宿主分发渠道：frontend-<main提交>.tar.xz + .sha256，
+          # 宿主按 BUILD_MANIFEST 里的 azurpilot_commit 拉取，tar 根目录为 dist/。
+          android_sha=$(git rev-parse HEAD)
+          tar -cJf "frontend-${android_sha}.tar.xz" -C frontend dist
+          sha256sum "frontend-${android_sha}.tar.xz" > "frontend-${android_sha}.tar.xz.sha256"
+
+      - name: 发布安卓前端分发产物
+        if: steps.aligned.outputs.aligned == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view android-dist --repo xb18/AzurNext >/dev/null 2>&1 || \
+            gh release create android-dist --repo xb18/AzurNext \
+              --title "Android dist channel" --notes "滚动更新：最新 main 提交的预构建前端 dist"
+          gh release upload android-dist --repo xb18/AzurNext --clobber \
+            frontend-*.tar.xz frontend-*.tar.xz.sha256
