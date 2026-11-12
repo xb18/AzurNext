@@ -1,0 +1,76 @@
+name: build-dist
+
+# 从 main（二次修改分支）构建前端 dist，发布到 dist-main 分支。
+#
+# dist-main = main + 单个 dist 提交，每次构建后 force push。
+# 客户端更新器以 --depth 1 浅拉取，仅下载最新树，分支历史重写无影响。
+# 客户端 deploy.yaml：
+#   Repository: https://github.com/xb18/AzurNext
+#   Branch: dist-main
+# 即可在更新时获得与源码指纹匹配的预构建 dist，无需本地安装 Node。
+#
+# 上游同步不在本工作流内：main 的上游合并沿用 sync-upstream 技能的
+# merge 追加方式；push 到 main 即触发构建。
+#
+# 幂等保障：dist-main 提交的父提交等于 main 当前 tip 时跳过构建，
+# 防止重复触发形成循环。
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    # 每 2 小时兜底重跑，与 push 触发互为备份；已对齐时直接退出。
+    - cron: '0 */2 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-dist
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+
+      - name: 检查 dist-main 是否已对齐
+        id: aligned
+        run: |
+          if git fetch --depth 1 origin dist-main 2>/dev/null; then
+            dist_parent=$(git rev-parse FETCH_HEAD^)
+            main_sha=$(git rev-parse HEAD)
+            echo "dist_main_parent=$dist_parent"
+            echo "main=$main_sha"
+            if [ "$dist_parent" = "$main_sha" ]; then
+              echo "aligned=true" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+          fi
+          echo "aligned=false" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-node@v4
+        if: steps.aligned.outputs.aligned == 'false'
+        with:
+          node-version: 22
+
+      - name: 构建前端并写入指纹
+        if: steps.aligned.outputs.aligned == 'false'
+        run: |
+          npm ci --prefix frontend --no-audit --no-fund
+          npm run build --prefix frontend
+          python3 -c "from pathlib import Path; from deploy.frontend import source_fingerprint; p = Path('frontend'); (p / 'dist/.source-fingerprint').write_text(source_fingerprint(p) + '\n', encoding='utf-8')"
+
+      - name: 发布 dist-main
+        if: steps.aligned.outputs.aligned == 'false'
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f frontend/dist
+          git commit -m "build(dist): 预构建前端产物 main@$(git rev-parse --short HEAD)"
+          git push --force origin HEAD:refs/heads/dist-main
