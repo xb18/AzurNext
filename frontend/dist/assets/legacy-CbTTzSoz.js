@@ -54,7 +54,6 @@ h1 {font-size: 30px; letter-spacing: -.8px; font-weight: 700; line-height: 1.3}
 h2 {font-size: 14px; font-weight: 650}
 small {font-size: 11px}
 svg {flex-shrink: 0; vertical-align: middle}
-::selection {background: #6ed4bc45}
 /* 滚动条不显示也不占位：折叠会改变页面高度，占位一变内容宽度就会跟着跳。 */
 ::-webkit-scrollbar {width: 0; height: 0}
 ::-webkit-scrollbar-thumb {background: #95a5b73c; border-radius: 8px}
@@ -112,7 +111,7 @@ svg {flex-shrink: 0; vertical-align: middle}
 }
 .sidebar-label {display: flex; align-items: center; justify-content: space-between; color: #97a4af; font-size: 10px; padding: 0 10px; letter-spacing: 1px; margin-bottom: 12px}
 .sidebar-label button {padding: 0; color: #82929e; display: grid; place-items: center}
-.sidebar-label > span {font: 10px "Segoe UI", sans-serif; letter-spacing: 0; background: var(--surface-muted); padding: 1px 5px; border-radius: 3px}
+.sidebar-label > span {font: 10px var(--theme-font-sans); letter-spacing: 0; background: var(--surface-muted); padding: 1px 5px; border-radius: 3px}
 .primary-nav {position: relative; display: grid; gap: 4px; margin-bottom: 28px}
 .primary-nav a {display: flex; align-items: center; gap: 11px; padding: 11px 12px; color: #768593; border-radius: 7px; font-size: 12px; font-weight: 500}
 .primary-nav a:hover {background: var(--surface-muted)}
@@ -189,7 +188,6 @@ svg {flex-shrink: 0; vertical-align: middle}
 .breadcrumb a strong {color: var(--text); font-weight: 500; transition: color .15s}
 .breadcrumb a:hover strong {color: var(--accent)}
 /* 顶栏模式开关：开着时所有实例铺成一行分页，关着时仍收在下拉里。 */
-.topbar-mode-toggle {flex-shrink: 0}
 .breadcrumb.with-tabs {min-width: 0; flex: 1}
 @media (max-width: 950px) {
   .instance-tab-name {max-width: 5rem}
@@ -239,7 +237,7 @@ main {padding: 32px 32px 16px; flex: 1}
 
 .login-art > span {font-size: 15px; letter-spacing: 4px; color: #bdd2d8}
 .login-card {width: 360px; max-width: calc(100% - 40px); margin: auto; display: flex; flex-direction: column; gap: 18px}
-.login-card .brand-mark {background: var(--navy); border-radius: 10px; margin-bottom: 20px; width: 48px; height: 48px}
+.login-card .brand-mark {margin-bottom: 20px; width: 48px; height: 48px}
 .login-card h1 {font-size: 27px}
 .login-card p {margin-bottom: 20px}
 .login-card small {color: var(--muted); line-height: 1.8}
@@ -255,6 +253,50 @@ main {padding: 32px 32px 16px; flex: 1}
 /* 顶栏与右栏的公共容器：默认不参与布局，谁都不受影响；
    新版玻璃主题在自己的样式里把它接管成真正的一级层容器。 */
 .shell-frame {display: contents}
+
+
+/* 侧栏宽度直接拖拽调整把手 */
+.sidebar-resize-handle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: -5px;
+  width: 10px;
+  cursor: col-resize;
+  z-index: 35;
+  touch-action: none;
+  user-select: none;
+}
+.sidebar-resize-handle::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 4px;
+  width: 2px;
+  background: transparent;
+  transition: background-color .15s cubic-bezier(.2, 0, 0, 1);
+  pointer-events: none;
+}
+.sidebar-resize-handle:hover::after,
+.sidebar-resize-handle.is-dragging::after,
+.sidebar-resize-handle:focus-visible::after {
+  background: var(--accent);
+}
+.sidebar-resize-handle.is-dragging::after {
+  width: 3px;
+  left: 3.5px;
+}
+body.is-resizing-sidebar,
+body.is-resizing-sidebar * {
+  cursor: col-resize !important;
+  user-select: none !important;
+}
+@media (max-width: 950px) {
+  .sidebar-resize-handle {
+    display: none !important;
+  }
+}
 /* 壁纸层的定位与铺法：外壳级规则，所有皮肤共用（材质皮肤另有淡入动画）。 */
 /* 让壁纸层（z-index: -1）留在 #root 的层叠上下文里：否则它会被画布底色盖住，只有材质皮肤看得见。 */
 #root {isolation: isolate}
@@ -1151,8 +1193,7 @@ main {padding: 32px 32px 16px; flex: 1}
   margin: 14px 0;
   padding: 12px 16px;
   border-radius: 8px;
-  background: var(--surface-muted);
-  border-left: 4px solid var(--border);
+  border: 1px solid transparent;
 }
 .markdown-view .md-alert-header {
   display: flex;
@@ -1173,39 +1214,60 @@ main {padding: 32px 32px 16px; flex: 1}
   line-height: 1.6;
 }
 .markdown-view .md-alert-note {
-  border-left-color: #3b82f6;
+  background: color-mix(in srgb, #3b82f6 10%, var(--surface));
+  border-color: color-mix(in srgb, #3b82f6 22%, transparent);
 }
 .markdown-view .md-alert-note .md-alert-badge {
-  background: #3b82f620;
-  color: #3b82f6;
+  background: color-mix(in srgb, #3b82f6 20%, var(--surface));
+  color: #1d4ed8;
 }
+[data-theme='dark'] .markdown-view .md-alert-note .md-alert-badge {
+  color: #60a5fa;
+}
+
 .markdown-view .md-alert-tip {
-  border-left-color: var(--accent, #10b981);
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface));
+  border-color: color-mix(in srgb, var(--accent) 22%, transparent);
 }
 .markdown-view .md-alert-tip .md-alert-badge {
-  background: var(--accent-soft, #10b98120);
-  color: var(--accent, #10b981);
+  background: color-mix(in srgb, var(--accent) 20%, var(--surface));
+  color: var(--accent);
 }
+
 .markdown-view .md-alert-important {
-  border-left-color: #a855f7;
+  background: color-mix(in srgb, #a855f7 10%, var(--surface));
+  border-color: color-mix(in srgb, #a855f7 22%, transparent);
 }
 .markdown-view .md-alert-important .md-alert-badge {
-  background: #a855f720;
-  color: #a855f7;
+  background: color-mix(in srgb, #a855f7 20%, var(--surface));
+  color: #7e22ce;
 }
+[data-theme='dark'] .markdown-view .md-alert-important .md-alert-badge {
+  color: #c084fc;
+}
+
 .markdown-view .md-alert-warning {
-  border-left-color: #f59e0b;
+  background: color-mix(in srgb, #f59e0b 10%, var(--surface));
+  border-color: color-mix(in srgb, #f59e0b 22%, transparent);
 }
 .markdown-view .md-alert-warning .md-alert-badge {
-  background: #f59e0b20;
-  color: #f59e0b;
+  background: color-mix(in srgb, #f59e0b 20%, var(--surface));
+  color: #b45309;
 }
+[data-theme='dark'] .markdown-view .md-alert-warning .md-alert-badge {
+  color: #fbbf24;
+}
+
 .markdown-view .md-alert-caution {
-  border-left-color: #ef4444;
+  background: color-mix(in srgb, #ef4444 10%, var(--surface));
+  border-color: color-mix(in srgb, #ef4444 22%, transparent);
 }
 .markdown-view .md-alert-caution .md-alert-badge {
-  background: #ef444420;
-  color: #ef4444;
+  background: color-mix(in srgb, #ef4444 20%, var(--surface));
+  color: #b91c1c;
+}
+[data-theme='dark'] .markdown-view .md-alert-caution .md-alert-badge {
+  color: #f87171;
 }
 
 /* HTML 折叠 details/summary */
@@ -1327,6 +1389,8 @@ main {padding: 32px 32px 16px; flex: 1}
 .nav-restore {position: fixed; left: 0; top: 50%; transform: translateY(-50%); z-index: 60; display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 58px; padding: 0; border: 0; border-radius: 0 11px 11px 0; background: color-mix(in srgb, var(--surface) 86%, transparent); color: var(--theme-muted); cursor: pointer; box-shadow: var(--glass-shadow); transition: color .15s ease, background .15s ease}
 .nav-restore:hover {color: var(--theme-accent); background: var(--surface)}
 .nav-restore:focus-visible {outline: 2px solid var(--theme-focus); outline-offset: 2px}
+/* 看图把手只用于桌面侧栏，窄屏由顶栏按钮打开导航抽屉。 */
+.nav-handle {display: none}
 @media (min-width: 951px) {
   /* 收起/展开为瞬时切换，避免低帧率下宽度动画挤压主内容。
      grid 轨道用 auto，宽度由 .sidebar 自己的 width 承担。 */
@@ -1518,8 +1582,8 @@ main {padding: 32px 32px 16px; flex: 1}
 .inspector-body .field-label {flex: 0 0 62px; min-width: 0}
 .inspector-body .field-control {width: auto; flex: 1 1 auto; min-width: 0}
 
-/* 侧栏搜索命中的配置项列表：任务树之外的第二组结果。 */
-.nav-search-hits { display: flex; flex-direction: column; gap: 2px; padding: 4px 8px 8px; overflow-y: auto; }
+/* 侧栏搜索的命中列表（卡片与配置项）：排在搜索框下方、任务树上方。 */
+.nav-search-hits { display: flex; flex-direction: column; gap: 2px; padding: 4px 8px 8px; overflow-y: auto; flex: 0 1 auto; min-height: 0; max-height: 45%; }
 .nav-search-hit { display: flex; flex-direction: column; gap: 2px; align-items: flex-start; padding: 6px 8px; border: 1px solid transparent; border-radius: 8px; background: transparent; color: inherit; text-align: left; cursor: pointer; }
 .nav-search-hit:hover { background: var(--theme-inset-bg, var(--theme-plate-bg)); border-color: var(--theme-inset-edge, transparent); }
 .nav-search-hit-label { font-size: 13px; }
@@ -1529,6 +1593,7 @@ main {padding: 32px 32px 16px; flex: 1}
 
 /* 从搜索跳进来的那一项：短暂描边，说明"就是这一项"。 */
 .field-row.is-search-target { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+.config-group.is-search-target { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: var(--theme-radius-panel, 26px); }
 .table-toolbar {display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; color:var(--muted); font-size:12px}
 .resource-grid {display:flex;flex-wrap:wrap;--resource-card-min:150px}.resource-grid .resource-card {flex:1 1 var(--resource-card-min)}
 .resource-card {min-width:0}.resource-value {white-space:nowrap}
@@ -1747,6 +1812,9 @@ main {padding: 32px 32px 16px; flex: 1}
 .statistics-category-control > button {position: relative; z-index: 1}
 .statistics-category-control > * {z-index: 1}
 .statistics-category-control button.is-chained::after {content:'';width:5px;height:5px;margin-left:6px;border-radius:50%;background:currentColor;opacity:.45}
+.statistics-category-picker {display:none; align-items:center; gap:10px; min-width:0; margin-bottom:20px}
+.statistics-category-picker > .statistics-category-select {flex:1; min-width:0}
+.statistics-category-picker > .statistics-single-view {flex-shrink:0; min-height:var(--form-height); padding:6px 12px; border:1px solid var(--theme-border); border-radius:var(--theme-radius-control); background:var(--theme-control-bg); white-space:nowrap}
 .statistics-chain-link {align-self:center;width:10px;height:1px;background:var(--theme-border)}
 .statistics-chain-add:hover {color:var(--theme-accent);border-color:var(--theme-accent)}
 .statistics-chain-picker {min-width:160px}
@@ -1769,9 +1837,9 @@ main {padding: 32px 32px 16px; flex: 1}
 :root[data-theme='extreme'] .statistics-toolbar-row {position:sticky;top:var(--topbar-height);z-index:30;display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:8px 0;margin-bottom:12px;background:var(--bg)}
 /* 分段控件放不下时换成单按钮下拉（指针移入即展开，见 Select 的 openOnFocus）。
    is-compact 由 Statistics 测量可用宽度得出，不用固定断点：右侧控件宽度随分类变化。 */
-:root[data-theme='extreme'] .statistics-toolbar-row .statistics-category-select {display:none}
+:root[data-theme='extreme'] .statistics-toolbar-row .statistics-category-picker {margin-bottom:0}
 :root[data-theme='extreme'] .statistics-toolbar-row.is-compact .statistics-category-control {display:none}
-:root[data-theme='extreme'] .statistics-toolbar-row.is-compact .statistics-category-select {display:inline-flex}
+:root[data-theme='extreme'] .statistics-toolbar-row.is-compact .statistics-category-picker {display:flex}
 :root[data-theme='extreme'] .instance-page-main > .statistics-toolbar-row {top:0}
 :root[data-theme='extreme'] .statistics-toolbar-row .statistics-category-control {margin-bottom:0;flex:0 0 auto;width:max-content}
 :root[data-theme='extreme'] .statistics-toolbar-right {display:flex;align-items:center;gap:12px;margin-left:auto;flex-wrap:wrap}
@@ -1908,9 +1976,20 @@ main {padding: 32px 32px 16px; flex: 1}
 
 @media(max-width:950px) {.resource-grid:not(.resource-fit) {grid-template-columns:repeat(auto-fit,minmax(140px,1fr)) !important}.resource-card-editor,.resource-picker-grid {grid-template-columns:1fr}.resource-settings-heading {gap:10px}.task-row {grid-template-columns:minmax(0,1fr) 48px 74px 10px !important}.stat-metrics {grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.statistics-controls {padding:15px;gap:10px}.statistics-controls label {max-width:100%}.statistics-controls input {max-width:100%}.statistics-sections {flex:none;grid-template-rows:auto auto}.schedule-panel, .monitor-panel {height:500px}.panel.chart-expanded {inset:5px}.statistics-note {font-size:11px}}
 
+@media(max-width:950px) {
+  /* 分类文字完整收在下拉菜单里，不再露出被切断的半个标签。 */
+  .statistics-toolbar-row .statistics-category-control {display:none}
+  .statistics-toolbar-row .statistics-category-picker {display:flex; width:100%}
+}
+
 /* 手机端：165px 起的网格在窄屏只放得下一列，而卡片是按多列设计的。
    窄屏改成「图标 + 名字在左、数值在右」的紧凑行，并允许名字折行，长物品名不再被省略号吃掉。 */
 @media(max-width:480px) {
+  /* 搜索独占一行，标题与导出操作保留在上方，避免按钮文字被挤成单字竖排。 */
+  .statistics-table > .panel-heading {flex-wrap:wrap; gap:10px}
+  .statistics-table > .panel-heading > .table-search {order:1; flex-basis:100%}
+  .statistics-table > .panel-heading > .table-search input {max-width:none}
+  .statistics-table > .panel-heading > .table-search > span {flex-shrink:0; white-space:nowrap}
   .summary-metrics-panel .summary-metrics {grid-template-columns:1fr;gap:2px}
   .summary-metrics-panel .summary-metric-card {flex-direction:row;align-items:center;gap:12px;min-height:0;padding:9px 10px}
   .summary-metrics-panel .summary-metric-head {flex-direction:row-reverse;justify-content:flex-end;flex:1 1 auto;min-width:0;margin-bottom:0;gap:10px}
@@ -1961,539 +2040,270 @@ main {padding: 32px 32px 16px; flex: 1}
 
 /* 掉落统计说明较长，允许窄屏换行。 */
 .statistics-hints {white-space:normal;line-height:1.5;max-width:100%}
-/* 五档：中档是基准，大小两档按同一比例缩放。标签高度是这一族唯一的尺寸源——
-   栏的上下留白、两只脚、竖线都从它派生。 */
-:root[data-tab-size='md'] {--row-scale: 1}
-:root[data-tab-size='lg'] {--row-scale: 1.24}
-:root[data-tab-size='xl'] {--row-scale: 1.55}
-:root[data-tab-size='sm'] {--row-scale: .78}
-:root[data-tab-size='xs'] {--row-scale: .62}
-:root {--instance-tab-height: calc(32px * var(--row-scale, 1)); --instance-tab-font: calc(13px * var(--row-scale, 1)); --row-pad: max(8px, var(--instance-tab-gap-y)); --instance-tab-pad: calc(12px * var(--row-scale, 1)); --instance-tab-max: calc(220px * var(--row-scale, 1)); --instance-tab-icon: calc(15px * var(--row-scale, 1)); --instance-tab-gap: 2px}
+/* 首次设置：桌面双栏，窄屏按步骤纵向排列。 */
+main.instance-setup {
+  min-height: var(--viewport-height);
+  display: grid;
+  place-items: center;
+  padding: clamp(16px, 4vw, 28px);
+  background: var(--bg);
+}
 
-.update-notice.sidebar-update-notice {padding: 4px 8px; border-radius: 999px; background: var(--red); color: #fff; font-size: 10px; font-weight: 750; line-height: 1; flex-shrink: 0}
-.sidebar-brand {padding-top: 0; margin-bottom: 20px}
-.brand-title {color: var(--text); text-decoration: none}
-.sidebar-brand-left {display: flex; align-items: center; gap: 8px; min-width: 0}
-.sidebar-update-notice span {position: relative; z-index: 1}
-.nav-instance-name {min-width: 0; overflow: hidden; text-overflow: ellipsis}
-.topbar {position: sticky; top: 0; z-index: 30; gap: 16px; border-bottom: none !important}
-/* 承载控件的那一行由控件自身撑起，不另外定高：定高会在分页与原模式之间差出 1px。 */
-.breadcrumb {min-width: 0; min-height: var(--instance-tab-height); align-items: center}
-.breadcrumb-current {overflow: hidden; text-overflow: ellipsis; white-space: nowrap}
-.breadcrumb > a, .breadcrumb > span, .breadcrumb > strong {flex-shrink: 0}
-.breadcrumb > .breadcrumb-current {flex-shrink: 1}
-.breadcrumb .instance-picker {margin: 0; min-width: 0}
-.breadcrumb .instance-switcher {display: inline-flex; align-items: center; gap: 2px; padding: 0; border: 0; background: transparent; width: auto}
-.breadcrumb .instance-caption {display: inline-flex; align-items: center; color: var(--text); text-decoration: none; border-radius: 4px; padding: 4px 6px; transition: color .15s, background-color .15s}
-.breadcrumb .instance-caption:hover {color: var(--accent); background: var(--accent-soft)}
-/* 原模式下这一行由实例下拉撑起，它的字号与内边距也要跟同一比例缩放，
-   否则小档时下拉自身的高度会把整行撑住，放缩在原模式下看不出效果。 */
-.breadcrumb .instance-caption {padding: calc(var(--instance-tab-font) * .3) 6px}
-.breadcrumb .instance-caption strong {font-size: var(--instance-tab-font); max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap}
-.breadcrumb .instance-toggle {display: inline-flex; align-items: center; justify-content: center; padding: 4px 5px; border: 0; background: transparent; color: var(--muted); border-radius: 4px; cursor: pointer; transition: color .15s, background-color .15s}
-.breadcrumb .instance-toggle:hover, .breadcrumb .instance-toggle[aria-expanded='true'] {color: var(--accent); background: var(--accent-soft)}
-.breadcrumb .instance-menu {right: auto; left: 0; width: 240px; max-width: calc(100vw - 32px)}
-.breadcrumb .instance-menu span {color: inherit}
-
-/* 模式开关与缩放开关都钉在行首不参与收缩，「主页 / 实例…」整体让到它们右边。 */
-.topbar-mode-toggle, .topbar-tab-size, .topbar-bulk-toggle {flex-shrink: 0}
-/* 放缩只落在承载标签的那条栏上：新版主题是顶栏自己，旧版主题是页内那一行。
-   旧版顶部还有一条只有品牌与页名的装饰栏，它不参与放缩，否则顶部会白占两条栏的高度。 */
-/* 顶栏的实际高度：右栏按它让位，两边必须读同一个值。 */
-:root {--topbar-actual-height: 56px}
-/* 承载这一行的栏按「标签高 + 8px」定高，与顶栏是分页还是下拉无关 ——
-   判据用「有这两枚按钮」而不是「有标签条」，否则切模式时这一行会突然变高变矮。
-   正栏是吸顶的，不能压得比各主题原高还矮，否则下方会留缝让正文穿过去；页内那行可以贴到最紧。 */
-:root[data-tab-size] .app-shell:not(.legacy-shell):has(.topbar-tab-size) {--topbar-actual-height: calc(var(--instance-tab-height) + 2 * var(--row-pad, 4px))}
-:root[data-tab-size] .app-shell:not(.legacy-shell):has(.topbar-tab-size) .topbar {height: var(--topbar-actual-height)}
-/* 右栏紧贴顶栏下方；旧版外壳的右栏另有一套规则，不在此列。 */
-:root[data-tab-size] .app-shell:not(.legacy-shell) .right-rail {top: var(--topbar-actual-height); height: calc(var(--viewport-height) - var(--topbar-actual-height))}
-:root[data-tab-size] .app-shell .topbar:has(.topbar-tab-size) {padding-block: var(--row-pad, 4px)}
-/* 两枚按钮的盒子固定为图标的两倍见方，且与顶栏是分页还是下拉无关：
-   按钮一旦随模式改变宽度，右侧所有内容都会被推着左右跳。 */
-/* components.css 里同特异性的 .icon-button 也定这两枚按钮的尺寸，这里加一族前缀才压得住。 */
-:root[data-tab-size] .app-shell .topbar-mode-toggle,
-:root[data-tab-size] .app-shell .topbar-tab-size,
-:root[data-tab-size] .app-shell .topbar-bulk-toggle {width: calc(var(--instance-tab-icon) * 2); height: calc(var(--instance-tab-icon) * 2); padding: 0; justify-content: center}
-/* 图标统一按 --instance-tab-icon 定死宽高：两枚按钮换图标（如切换图标形状不同）时不会改变自身宽度，
-   否则点一下切换按钮，右侧整条标签都会左右跳。 */
-.topbar-mode-toggle .lucide, .topbar-tab-size .lucide, .topbar-bulk-toggle .lucide {width: var(--instance-tab-icon); height: var(--instance-tab-icon); flex-shrink: 0}
-/* 一键启停执行期间按钮禁用，图标转圈表示正在逐个处理。 */
-.topbar-bulk-toggle:disabled {cursor: default}
-.topbar-bulk-toggle:disabled .lucide {animation: spin 1.2s linear infinite}
-
-/* 两枚开关与「主页」同在一条横排里；悬停区单独占一个元素，摆在「主页」左边那片空处。 */
-:root[data-tab-size] .app-shell .breadcrumb .topbar-actions {position: relative; display: flex; align-items: center; align-self: stretch; min-width: 0; gap: calc(var(--instance-tab-icon) * .5)}
-/* 悬停区是盒子左侧外部的一条窄带（right: 100%），宽度按两枚开关算。 */
-:root[data-tab-size] .app-shell .breadcrumb .topbar-actions-hover {position: absolute; top: 0; bottom: 0; right: 100%; width: calc(var(--instance-tab-icon) * 2)}
-/* 两枚开关收在一个盒子里，展开只是把盒子拉宽：向右长，把「主页」与标签栏一并顶开。
-   折叠时盒子宽 0：「主页」直接靠到左沿，不留占位空；开关靠 visibility 不绘制。 */
-:root[data-tab-size] .app-shell .breadcrumb .topbar-actions-buttons {display: flex; align-items: center; gap: calc(var(--instance-tab-icon) * .5); width: 0; overflow: hidden; transition: width .18s ease}
-:root[data-tab-size] .app-shell .breadcrumb .topbar-actions-buttons > * {visibility: hidden; pointer-events: none}
-/* 展开：指针落在左边那片悬停区上、或已进入展开的开关盒内 —— 两者合起来才算悬停区，
-   否则指针一挪到开关上就掉出去，展开的开关根本点不到；键盘焦点同理。鼠标点击留下的
-   焦点不算 —— 它会一直留着，盒子就再也折不回去。 */
-/* 三枚开关：3×2 个图标宽 + 2×.5 个间隙。 */
-:root[data-tab-size] .app-shell .breadcrumb .topbar-actions:has(> .topbar-actions-hover:hover) .topbar-actions-buttons,
-:root[data-tab-size] .app-shell .breadcrumb .topbar-actions:has(> .topbar-actions-buttons:hover) .topbar-actions-buttons,
-:root[data-tab-size] .app-shell .breadcrumb .topbar-actions:has(:focus-visible) .topbar-actions-buttons {width: calc(var(--instance-tab-icon) * 7)}
-:root[data-tab-size] .app-shell .breadcrumb .topbar-actions:has(> .topbar-actions-hover:hover) .topbar-actions-buttons > *,
-:root[data-tab-size] .app-shell .breadcrumb .topbar-actions:has(> .topbar-actions-buttons:hover) .topbar-actions-buttons > *,
-:root[data-tab-size] .app-shell .breadcrumb .topbar-actions:has(:focus-visible) .topbar-actions-buttons > * {visibility: visible; pointer-events: auto}
-/* 「主页」的文字与它右侧的分隔线跟整行同一比例；字号不只在分页模式生效。
-   它是纯文字链接，默认命中区只有文字那么大，所以给足行高与横向内边距。 */
-.breadcrumb .topbar-actions > a {font-size: var(--instance-tab-font); display: inline-flex; align-items: center; height: var(--instance-tab-height); padding: 0 calc(var(--instance-tab-pad) * .6)}
-.breadcrumb .topbar-actions > a:hover {color: var(--accent); background: var(--accent-soft); border-radius: var(--theme-radius-control)}
-
-/* 分页模式：实例平铺成一行标签页。留给标签的宽度有下限，所以「主页」与会收缩的页名要能截断，
-   而不是把标签挤没。 */
-.breadcrumb.with-tabs {flex: 1; min-width: 0}
-.breadcrumb.with-tabs > a {flex-shrink: 0}
-.breadcrumb.with-tabs > .breadcrumb-current {flex-shrink: 1; min-width: 0}
-/* 按压反馈与主题里其它按钮同一写法（见 apple.css 的 .button:active）。 */
-.instance-create:active:not(:disabled) {filter: brightness(.94)}
-
-.topbar-right {flex-shrink: 0; gap: 16px}
-.update-notice {display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; color: var(--accent); background: var(--accent-soft); border-radius: 20px; white-space: nowrap}
-.task-nav-heading {margin-bottom: 8px; flex-shrink: 0}
-.sidebar-label .icon-button {width: 28px; height: 28px; padding: 6px}
-/* 选中的控件（日志筛选、卡片视图切换）：底与文字都取自主题强调色，随主题自动跟随。 */
-.icon-button.filter-active {background: color-mix(in srgb, var(--theme-accent) 14%, transparent) !important; color: var(--theme-accent) !important}
-.main-shell > main:has(> .home-editorial) {max-width: none; min-height: calc(var(--viewport-height) - 56px); padding: 0; display: flex}
-/* 旧版外壳多出内容区顶部那行导航，页面本身也不靠「视口 − 常量」算高（那常量会漂），
-   所以这里改成由上到下逐级撑满，否则整壳会被顶出视口、底部露出接缝。 */
-.app-shell.legacy-shell > .main-shell > main:has(> .home-editorial) {min-height: 0}
-/* 旧版外壳里两列都自己滚（和实例页同一套做法）：不这样，主页内容会把整壳顶出视口，矮窗口下底部就露出接缝。 */
-.app-shell.legacy-shell .home-deck, .app-shell.legacy-shell .home-main {min-height: 0; overflow-y: auto}
-.home-editorial {flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(300px, 34%) minmax(0, 1fr)}
-.home-deck {position: relative; min-width: 0; padding: clamp(28px, 3.4vw, 54px); display: flex; flex-direction: column; gap: 26px}
-.home-deck-copy {margin: auto 0; max-width: 34em}
-.home-deck-eyebrow {margin: 0 0 10px; font-size: 12px; font-weight: 650; letter-spacing: .14em; opacity: .74}
-.home-deck-greeting {margin: 0 0 14px; font-size: clamp(30px, 3vw, 42px); line-height: 1.24; font-weight: 700; word-break: keep-all; overflow-wrap: anywhere; text-wrap: balance}
-.home-deck-subtitle {margin: 0; font-size: 13.5px; line-height: 1.8; opacity: .82}
-
-/* 侧栏公告卡片：适配浅色/深色/极简/经典所有主题 */
-.home-deck-announcement {
-  margin: auto 0;
+.instance-setup-card {
+  width: min(100%, 860px);
+  min-height: min(620px, calc(var(--viewport-height) - 56px));
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  max-width: 38em;
-  padding: 20px 22px;
-  border-radius: var(--theme-radius-card, 20px);
-  -webkit-backdrop-filter: var(--theme-plate-filter);
-  backdrop-filter: var(--theme-plate-filter);
-  transition: transform .2s cubic-bezier(.16, 1, .3, 1), box-shadow .2s ease;
-  overflow: hidden;
-  position: relative;
-  isolation: isolate;
-}
-/* 卡片下方的一级面底片：尺寸严格等于卡片，给它一个同层该有的叠加效果。
-   放在卡片自己的层叠上下文里，不会盖到列中的其它区域。 */
-.home-deck-announcement::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  border-radius: inherit;
-  background: var(--theme-surface-bg);
-  -webkit-backdrop-filter: var(--theme-surface-filter);
-  backdrop-filter: var(--theme-surface-filter);
-}
-.home-deck-announcement * {
-  text-shadow: none !important;
+  padding: clamp(20px, 6vw, 48px);
+  border-radius: var(--theme-radius-panel);
+  background: var(--surface);
 }
 
-/* 通透白瓷磨砂玻璃卡片：底色走二级贴片，普通材质由材质轴压成不透明。 */
-.home-deck-announcement {
-  background: var(--theme-plate-bg);
-  border: 1px solid color-mix(in srgb, var(--border, rgba(0, 0, 0, 0.08)) 75%, transparent);
-  color: var(--text, #1d1d1f);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.95);
-}
-:root[data-theme='light'] .home-deck-announcement,
-:root[data-theme='light'] .home-deck-announcement p,
-:root[data-theme='light'] .home-deck-announcement span:not(.home-deck-badge-group *):not(.home-deck-view-all *):not(.home-deck-link *) {
-  color: var(--text, #1d1d1f);
-}
-.home-deck-announcement:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 16px 38px rgba(0, 0, 0, 0.11), 0 3px 10px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 1);
-}
-
-/* 深色主题：深邃暗黑磨砂玻璃卡片 */
-:root[data-theme='dark'] .home-deck-announcement {
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  color: #f5f5f7;
-  box-shadow: 0 14px 38px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.12);
-}
-:root[data-theme='dark'] .home-deck-announcement:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.16);
-}
-
-/* 极简与紧凑主题 */
-[data-theme='minimal'] .home-deck-announcement,
-[data-theme='extreme'] .home-deck-announcement {
-  border: 1px solid var(--border);
-  color: var(--text);
-  box-shadow: none;
-}
-
-/* 经典旧版主题 */
-:root[data-theme='legacy-light']:not([data-material='glass']) .home-deck-announcement,
-:root[data-theme='legacy-dark']:not([data-material='glass']) .home-deck-announcement {
-  border: 1px solid var(--border);
-  color: var(--text);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
-}
-
-.home-deck-announcement-header {
+.instance-setup-card.setup-language-step {width: min(100%, 520px); min-height: 0}
+.setup-language-step .setup-steps {display: none}
+.setup-brand {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  justify-content: center;
+  gap: 16px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--border);
 }
-.home-deck-badge-group {
-  display: inline-flex;
+.setup-brand img {flex-shrink: 0}
+.setup-brand-title {font-size: clamp(20px, 4vw, 28px); line-height: 1.3; font-weight: 700}
+.setup-brand .muted, .setup-step-content h1 + p {margin: 4px 0 0}
+
+.setup-steps {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+  margin: 24px 0;
+  padding: 0;
+  list-style: none;
+}
+.setup-steps li {
+  display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 11.5px;
-  font-weight: 650;
-  color: var(--accent);
-  padding: 3px 9px 3px 7px;
-  border-radius: 999px;
-  background: var(--accent-soft);
-  border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
-  letter-spacing: .02em;
-}
-.home-deck-badge-group .tiny-dot.red {
-  box-shadow: 0 0 6px rgba(255, 59, 48, 0.6);
-}
-.home-deck-view-all {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
+  gap: 8px;
+  min-width: 0;
+  padding: 8px;
+  color: var(--muted);
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+  border-radius: var(--theme-radius-control);
   font-size: 12px;
-  font-weight: 600;
-  text-decoration: none;
-  padding: 5px 11px;
-  border-radius: 999px;
-  color: var(--accent);
-  background: var(--accent-soft);
-  border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
-  transition: all .15s ease;
+  line-height: 1.4;
 }
-.home-deck-view-all:hover {
-  background: color-mix(in srgb, var(--accent) 20%, transparent);
-  color: var(--accent-hover, var(--accent));
-  transform: translateX(1px);
+.setup-steps li[aria-current='step'] {color: var(--accent); background: var(--accent-soft); border-color: var(--accent); font-weight: 650}
+.setup-steps li[data-done] .setup-step-number {color: var(--accent)}
+.setup-step-number {
+  display: grid;
+  place-items: center;
+  flex: 0 0 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--surface);
+  font-weight: 650;
 }
-:root[data-theme='dark'] .home-deck-view-all {
-  color: #fff;
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.18);
-}
-:root[data-theme='dark'] .home-deck-view-all:hover {
-  background: rgba(255, 255, 255, 0.22);
-}
-[data-theme='minimal'] .home-deck-view-all,
-[data-theme='extreme'] .home-deck-view-all,
-:root[data-theme='legacy-light'] .home-deck-view-all,
-:root[data-theme='legacy-dark'] .home-deck-view-all {
-  color: var(--accent);
-  background: var(--accent-soft);
+
+.setup-illustration {display: none}
+.setup-form {display: flex; flex: 1; flex-direction: column; gap: 24px; min-width: 0}
+.setup-step-content {flex: 1; min-width: 0}
+.setup-step-content h1 {margin: 0; font-size: clamp(18px, 3vw, 22px); letter-spacing: normal}
+.setup-step-content > label {font-size: 14px}
+.setup-step-content input {min-width: 0}
+.setup-import, .setup-review {
+  background: var(--surface-muted);
   border: 1px solid var(--border);
+  border-radius: var(--theme-radius-control);
 }
+.setup-import {display: flex; align-items: flex-start; gap: 12px; padding: 16px}
+.setup-import > svg {color: var(--accent); flex-shrink: 0}
+.setup-import > div {min-width: 0}
+.setup-import p {margin: 4px 0 12px}
+.setup-import p.setup-file-name {margin: 8px 0 0; overflow-wrap: anywhere}
+.setup-languages {display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px}
+.setup-languages .button {justify-content: center}
+.setup-languages .button[aria-pressed='true'] {color: var(--accent); background: var(--accent-soft); border-color: var(--accent)}
 
-.home-deck-announcement-title {
-  margin: 0;
-  font-size: clamp(17px, 1.8vw, 21px);
-  font-weight: 700;
-  line-height: 1.35;
-  color: var(--text, #1d1d1f);
-  letter-spacing: -.3px;
-}
-:root[data-theme='dark'] .home-deck-announcement-title {
-  color: #fff;
-}
-.home-deck-announcement-title a {
-  color: inherit;
-  text-decoration: none;
-  transition: color .15s ease;
-}
-.home-deck-announcement-title a:hover {
-  color: var(--accent);
-}
-[data-theme='minimal'] .home-deck-announcement-title,
-[data-theme='extreme'] .home-deck-announcement-title,
-:root[data-theme='legacy-light'] .home-deck-announcement-title,
-:root[data-theme='legacy-dark'] .home-deck-announcement-title {
-  color: var(--text);
-}
+.setup-review {margin: 0; overflow: hidden}
+.setup-review > div {display: grid; grid-template-columns: minmax(0, 34%) minmax(0, 1fr); align-items: stretch}
+.setup-review > div + div {border-top: 1px solid var(--border)}
+.setup-review dt, .setup-review dd {display: flex; align-items: center; padding: 10px 14px; overflow-wrap: anywhere}
+.setup-review dt {font-weight: 600; color: var(--muted)}
+.setup-review dd {margin: 0; background: var(--surface)}
+.setup-review input {width: 100%}
 
-.home-deck-announcement-content {
-  max-height: 4.2em;
-  overflow: hidden !important;
-  position: relative;
-  font-size: 13px;
-  line-height: 1.55;
-  mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
-  -webkit-mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
-}
-.home-deck-announcement-content .katex,
-.home-deck-announcement-content .katex-display,
-.home-deck-announcement-content .md-callout,
-.home-deck-announcement-content .md-table-wrap,
-.home-deck-announcement-content blockquote,
-.home-deck-announcement-content pre,
-.home-deck-announcement-content table,
-.home-deck-announcement-content hr,
-.home-deck-announcement-content h1,
-.home-deck-announcement-content h2,
-.home-deck-announcement-content h3,
-.home-deck-announcement-content h4,
-.home-deck-announcement-content .md-h1,
-.home-deck-announcement-content .md-h2,
-.home-deck-announcement-content .md-h3 {
-  display: none !important;
-}
-.home-deck-announcement-content .markdown-view {
-  color: var(--text, #2c2c2e);
-  opacity: .88;
-}
-:root[data-theme='dark'] .home-deck-announcement-content .markdown-view {
-  color: rgba(255, 255, 255, 0.88);
-}
-[data-theme='minimal'] .home-deck-announcement-content .markdown-view,
-[data-theme='extreme'] .home-deck-announcement-content .markdown-view,
-:root[data-theme='legacy-light'] .home-deck-announcement-content .markdown-view,
-:root[data-theme='legacy-dark'] .home-deck-announcement-content .markdown-view {
-  color: var(--text);
-}
-.home-deck-announcement-footer {
-  margin-top: 2px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.home-deck-announcement-footer .home-deck-link {
-  font-size: 11.5px;
-  padding: 5px 12px;
-  border-radius: 999px;
-  color: var(--accent) !important;
-  background: var(--accent-soft) !important;
-  border: 1px solid color-mix(in srgb, var(--accent) 24%, transparent) !important;
-  -webkit-backdrop-filter: none !important;
-  backdrop-filter: none !important;
-  transition: all .15s ease;
-}
-.home-deck-announcement-footer .home-deck-link:hover {
-  background: var(--accent) !important;
-  color: #fff !important;
-}
-:root[data-theme='dark'] .home-deck-announcement-footer .home-deck-link {
-  color: #fff !important;
-  background: rgba(255, 255, 255, 0.12) !important;
-  border-color: rgba(255, 255, 255, 0.18) !important;
-}
-:root[data-theme='dark'] .home-deck-announcement-footer .home-deck-link:hover {
-  background: rgba(255, 255, 255, 0.22) !important;
-}
-.home-deck-foot {display: flex; flex-direction: column; gap: 14px; padding-top: 6px}
-.home-stats {display: flex; flex-wrap: wrap; gap: 10px 26px; margin: 0}
-.home-stat {display: flex; align-items: baseline; gap: 8px}
-.home-stat dt {font-size: 12px; opacity: .7}
-.home-stat dd {margin: 0; font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -.4px}
-.home-deck-links {display: flex; flex-wrap: wrap; gap: 10px}
-.home-deck-link {display: inline-flex; align-items: center; gap: 7px; padding: 8px 13px; border-radius: 999px; font-size: 12.5px; border: 1px solid var(--border); background: var(--surface); color: var(--text); transition: border-color .15s, color .15s, background-color .15s}
-.home-deck-link:hover {border-color: var(--accent); color: var(--accent)}
-.home-active .wallpaper::after {content: ''; position: absolute; inset: 0; background: linear-gradient(168deg, rgb(0 0 0 / .30), rgb(0 0 0 / .48) 55%, rgb(0 0 0 / .62)); pointer-events: none}
-.instance-device {display: flex; flex-wrap: wrap; gap: 4px 10px; color: var(--muted); font-size: 11px; overflow-wrap: anywhere}
-.instance-device > span:first-child {text-transform: uppercase; flex-shrink: 0}
-.home-main {min-width: 0; padding: clamp(26px, 3.2vw, 52px) clamp(26px, 3.6vw, 56px); background: var(--bg); color: var(--text); border-bottom-left-radius: var(--theme-radius-panel, 26px)}
-.home-main-heading {display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; padding-bottom: 22px; border-bottom: 1px solid var(--border); margin-bottom: 24px}
-.home-main-heading h2 {margin: 0; font-size: clamp(22px, 2.2vw, 30px); letter-spacing: -.6px}
-.home-instance-grid {display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr)); gap: 20px; align-content: start}
-.home-instance-grid .instance-card {display: flex; flex-direction: column; min-width: 0; padding: 24px; color: var(--text); text-decoration: none; border-radius: var(--theme-radius-card, 24px); border-bottom-left-radius: var(--theme-radius-card, 24px); background: var(--theme-plate-bg); -webkit-backdrop-filter: var(--theme-plate-filter); backdrop-filter: var(--theme-plate-filter)}
-.home-instance-grid .instance-card-heading {display: flex; align-items: center; justify-content: space-between; gap: 12px}
-.home-instance-grid .home-instance-icon {width: 44px; height: 44px; display: grid; place-items: center; border-radius: 14px}
-.home-instance-grid .instance-card h3 {margin: 22px 0 10px; font-size: 20px; letter-spacing: -.3px; overflow-wrap: anywhere}
-.home-instance-grid .instance-card-footer {margin-top: auto; padding-top: 22px; display: flex; align-items: center; justify-content: space-between; gap: 12px}
-.home-instance-grid .instance-card-footer > span {font-size: 12px; font-weight: 650; min-width: 0; overflow-wrap: anywhere}
-.home-instance-grid .instance-card-footer > svg {background: var(--accent-soft); border-radius: 50%; box-sizing: content-box; padding: 7px}
-.home-instance-empty {grid-column: 1 / -1; width: 100%; min-height: 180px; display: flex; align-items: center; justify-content: center; gap: 12px; border: 1px dashed var(--border); border-radius: 16px; color: var(--accent); background: transparent; font-size: 14px}
-.home-instance-empty:hover {border-color: var(--accent)}
-[data-theme='light'] .home-deck, [data-theme='dark'] .home-deck {color: #fff; text-shadow: 0 2px 18px rgb(0 0 0 / .45)}
-[data-theme='light'] .home-deck-link, [data-theme='dark'] .home-deck-link,
-:root[data-material='glass'][data-theme='legacy-light'] .home-deck-link,
-:root[data-material='glass'][data-theme='legacy-dark'] .home-deck-link {border-color: rgb(255 255 255 / .42); background: rgb(255 255 255 / .14); color: #fff; -webkit-backdrop-filter: var(--theme-control-filter); backdrop-filter: var(--theme-control-filter)}
-[data-theme='light'] .home-deck-link:hover, [data-theme='dark'] .home-deck-link:hover {border-color: rgb(255 255 255 / .78); background: rgb(255 255 255 / .24); color: #fff}
-@media (forced-colors: active) {
-  .home-deck {color: var(--text); background: var(--surface-muted); text-shadow: none}
-  .home-deck-link {border-color: var(--border); background: var(--surface); color: var(--text)}
-}
-[data-theme='minimal'] .home-deck, [data-theme='extreme'] .home-deck {color: var(--text); background: var(--surface-muted); text-shadow: none}
-[data-theme='minimal'] .main-shell > main:has(> .home-editorial), [data-theme='extreme'] .main-shell > main:has(> .home-editorial) {min-height: calc(var(--viewport-height) - var(--topbar-height))}
-.head-grid {display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; margin-bottom: 24px}
-.head-card {padding: 22px; display: grid; gap: 15px}
-.head-card-header {display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap}
-.head-card-header > span, .head-card > span {display: flex; align-items: center; gap: 8px; color: var(--muted)}
-.head-card code {font-family: var(--theme-font-mono, "JetBrains Mono", "JetBrains Mono NL", "Cascadia Code", "Consolas", "Microsoft YaHei", monospace); font-size: 13px; overflow-wrap: anywhere; user-select: all}
-.branch-summary {display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 12px}
-.commit-panel .panel-heading {flex-wrap: wrap; gap: 12px}
-.update-summary {display: flex; align-items: center; flex-wrap: wrap; gap: 12px; color: var(--muted); font-size: 12px}
-.update-summary > span {display: flex; align-items: center; gap: 6px}
-.update-summary .update-available {color: var(--accent)}
-.commit-row {display: flex; gap: 16px; padding: 19px 24px; border-top: 1px solid var(--border)}
-.commit-node {margin-top: 2px; color: var(--accent); flex-shrink: 0}
-.commit-detail {min-width: 0; flex: 1}
-.commit-subject {line-height: 1.7; overflow-wrap: anywhere}
-.commit-ref {display: inline-block; font-size: 10px; padding: 0 7px; background: var(--surface-muted); border: 1px solid var(--border); border-radius: 5px; margin-left: 9px; white-space: nowrap}
-.commit-ref.upstream {background: var(--accent-soft); color: var(--accent)}
-.commit-meta {display: flex; align-items: center; flex-wrap: wrap; gap: 12px; font-size: 11px; color: var(--muted); margin-top: 8px}
-.commit-meta code {font-family: var(--theme-font-mono, "JetBrains Mono", "JetBrains Mono NL", "Cascadia Code", "Consolas", "Microsoft YaHei", monospace); user-select: all}
-.commit-detail details {margin-top: 6px; color: var(--muted); font-size: 12px}
-.commit-detail summary {cursor: pointer}
-.commit-detail pre {white-space: pre-wrap; overflow-wrap: anywhere; font: inherit; line-height: 1.8; color: var(--text)}
-.commit-pagination {display: flex; align-items: center; justify-content: flex-end; gap: 12px; padding: 18px 24px; border-top: 1px solid var(--border)}
-.commit-pagination > span {margin-right: auto; color: var(--muted); font-size: 12px}
-@media (max-width: 950px) {
-  .instance-tabs {display: none}
-  .topbar {gap: 8px}
-  .sidebar {z-index: 100}
-  .topbar-right {gap: 8px}
-  .topbar-right .connection-label span {display: none}
-  .breadcrumb .instance-caption strong {max-width: 100px}
-  .breadcrumb {gap: 6px; flex: 1}
-  .breadcrumb > a[href$='/task/Alas'], .breadcrumb > a[href$='/task/Alas'] + span {display: none}
-  .update-notice {font-size: 10px; padding: 5px 6px}
-  .update-notice > svg {display: none}
-  .head-grid {grid-template-columns: 1fr}
-  .head-card {padding: 18px}
-  .commit-row {padding: 16px; gap: 10px}
-  .commit-pagination {padding: 16px; gap: 8px}
-  .home-editorial {grid-template-columns: 1fr}
-  .home-deck {min-height: 248px; padding: 26px 30px}
-  .home-deck.home-deck-with-announcement,
-  .home-deck:has(.home-deck-announcement) {
-    min-height: auto;
-    padding: 16px 20px 12px;
-    gap: 12px;
+.setup-footer, .setup-actions {display: flex; align-items: center; gap: 10px; flex-wrap: wrap}
+.setup-footer {justify-content: space-between; padding-top: 16px; border-top: 1px solid var(--border)}
+.setup-actions {justify-content: flex-end; margin-left: auto}
+
+@media (min-width: 951px) {
+  main.instance-setup {
+    --setup-accent: #0067c0;
+    --setup-accent-hover: #005a9e;
+    --setup-on-accent: #fff;
+    padding: 28px;
+    font-family: var(--theme-font-sans);
+    background:
+      radial-gradient(ellipse at 17% 12%, color-mix(in srgb, var(--setup-accent) 22%, transparent), transparent 61%),
+      radial-gradient(ellipse at 88% 93%, color-mix(in srgb, var(--setup-accent) 18%, transparent), transparent 58%),
+      var(--bg);
   }
-  .home-deck-announcement {
-    margin: 0;
-    padding: 12px 14px;
-    gap: 8px;
-    border-radius: 16px;
+  :root[data-theme='legacy-dark'] main.instance-setup {
+    --setup-accent: #60cdff;
+    --setup-accent-hover: #8bd9ff;
+    --setup-on-accent: #102431;
   }
-  :root[data-theme='light'] .home-deck-announcement,
-  .home-deck-announcement {
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+
+  .instance-setup-card.setup-wizard {
+    width: min(100%, 1048px);
+    min-height: min(664px, calc(var(--viewport-height) - 56px));
+    display: grid;
+    grid-template-columns: minmax(0, 46fr) minmax(0, 54fr);
+    padding: 0;
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--surface) 88%, transparent);
+    box-shadow: 0 8px 24px color-mix(in srgb, var(--text) 8%, transparent),
+                0 24px 64px color-mix(in srgb, var(--text) 10%, transparent);
   }
-  :root[data-theme='dark'] .home-deck-announcement {
-    box-shadow: 0 8px 26px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  .instance-setup:has(> .setup-wizard[data-entering]) {overflow: clip}
+  .setup-wizard[data-entering] {animation: setup-window-enter var(--dur-5) var(--ease-emphasized) both}
+  .setup-wizard[data-entering] > :is(.setup-illustration, .setup-form) {
+    animation: setup-content-enter calc(var(--dur-5) * .35) var(--ease-standard) calc(var(--dur-5) * .65) both;
   }
-  .home-deck-announcement:active {
-    transform: scale(0.99);
+  .setup-wizard[data-entering] > .setup-form {pointer-events: none}
+  @keyframes setup-window-enter {
+    from {transform: scale(var(--setup-entry-scale-x, 1), var(--setup-entry-scale-y, 1))}
+    to {transform: none}
   }
-  .home-deck-announcement-header {
-    gap: 8px;
+  @keyframes setup-content-enter {from {opacity: 0} to {opacity: 1}}
+
+  .setup-wizard .setup-brand, .setup-wizard .setup-steps {display: none}
+  .setup-illustration {
+    --setup-art-pale: color-mix(in srgb, var(--setup-accent) 10%, var(--surface));
+    --setup-art-blue: color-mix(in srgb, var(--setup-accent) 28%, var(--surface));
+    --setup-art-edge: color-mix(in srgb, var(--setup-accent) 44%, var(--surface));
+    display: grid;
+    place-items: center;
+    background: radial-gradient(ellipse at center, color-mix(in srgb, var(--setup-accent) 16%, transparent), transparent 68%);
   }
-  .home-deck-badge-group {
-    font-size: 11px;
-    padding: 2.5px 8px 2.5px 6px;
-    gap: 5px;
+  .setup-illustration-art {width: min(92%, 432px); aspect-ratio: 1}
+  .setup-art-part {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: setup-art-enter var(--dur-4) var(--ease-emphasized) var(--setup-art-delay, 0ms) both;
   }
-  .home-deck-badge-group svg {
-    width: 13px;
-    height: 13px;
-    flex-shrink: 0;
+  @keyframes setup-art-enter {
+    from {opacity: 0; transform: translate(var(--setup-art-x, 0px), var(--setup-art-y, 12px)) scale(.96)}
+    to {opacity: 1; transform: none}
   }
-  .home-deck-view-all {
-    font-size: 11px;
-    padding: 3px 9px;
+  .setup-art-import-file {--setup-art-y: -34px; --setup-art-delay: calc(var(--dur-1) * .5)}
+  .setup-art-monitor {--setup-art-x: -20px; --setup-art-y: 0px}
+  .setup-art-phone {--setup-art-x: 18px; --setup-art-y: 0px; --setup-art-delay: calc(var(--dur-1) * .5)}
+  .setup-art-device-link {--setup-art-y: 0px; --setup-art-delay: var(--dur-2); animation-duration: var(--dur-2)}
+  .setup-art-checks > .setup-art-part {--setup-art-y: 4px; animation-duration: var(--dur-2)}
+  .setup-art-checks > :nth-child(1) {--setup-art-delay: var(--dur-1)}
+  .setup-art-checks > :nth-child(2) {--setup-art-delay: var(--dur-2)}
+  .setup-art-checks > :nth-child(3) {--setup-art-delay: var(--dur-3)}
+  .setup-illustration-mark {
+    position: relative;
+    isolation: isolate;
+    display: grid;
+    place-items: center;
+    width: min(52%, 216px);
+    aspect-ratio: 1;
+    color: var(--setup-accent);
   }
-  .home-deck-view-all svg {
-    width: 12px;
-    height: 12px;
+  .setup-illustration-mark::before, .setup-illustration-mark::after {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    inset: 0;
+    border: 1px solid color-mix(in srgb, var(--setup-accent) 18%, var(--surface));
+    border-radius: 24%;
   }
-  .home-deck-announcement-title {
+  .setup-illustration-mark::before {
+    transform: translate(12%, -8%) rotate(13deg);
+    background: color-mix(in srgb, var(--setup-accent) 18%, var(--surface));
+  }
+  .setup-illustration-mark::after {
+    transform: rotate(-8deg);
+    background: linear-gradient(145deg, var(--surface), color-mix(in srgb, var(--setup-accent) 13%, var(--surface)));
+    box-shadow: 0 16px 32px color-mix(in srgb, var(--setup-accent) 22%, transparent);
+  }
+
+  .setup-wizard .setup-form {
+    padding: clamp(32px, 4.5vw, 48px);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .setup-wizard .setup-step-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    width: 100%;
+    max-width: 440px;
+    margin-inline: auto;
+  }
+  .setup-step-content h1 {font-size: clamp(25px, 3vw, 32px); font-weight: 600}
+  .setup-step-content h1 + p {margin-top: 8px; font-size: 14px}
+  .setup-wizard .setup-languages {
+    grid-template-columns: 1fr;
+    gap: 4px;
+    padding: 4px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface);
+  }
+  .setup-wizard .setup-languages .button {
+    position: relative;
+    justify-content: flex-start;
+    min-height: 42px;
+    padding-inline: 16px;
+    border: 0;
+    border-radius: 4px;
+    background: transparent;
+    color: var(--text);
+    box-shadow: none;
     font-size: 14px;
-    font-weight: 650;
-    line-height: 1.42;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
   }
-  .home-deck-announcement-content,
-  .home-deck-announcement-footer {
-    display: none;
+  .setup-wizard .setup-languages .button:hover {background: var(--surface-muted)}
+  .setup-wizard .setup-languages .button[aria-pressed='true'] {background: color-mix(in srgb, var(--setup-accent) 10%, var(--surface))}
+  .setup-languages .button[aria-pressed='true']::before {
+    content: '';
+    position: absolute;
+    inset: 25% auto 25% 0;
+    width: 3px;
+    border-radius: 2px;
+    background: var(--setup-accent);
   }
-  .home-deck.home-deck-with-announcement .home-deck-foot,
-  .home-deck:has(.home-deck-announcement) .home-deck-foot {
-    gap: 8px;
+  .setup-wizard .setup-footer {
+    width: 100%;
+    max-width: 440px;
+    margin-inline: auto;
     padding-top: 0;
+    border-top: 0;
   }
-  .home-deck.home-deck-with-announcement .home-stats,
-  .home-deck:has(.home-deck-announcement) .home-stats {
-    gap: 4px 16px;
+  .setup-wizard .setup-footer .button {min-height: 36px; border-radius: 4px}
+  .setup-wizard .setup-actions .button.primary {
+    min-width: 128px;
+    color: var(--setup-on-accent);
+    background: var(--setup-accent);
+    box-shadow: none;
   }
-  .home-deck.home-deck-with-announcement .home-stat dd,
-  .home-deck:has(.home-deck-announcement) .home-stat dd {
-    font-size: 17px;
-  }
-  .home-deck-greeting {font-size: clamp(28px, 7vw, 40px)}
-  .home-main {padding: 30px 26px}
+  .setup-wizard .setup-actions .button.primary:hover:not(:disabled) {background: var(--setup-accent-hover)}
 }
 
 @media (max-width: 620px) {
-  .home-deck {min-height: 210px; padding: 22px 20px; gap: 16px}
-  .home-deck.home-deck-with-announcement,
-  .home-deck:has(.home-deck-announcement) {
-    min-height: auto;
-    padding: 10px 14px 8px;
-    gap: 8px;
-  }
-  .home-deck-announcement {
-    padding: 8px 10px;
-    gap: 5px;
-    border-radius: 12px;
-  }
-  .home-deck.home-deck-with-announcement .home-deck-links,
-  .home-deck:has(.home-deck-announcement) .home-deck-links {
-    gap: 6px;
-  }
-  .home-deck.home-deck-with-announcement .home-deck-link,
-  .home-deck:has(.home-deck-announcement) .home-deck-link {
-    padding: 4px 8px;
-    font-size: 11px;
-  }
-  .home-deck-announcement-title {
-    font-size: 13px;
-  }
-  .home-deck-eyebrow, .home-deck-subtitle {display: none}
-  .home-main {padding: 24px 18px}
-  .home-main-heading {align-items: flex-start; flex-direction: column; gap: 14px}
-  .home-instance-grid {gap: 16px}
+  .setup-steps {grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 18px 0 22px}
+  .setup-brand {justify-content: flex-start; padding-bottom: 16px}
+  .setup-brand img {width: 36px; height: 36px}
+  .setup-review dt, .setup-review dd {padding: 8px}
 }
 
-/* 旧版外壳里，内容区那两列（\`.instance-page-grid\` / \`.task-config-legacy\`）的高度预算也要跟着这一行走，
-   否则它们按旧值算出来的高度会把整壳顶出视口，页面就能滚、接缝就露出来了。 */
-:root[data-tab-size] .app-shell.legacy-shell:has(.topbar-tab-size) {--legacy-page-nav-height: calc(56px * var(--row-scale, 1))}
-
-/* 「栏底边线 → 实例名」之间只留一小段空隙，三个新版主题一致。
-   只给实例名加上外边距：顶栏高度、标签页位置、栏底边线都不动。 */
-:root[data-tab-size] .app-shell:not(.legacy-shell) .main-shell main .page-title {margin-top: 16px}
-/* 旧版族有材质轴，又没有 apple.css 那份皮肤，一级面在这里直接由契约键给出：
-   玻璃材质是半透明加磨砂，普通材质被材质轴压成不透明、无滤镜。 */
-:root[data-theme='legacy-light'] .home-main,
-:root[data-theme='legacy-dark'] .home-main {
-  background: var(--theme-surface-bg);
-  -webkit-backdrop-filter: var(--theme-surface-filter);
-  backdrop-filter: var(--theme-surface-filter);
-}
 .dev-intro {display:flex;align-items:center;justify-content:space-between;gap:18px;padding:18px 22px;margin-bottom:20px}
 .dev-intro > div {display:flex;align-items:flex-start;gap:12px;min-width:0}
 .dev-intro strong {display:block;font-size:14px;margin-bottom:4px}
@@ -2721,7 +2531,7 @@ main {padding: 32px 32px 16px; flex: 1}
   --theme-segment-indicator: var(--accent-soft);
   --theme-toast-bg: var(--text); --theme-toast-text: var(--surface); --theme-toast-error-bg: var(--red);
   --theme-error-bg: var(--theme-danger-soft); --theme-error-border: var(--red);
-  --theme-selection: var(--accent-soft); --theme-scrollbar-thumb: #b5b5b5;
+  --theme-selection: color-mix(in srgb, var(--accent) 25%, transparent); --theme-scrollbar-thumb: #b5b5b5;
   --theme-status-stopped-bg: var(--surface-muted); --theme-status-stopped-text: var(--muted);
 
   /* 契约层 —— 日志 */
@@ -2768,7 +2578,7 @@ main {padding: 32px 32px 16px; flex: 1}
   --theme-input-bg: var(--theme-control-bg); --theme-input-border: var(--border);
   --theme-toggle-off: #938f99; --theme-toggle-on: #7a77bb; --theme-toggle-knob: #ffffff;
   --theme-segment-indicator: #3e3b6a;
-  --theme-selection: #3e3b6a; --theme-scrollbar-thumb: #5a5e66;
+  --theme-scrollbar-thumb: #5a5e66;
   --theme-shadow-panel: 0 1px 2px rgb(0 0 0 / .2);
   --theme-shadow-popover: 0 4px 12px rgb(0 0 0 / .25);
   --theme-shadow-modal: 0 8px 24px rgb(0 0 0 / .35);
@@ -3142,11 +2952,11 @@ button:focus-visible, a:focus-visible, summary:focus-visible {outline-color: var
 .instance-tab .instance-tab-icon {flex-shrink: 0; width: var(--tab-cell-icon); height: var(--tab-cell-icon)}
 .instance-tab-cell:not(.instance-tab-remove):hover .instance-tab-icon {visibility: hidden}
 .instance-tab-cell:not(.instance-tab-remove):hover .instance-tab-power {display: grid}
-.instance-tab-power {position: absolute; inset: 0; display: none; place-items: center; border-radius: 50%; cursor: pointer; color: var(--accent)}
+.instance-tab-power {position: absolute; inset: 0; display: none; place-items: center; cursor: pointer; color: var(--accent); transition: transform .12s ease}
 .instance-tab-power > .lucide {width: var(--tab-cell-icon); height: var(--tab-cell-icon)}
-.instance-tab-power:hover {color: var(--surface); background: var(--accent)}
+.instance-tab-power:hover {color: var(--accent); transform: scale(1.15)}
 .instance-tab.running .instance-tab-power {color: var(--red)}
-.instance-tab.running .instance-tab-power:hover {color: var(--surface); background: var(--red)}
+.instance-tab.running .instance-tab-power:hover {color: var(--red); transform: scale(1.15)}
 .instance-tab-remove .lucide {display: none}
 .instance-tab-remove:hover .lucide {display: block}
 .instance-tab-remove:hover {border-radius: 50%; cursor: pointer; color: var(--red); background: var(--surface)}
@@ -3192,6 +3002,126 @@ button:focus-visible, a:focus-visible, summary:focus-visible {outline-color: var
   .instance-tab, .instance-tab-create, .instance-tab-create > .lucide {transition: none}
   .instance-tab.running .instance-tab-icon, .instance-tab.updating .instance-tab-icon {animation: none}
 }
+/* 标签、分隔线和上下留白按四个档位等比缩放，默认使用第三档。 */
+:root[data-tab-size='md'] {--row-scale: 1}
+:root[data-tab-size='lg'] {--row-scale: 1.24}
+:root[data-tab-size='xl'] {--row-scale: 1.55}
+:root[data-tab-size='sm'] {--row-scale: .78}
+:root {--instance-tab-height: calc(26px * var(--row-scale, 1.24)); --instance-tab-font: calc(12px * var(--row-scale, 1.24)); --row-pad: var(--instance-tab-gap-y); --instance-tab-pad: calc(9px * var(--row-scale, 1.24)); --instance-tab-max: calc(210px * var(--row-scale, 1.24)); --instance-tab-icon: calc(14px * var(--row-scale, 1.24)); --instance-tab-gap: 1px}
+
+.update-notice.sidebar-update-notice {padding: 4px 8px; border-radius: 999px; background: var(--red); color: #fff; font-size: 10px; font-weight: 750; line-height: 1; flex-shrink: 0}
+.sidebar-brand {padding-top: 0; margin-bottom: 20px}
+.brand-title {color: var(--text); text-decoration: none}
+.sidebar-brand-left {display: flex; align-items: center; gap: 8px; min-width: 0}
+.sidebar-update-notice span {position: relative; z-index: 1}
+.nav-instance-name {min-width: 0; overflow: hidden; text-overflow: ellipsis}
+.topbar {position: sticky; top: 0; z-index: 30; gap: 16px; border-bottom: none !important}
+.breadcrumb {min-width: 0; min-height: var(--instance-tab-height); align-items: center}
+.breadcrumb-current {overflow: hidden; text-overflow: ellipsis; white-space: nowrap}
+.breadcrumb > a, .breadcrumb > span, .breadcrumb > strong {flex-shrink: 0}
+.breadcrumb > .breadcrumb-current {flex-shrink: 1}
+
+.topbar-bulk-toggle {flex-shrink: 0}
+/* 放缩只落在承载标签的那条栏上：新版主题是顶栏自己，旧版主题是页内那一行。
+   旧版顶部还有一条只有品牌与页名的装饰栏，它不参与放缩，否则顶部会白占两条栏的高度。 */
+/* 顶栏、内容区和右栏共用高度，拖动换档时一起移动。 */
+:root {--topbar-actual-height: calc(var(--instance-tab-height) + 2 * var(--row-pad, 4px))}
+:root[data-tab-size] .app-shell:not(.legacy-shell) .topbar:has(> .tabbar-resize-handle) {height: var(--topbar-actual-height); min-height: var(--topbar-actual-height); padding-block: var(--row-pad, 4px)}
+/* 右栏紧贴顶栏下方；旧版外壳的右栏另有一套规则，不在此列。 */
+:root[data-tab-size] .app-shell:not(.legacy-shell) .right-rail {top: var(--topbar-actual-height); height: calc(var(--viewport-height) - var(--topbar-actual-height))}
+:root[data-tab-size] .app-shell .topbar-bulk-toggle {width: calc(var(--instance-tab-icon) * 2); height: calc(var(--instance-tab-icon) * 2); padding: 0; justify-content: center}
+.topbar-bulk-toggle .lucide {width: var(--instance-tab-icon); height: var(--instance-tab-icon); flex-shrink: 0}
+/* 一键启停执行期间按钮禁用，图标转圈表示正在逐个处理。 */
+.topbar-bulk-toggle:disabled {cursor: default}
+.topbar-bulk-toggle:disabled .lucide {animation: spin 1.2s linear infinite}
+
+/* 设置入口与标签栏控件共用一行。 */
+:root[data-tab-size] .app-shell .breadcrumb .topbar-actions {position: relative; display: flex; align-items: center; align-self: stretch; min-width: 0; gap: calc(var(--instance-tab-icon) * .5)}
+/* 悬停区在设置入口左侧，宽度与批量操作按钮相同。 */
+:root[data-tab-size] .app-shell .breadcrumb .topbar-actions-hover {position: absolute; top: 0; bottom: 0; right: 100%; width: calc(var(--instance-tab-icon) * 2)}
+/* 悬停或键盘聚焦时展开控件。 */
+:root[data-tab-size] .app-shell .breadcrumb .topbar-actions-buttons {display: flex; align-items: center; gap: calc(var(--instance-tab-icon) * .5); width: 0; overflow: hidden; transition: width .18s ease}
+:root[data-tab-size] .app-shell .breadcrumb .topbar-actions-buttons > * {visibility: hidden; pointer-events: none}
+/* 展开：指针落在左边那片悬停区上、或已进入展开的开关盒内 —— 两者合起来才算悬停区，
+   否则指针一挪到开关上就掉出去，展开的开关根本点不到；键盘焦点同理。鼠标点击留下的
+   焦点不算 —— 它会一直留着，盒子就再也折不回去。 */
+:root[data-tab-size] .app-shell .breadcrumb .topbar-actions:has(> .topbar-actions-hover:hover) .topbar-actions-buttons,
+:root[data-tab-size] .app-shell .breadcrumb .topbar-actions:has(> .topbar-actions-buttons:hover) .topbar-actions-buttons,
+:root[data-tab-size] .app-shell .breadcrumb .topbar-actions:has(:focus-visible) .topbar-actions-buttons {width: calc(var(--instance-tab-icon) * 2)}
+:root[data-tab-size] .app-shell .breadcrumb .topbar-actions:has(> .topbar-actions-hover:hover) .topbar-actions-buttons > *,
+:root[data-tab-size] .app-shell .breadcrumb .topbar-actions:has(> .topbar-actions-buttons:hover) .topbar-actions-buttons > *,
+:root[data-tab-size] .app-shell .breadcrumb .topbar-actions:has(:focus-visible) .topbar-actions-buttons > * {visibility: visible; pointer-events: auto}
+.breadcrumb .topbar-actions > a {font-size: var(--instance-tab-font); display: inline-flex; align-items: center; height: var(--instance-tab-height); padding: 0 calc(var(--instance-tab-pad) * .6)}
+.breadcrumb .topbar-actions > a:hover {color: var(--accent); background: var(--accent-soft); border-radius: var(--theme-radius-control)}
+
+/* 给标签轨道留出可横向滚动的宽度。 */
+.breadcrumb.with-tabs {flex: 1; min-width: 0}
+.breadcrumb.with-tabs > a {flex-shrink: 0}
+.breadcrumb.with-tabs > .breadcrumb-current {flex-shrink: 1; min-width: 0; max-width: 30%}
+
+.legacy-page-nav {position: relative; z-index: 1}
+.tabbar-resize-handle {
+  position: absolute;
+  z-index: 2;
+  inset: auto 0 0;
+  height: 8px;
+  cursor: ns-resize;
+  touch-action: none;
+  user-select: none;
+}
+.tabbar-resize-handle::after {content: ''; position: absolute; inset: auto 0 0; height: 1px; background: var(--border)}
+.tabbar-resize-handle:is(:hover, :active, :focus-visible)::after {height: 2px; background: var(--accent)}
+
+.topbar-right {flex-shrink: 0; gap: 16px}
+.update-notice {display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; color: var(--accent); background: var(--accent-soft); border-radius: var(--theme-radius-pill, 999px); white-space: nowrap}
+.task-nav-heading {margin-bottom: 8px; flex-shrink: 0}
+.sidebar-label .icon-button {width: 28px; height: 28px; padding: 6px}
+/* 选中的控件（日志筛选、卡片视图切换）：底与文字都取自主题强调色，随主题自动跟随。 */
+.icon-button.filter-active {background: color-mix(in srgb, var(--theme-accent) 14%, transparent) !important; color: var(--theme-accent) !important}
+
+.head-grid {display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; margin-bottom: 24px}
+.head-card {padding: 22px; display: grid; gap: 15px}
+.head-card-header {display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap}
+.head-card-header > span, .head-card > span {display: flex; align-items: center; gap: 8px; color: var(--muted)}
+.head-card code {font-family: var(--theme-font-mono, "JetBrains Mono", "JetBrains Mono NL", "Cascadia Code", "Consolas", "Microsoft YaHei", monospace); font-size: 13px; overflow-wrap: anywhere; user-select: all}
+.branch-summary {display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 12px}
+.commit-panel .panel-heading {flex-wrap: wrap; gap: 12px}
+.update-summary {display: flex; align-items: center; flex-wrap: wrap; gap: 12px; color: var(--muted); font-size: 12px}
+.update-summary > span {display: flex; align-items: center; gap: 6px}
+.update-summary .update-available {color: var(--accent)}
+.commit-row {display: flex; gap: 16px; padding: 19px 24px; border-top: 1px solid var(--border)}
+.commit-node {margin-top: 2px; color: var(--accent); flex-shrink: 0}
+.commit-detail {min-width: 0; flex: 1}
+.commit-subject {line-height: 1.7; overflow-wrap: anywhere}
+.commit-ref {display: inline-block; font-size: 10px; padding: 0 7px; background: var(--surface-muted); border: 1px solid var(--border); border-radius: 5px; margin-left: 9px; white-space: nowrap}
+.commit-ref.upstream {background: var(--accent-soft); color: var(--accent)}
+.commit-meta {display: flex; align-items: center; flex-wrap: wrap; gap: 12px; font-size: 11px; color: var(--muted); margin-top: 8px}
+.commit-meta code {font-family: var(--theme-font-mono, "JetBrains Mono", "JetBrains Mono NL", "Cascadia Code", "Consolas", "Microsoft YaHei", monospace); user-select: all}
+.commit-detail details {margin-top: 6px; color: var(--muted); font-size: 12px}
+.commit-detail summary {cursor: pointer}
+.commit-detail pre {white-space: pre-wrap; overflow-wrap: anywhere; font: inherit; line-height: 1.8; color: var(--text)}
+.commit-pagination {display: flex; align-items: center; justify-content: flex-end; gap: 12px; padding: 18px 24px; border-top: 1px solid var(--border)}
+.commit-pagination > span {margin-right: auto; color: var(--muted); font-size: 12px}
+@media (max-width: 950px) {
+  /* 窄屏保留导航与调度按钮的触控空间。 */
+  :root {--topbar-actual-height: calc(56px + var(--instance-tab-height) - 26px * 1.24)}
+  .breadcrumb.with-tabs > .breadcrumb-current {display: none}
+  .topbar {gap: 8px}
+  .sidebar {z-index: 100}
+  .topbar-right {gap: 8px}
+  .topbar-right .connection-label span {display: none}
+  .breadcrumb {gap: 6px; flex: 1}
+  .update-notice {font-size: 10px; padding: 5px 6px}
+  .update-notice > svg {display: none}
+  .head-grid {grid-template-columns: 1fr}
+  .head-card {padding: 18px}
+  .commit-row {padding: 16px; gap: 10px}
+  .commit-pagination {padding: 16px; gap: 8px}
+}
+
+/* 「栏底边线 → 实例名」之间只留一小段空隙，三个新版主题一致。
+   只给实例名加上外边距：顶栏高度、标签页位置、栏底边线都不动。 */
+:root[data-tab-size] .app-shell:not(.legacy-shell) .main-shell main .page-title {margin-top: 16px}
 /* 全站表单共用现有主题契约，外部 theme.css 仍可覆盖颜色与圆角。 */
 :root {
   --form-height: 40px;
@@ -3481,6 +3411,233 @@ input[type='range']:focus-visible {outline: 2px solid var(--theme-focus); outlin
 .material-detail-modal .field-label label {color: var(--theme-text); font-size: 13px}
 .material-detail-modal .knob-value {color: var(--theme-text); font-size: 13px}
 .material-detail-modal .knob-region-title {font-size: 14px}
+
+/* 过滤器语法高亮编辑器（CodeMirror 6） */
+.filter-editor {
+  position: relative;
+  width: 100%;
+}
+.filter-editor .cm-editor {
+  border: 0;
+  border-bottom: 1px solid var(--theme-input-border, var(--form-edge));
+  border-radius: 4px 4px 0 0;
+  background: var(--theme-input-bg);
+  color: var(--theme-input-text, var(--text));
+  font-family: var(--theme-font-mono, "JetBrains Mono", Consolas, monospace);
+  font-size: 13px;
+  line-height: 1.9;
+  min-height: 42px;
+  transition: border-bottom-color .2s cubic-bezier(.2, 0, 0, 1), background-color .2s cubic-bezier(.2, 0, 0, 1);
+  outline: none;
+}
+.filter-editor .cm-editor.cm-focused {
+  background: var(--accent-soft);
+  border-bottom: 2px solid var(--theme-focus);
+}
+.filter-editor .cm-scroller {
+  font-family: inherit;
+  line-height: inherit;
+  overflow-x: hidden;
+}
+.filter-editor .cm-content {
+  padding: 10px 14px;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+.filter-editor .cm-line {
+  padding: 0;
+}
+.filter-editor .cm-cursor {
+  border-left-color: var(--text);
+}
+.filter-editor.is-disabled .cm-editor {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: var(--surface-muted);
+}
+
+/* 语法高亮 Token —— 核心控制与连接符 */
+.cm-filter-arrow {
+  color: var(--accent);
+  font-weight: 700;
+  padding: 0 4px;
+}
+.cm-filter-delimiter {
+  color: var(--muted);
+  opacity: 0.55;
+}
+.cm-filter-tier-marker {
+  color: #7c3aed;
+  font-weight: 700;
+  background: color-mix(in srgb, #8b5cf6 18%, transparent);
+  border: 1px solid color-mix(in srgb, #8b5cf6 35%, transparent);
+  border-radius: 4px;
+  padding: 0 5px;
+}
+.cm-filter-shortest {
+  color: #b45309;
+  font-weight: 700;
+  background: color-mix(in srgb, #f59e0b 20%, transparent);
+  border: 1px solid color-mix(in srgb, #f59e0b 40%, transparent);
+  border-radius: 4px;
+  padding: 0 5px;
+}
+.cm-filter-reset {
+  color: #dc2626;
+  font-weight: 700;
+  background: color-mix(in srgb, #ef4444 18%, transparent);
+  border: 1px solid color-mix(in srgb, #ef4444 35%, transparent);
+  border-radius: 4px;
+  padding: 0 5px;
+}
+.cm-filter-preset {
+  color: #d97706;
+  font-weight: 600;
+}
+
+/* 语法高亮 Token —— 时间与数值 */
+.cm-filter-time {
+  color: #2563eb;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.cm-filter-number {
+  color: #2563eb;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 语法高亮 Token —— 委托系统 (Commission) */
+.cm-filter-comm {font-weight: 600}
+.cm-filter-comm-urgent {color: #e11d48; font-weight: 700}
+.cm-filter-comm-extra {color: #7c3aed; font-weight: 700}
+.cm-filter-comm-daily {color: #0284c7}
+.cm-filter-comm-major {color: #d97706; font-weight: 700}
+.cm-filter-comm-night {color: #4f46e5}
+
+.cm-filter-genre {font-weight: 600}
+.cm-filter-genre-gem {color: #e11d48; font-weight: 700}
+.cm-filter-genre-cube {color: #0284c7; font-weight: 700}
+.cm-filter-genre-oil {color: #b45309}
+.cm-filter-genre-drill {color: #475569}
+.cm-filter-genre-box {color: #ea580c}
+.cm-filter-genre-chip {color: #9333ea}
+.cm-filter-genre-part {color: #0d9488}
+.cm-filter-genre-resource {color: #16a34a}
+.cm-filter-genre-event {color: #f43f5e}
+.cm-filter-genre-book {color: #6366f1}
+.cm-filter-genre-retrofit {color: #ec4899}
+.cm-filter-genre-ship {color: #059669}
+
+/* 语法高亮 Token —— 科研系统 (Research) */
+.cm-filter-series {color: #0284c7; font-weight: 600}
+.cm-filter-dr {color: #d97706; font-weight: 700}
+.cm-filter-pry {color: #9333ea; font-weight: 700}
+.cm-filter-genre-code {color: #0d9488; font-weight: 600}
+.cm-filter-ship {color: #059669; font-weight: 600}
+
+/* 语法高亮 Token —— 商店与通用物品 */
+.cm-filter-shop-group {color: #6366f1; font-weight: 600}
+.cm-filter-shop-sub {color: #0d9488; font-weight: 600}
+.cm-filter-tier {color: #ea580c; font-weight: 600}
+.cm-filter-fleet {color: #0891b2; font-weight: 600}
+.cm-filter-stage {color: #3b82f6; font-weight: 600}
+.cm-filter-rarity {color: #8b5cf6; font-weight: 600}
+.cm-filter-item {color: var(--text); font-weight: 500}
+
+/* 深色模式适配 */
+:root[data-theme='legacy-dark'] .cm-filter-tier-marker,
+:root[data-theme='dark'] .cm-filter-tier-marker {
+  color: #c084fc;
+  background: rgba(192, 132, 252, 0.2);
+  border-color: rgba(192, 132, 252, 0.4);
+}
+:root[data-theme='legacy-dark'] .cm-filter-shortest,
+:root[data-theme='dark'] .cm-filter-shortest {
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.2);
+  border-color: rgba(251, 191, 36, 0.4);
+}
+:root[data-theme='legacy-dark'] .cm-filter-reset,
+:root[data-theme='dark'] .cm-filter-reset {
+  color: #f87171;
+  background: rgba(248, 113, 113, 0.2);
+  border-color: rgba(248, 113, 113, 0.4);
+}
+:root[data-theme='legacy-dark'] .cm-filter-time,
+:root[data-theme='dark'] .cm-filter-time,
+:root[data-theme='legacy-dark'] .cm-filter-number,
+:root[data-theme='dark'] .cm-filter-number {
+  color: #60a5fa;
+}
+:root[data-theme='legacy-dark'] .cm-filter-comm-urgent,
+:root[data-theme='dark'] .cm-filter-comm-urgent {
+  color: #fb7185;
+}
+:root[data-theme='legacy-dark'] .cm-filter-comm-extra,
+:root[data-theme='dark'] .cm-filter-comm-extra {
+  color: #c084fc;
+}
+:root[data-theme='legacy-dark'] .cm-filter-comm-daily,
+:root[data-theme='dark'] .cm-filter-comm-daily {
+  color: #38bdf8;
+}
+:root[data-theme='legacy-dark'] .cm-filter-comm-major,
+:root[data-theme='dark'] .cm-filter-comm-major {
+  color: #fbbf24;
+}
+:root[data-theme='legacy-dark'] .cm-filter-genre-gem,
+:root[data-theme='dark'] .cm-filter-genre-gem {
+  color: #fb7185;
+}
+:root[data-theme='legacy-dark'] .cm-filter-genre-cube,
+:root[data-theme='dark'] .cm-filter-genre-cube {
+  color: #38bdf8;
+}
+:root[data-theme='legacy-dark'] .cm-filter-genre-oil,
+:root[data-theme='dark'] .cm-filter-genre-oil {
+  color: #f59e0b;
+}
+:root[data-theme='legacy-dark'] .cm-filter-genre-drill,
+:root[data-theme='dark'] .cm-filter-genre-drill {
+  color: #94a3b8;
+}
+:root[data-theme='legacy-dark'] .cm-filter-genre-box,
+:root[data-theme='dark'] .cm-filter-genre-box {
+  color: #fb923c;
+}
+:root[data-theme='legacy-dark'] .cm-filter-genre-chip,
+:root[data-theme='dark'] .cm-filter-genre-chip {
+  color: #c084fc;
+}
+:root[data-theme='legacy-dark'] .cm-filter-genre-part,
+:root[data-theme='dark'] .cm-filter-genre-part {
+  color: #2dd4bf;
+}
+:root[data-theme='legacy-dark'] .cm-filter-series,
+:root[data-theme='dark'] .cm-filter-series {
+  color: #38bdf8;
+}
+:root[data-theme='legacy-dark'] .cm-filter-dr,
+:root[data-theme='dark'] .cm-filter-dr {
+  color: #fbbf24;
+}
+:root[data-theme='legacy-dark'] .cm-filter-pry,
+:root[data-theme='dark'] .cm-filter-pry {
+  color: #c084fc;
+}
+:root[data-theme='legacy-dark'] .cm-filter-genre-code,
+:root[data-theme='dark'] .cm-filter-genre-code {
+  color: #2dd4bf;
+}
+:root[data-theme='legacy-dark'] .cm-filter-ship,
+:root[data-theme='dark'] .cm-filter-ship {
+  color: #34d399;
+}
+:root[data-theme='legacy-dark'] .cm-filter-tier,
+:root[data-theme='dark'] .cm-filter-tier {
+  color: #fb923c;
+}
 /* 旧版字体：正文 MiSans、日志 JetBrains Mono NL。
    字体文件放在 frontend/public/，用相对路径引用，才能在前缀式反代下同样命中。 */
 @font-face {
@@ -3628,10 +3785,6 @@ dialog.modal[open]::backdrop { animation: motion-backdrop-in var(--dur-3) var(--
 
 @keyframes motion-fade-up { from { opacity: 0; transform: translateY(var(--shift-entry)) } to { opacity: 1; transform: none } }
 
-.home-deck-copy > *, .home-main-heading { animation: motion-fade-up var(--dur-3) var(--ease-decelerate) both }
-.home-deck-copy > :nth-child(2) { animation-delay: 30ms }
-.home-deck-copy > :nth-child(3) { animation-delay: 60ms }
-.home-deck-foot { animation: motion-fade-up var(--dur-3) var(--ease-decelerate) both; animation-delay: 90ms }
 
 /* ============================================================================
    6 · 日志新行入场（LogPanel 给增量行挂 .motion-enter；初始加载不播）
@@ -4190,18 +4343,99 @@ button:disabled, input:disabled, textarea:disabled, select:disabled, .select-tri
     /* 基准写 0 而不是 auto：auto 会以内容高度为基准把容器撑到内容那么高。 */
     flex: 1 1 0;
     min-height: 0;
-    grid-template-columns: minmax(16rem, 20rem) minmax(24rem, 1fr);
+    grid-template-columns: var(--legacy-rail-width, 280px) minmax(24rem, 1fr);
     gap: 14px;
     align-items: stretch;
   }
-  /* 左列整体滚动；队列列表自身填满剩余高度并在内部滚动，与其它主题一致。 */
-  .instance-page-rail {display: flex; flex-direction: column; gap: 12px; min-height: 0; overflow-y: auto}
-/* 调度栏一级容器与内部贴片同心：顶部对齐 16px 的调度器组件，底部对齐 12px 的队列区。 */
-.instance-page-rail {border-radius: 16px 16px 12px 12px}
+  /* 调度器栏包裹容器与拖拽把手 */
+  .instance-page-rail-wrap {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    min-width: 0;
+  }
+  .instance-page-rail-wrap > .instance-page-rail {
+    flex: 1 1 0;
+    height: 100%;
+  }
+  .legacy-rail-resize-handle {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: -12px;
+    width: 14px;
+    cursor: col-resize;
+    z-index: 25;
+    touch-action: none;
+    user-select: none;
+  }
+  .legacy-rail-resize-handle::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 6px;
+    width: 2px;
+    background: transparent;
+    transition: background-color .15s cubic-bezier(.2, 0, 0, 1);
+    pointer-events: none;
+    border-radius: 1px;
+  }
+  .legacy-rail-resize-handle:hover::after,
+  .legacy-rail-resize-handle.is-dragging::after,
+  .legacy-rail-resize-handle:focus-visible::after {
+    background: var(--accent);
+  }
+  .legacy-rail-resize-handle.is-dragging::after {
+    width: 3px;
+    left: 5.5px;
+  }
+  body.is-resizing-rail,
+  body.is-resizing-rail * {
+    cursor: col-resize !important;
+    user-select: none !important;
+  }
+  /* 左列一体化卡片容器：整列融为一张面板，靠分隔线划分调度器、统计卡与队列，消除透底白色间隙。 */
+  .instance-page-rail {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    min-height: 0;
+    overflow-y: auto;
+    background: var(--theme-plate-bg);
+    -webkit-backdrop-filter: var(--theme-plate-filter);
+    backdrop-filter: var(--theme-plate-filter);
+    border: 1px solid var(--border);
+    border-radius: var(--theme-radius-panel, 16px);
+  }
   .instance-page-rail .rail-task-list {flex: 1 1 0%; min-height: 0; overflow-y: auto}
-  /* 右栏那套边距会让调度器与任务计划比同列其他卡片窄，这里清零让三块左右对齐。 */
-  .instance-page-rail .scheduler-widget {margin: 0}
-  .instance-page-rail .rail-schedule {padding: 12px 12px 10px}
+  .instance-page-rail .scheduler-widget {
+    margin: 0;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .instance-page-rail .legacy-stat-card {
+    background: transparent;
+    border: 0;
+    border-top: 1px solid var(--border);
+    border-radius: 0;
+    box-shadow: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .instance-page-rail .rail-schedule {
+    padding: 12px 12px 10px;
+    background: transparent;
+    border: 0;
+    border-top: 1px solid var(--border);
+    border-radius: 0;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
   /* 右栏不滚，滚动交给面板：滚动条只在面板内出现与消失，同列的资源卡片宽度不变。 */
   .instance-page-main {display: flex; flex-direction: column; gap: 12px; min-height: 0; overflow: hidden}
   .instance-page-main .resource-grid {margin-bottom: 0}
@@ -4420,6 +4654,8 @@ button:disabled, input:disabled, textarea:disabled, select:disabled, .select-tri
   .app-shell.legacy-shell > .main-shell > main:has(.instance-page-grid),
   .app-shell.legacy-shell > .main-shell > main:has(.task-config-legacy) {flex: none; overflow: visible}
   .instance-page-grid {display: flex; flex-direction: column; gap: 12px; height: auto}
+  .instance-page-rail-wrap {width: 100%}
+  .legacy-rail-resize-handle {display: none !important}
   .instance-page-rail, .instance-page-main {overflow: visible}
   .task-config-legacy {display: block}
   .legacy-page-nav {padding: 0 16px}
