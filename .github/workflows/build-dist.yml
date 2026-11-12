@@ -1,6 +1,12 @@
 name: build-dist
 
-# 从 main（二次修改分支）构建前端 dist，发布到 dist-main 分支。
+# 分支职责：
+#   upstream  = 纯上游镜像（wess09/AzurPilot master），每次运行自动 force push 对齐
+#   main      = 二次修改开发分支，上游合并由 sync-upstream 技能手动完成
+#   dist-main = main + 单个 dist 提交，本工作流构建发布
+#
+# 客户端更新器以 --depth 1 浅拉取 dist-main，仅下载最新树，分支历史重写无影响。
+# 客户端 deploy.yaml：
 #
 # dist-main = main + 单个 dist 提交，每次构建后 force push。
 # 客户端更新器以 --depth 1 浅拉取，仅下载最新树，分支历史重写无影响。
@@ -9,8 +15,7 @@ name: build-dist
 #   Branch: dist-main
 # 即可在更新时获得与源码指纹匹配的预构建 dist，无需本地安装 Node。
 #
-# 上游同步不在本工作流内：main 的上游合并沿用 sync-upstream 技能的
-# merge 追加方式；push 到 main 即触发构建。
+# main 的上游合并沿用 sync-upstream 技能的 merge 追加方式；push 到 main 即触发构建。
 #
 # 幂等保障：dist-main 提交的父提交等于 main 当前 tip 时跳过构建，
 # 防止重复触发形成循环。
@@ -38,6 +43,11 @@ jobs:
         with:
           ref: main
           fetch-depth: 1
+
+      - name: 同步 upstream 镜像分支
+        run: |
+          git fetch --depth 1 https://github.com/wess09/AzurPilot.git master
+          git push --force origin FETCH_HEAD:refs/heads/upstream
 
       - name: 检查 dist-main 是否已对齐
         id: aligned
