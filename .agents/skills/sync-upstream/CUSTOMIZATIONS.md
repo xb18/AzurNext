@@ -57,9 +57,13 @@
 
 ### 8. Agent 资产（非上游内容，同步时不会冲突，但注意保留）
 - `.agents/skills/extract-game-asset/`（素材提取技能 + 脚本）
-- `.agents/skills/sync-upstream/SKILL.md`（本技能）
+- `.agents/skills/sync-upstream/SKILL.md`（本技能）+ `CUSTOMIZATIONS.md`（本清单）
 - `AGENTS.md`（+183 项目开发准则）
 - `.github/workflows/ci.yml`（+2）
+- `launcher/`（2026-11-12 新增）：Tauri Thin Shell 桌面客户端（启动器）源码，
+  以 git subtree 方式从独立仓库 `AzurNext-Launcher` 合入（`--squash`）。
+  独立开发时在该仓库改代码，用 `git subtree pull --prefix=launcher <仓库路径> master --squash`
+  同步进来；反向 `git subtree push`。上游无此目录，sync 时不会冲突。
 
 ### 9. 测试（同步后必跑）
 - `tests/test_api.py`、`test_config_transaction.py`、`test_deploy_environment_ports.py`（新）
