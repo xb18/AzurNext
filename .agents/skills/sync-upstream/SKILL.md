@@ -12,7 +12,7 @@ description: >-
 
 ## 核心原则
 
-1. **保持 master 纯净**：本地 master 分支永远与官方/上游保持 100% 一致，不在 master 上做任何私有修改。
+1. **保持 upstream 纯净**：本地 upstream 分支（上游镜像分支，原 master 改名）永远与官方/上游保持 100% 一致，不在 upstream 上做任何私有修改。
 2. **私有修改在独立分支**：所有个人定制、脚本和修改均维护在独立主分支（如 `main`）。
 3. **使用合并而非变基**：将 master 通过 `git merge` 合入私有分支，master 的更新追加在私有提交之后；不改写已有提交历史，远程推送无需强推。
 4. **仅推送到个人 Remote**：只向 origin（个人的 Fork 仓库）推送，绝不向上游主仓库推送私有代码。
@@ -41,13 +41,13 @@ git status
 git fetch upstream
 
 # 3. 切换到本地 master 并对齐到上游最新提交
-git checkout master
+git checkout upstream
 git merge --ff-only upstream/master
 
 # 4. 同步更新你自己 GitHub 上的 master 分支
-git push origin master
+git push origin upstream
 ```
-*(注：如果未配置 upstream，而是在 GitHub 网页点击了 "Sync fork"，则直接运行 `git checkout master; git pull origin master`)*
+*(注：如果未配置 upstream，而是在 GitHub 网页点击了 "Sync fork"，则直接运行 `git checkout upstream; git pull origin upstream`)*
 
 ### 第三步：将 master 合并追加到开发分支
 ```powershell
@@ -128,7 +128,7 @@ git push origin main
 
 | 操作 | 命令 |
 |---|---|
-| 快速全流程同步 | `git checkout master; git pull origin master; git checkout main; git merge master` |
+| 快速全流程同步 | `git checkout upstream; git pull origin upstream; git checkout main; git merge master` |
 | 中止合并 | `git merge --abort` |
 | 解决冲突后完成合并 | `git add .; git commit` |
 | 交互式聚合提交 | `git rebase -i master` |
