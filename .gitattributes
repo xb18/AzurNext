@@ -14,3 +14,21 @@
 *.yaml text eol=lf
 *.json text eol=lf
 *.html text eol=lf
+*.webp -text
+*.webm -text
+*.mp4 -text
+*.ttf -text
+*.otf -text
+*.woff -text
+*.woff2 -text
+*.ico -text
+*.icns -text
+*.exe -text
+*.dll -text
+*.zip -text
+*.7z -text
+*.gz -text
+*.xz -text
+*.mp3 -text
+*.wav -text
+*.ogg -text
