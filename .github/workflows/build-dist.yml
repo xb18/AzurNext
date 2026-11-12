@@ -52,7 +52,7 @@ jobs:
       - name: 检查 dist-main 是否已对齐
         id: aligned
         run: |
-          if git fetch --depth 1 origin dist-main 2>/dev/null; then
+          if git fetch --depth 2 origin dist-main 2>/dev/null; then
             dist_parent=$(git rev-parse FETCH_HEAD^)
             main_sha=$(git rev-parse HEAD)
             echo "dist_main_parent=$dist_parent"
