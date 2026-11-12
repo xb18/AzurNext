@@ -48,8 +48,8 @@ jobs:
       fail-fast: false
       matrix:
         # 暂时只打包 Windows；恢复多平台时改回
-      # os: [ubuntu-22.04, macos-latest, windows-latest, windows-11-arm]
-      os: [windows-latest]
+        # os: [ubuntu-22.04, macos-latest, windows-latest, windows-11-arm]
+        os: [windows-latest]
 
     steps:
       - name: Install Tauri dependencies (Ubuntu only)
