@@ -32,3 +32,7 @@
 *.mp3 -text
 *.wav -text
 *.ogg -text
+*.tsx text eol=lf
+*.jsx text eol=lf
+*.mjs text eol=lf
+*.cjs text eol=lf
